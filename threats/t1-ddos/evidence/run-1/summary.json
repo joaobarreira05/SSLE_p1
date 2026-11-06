@@ -1,0 +1,38 @@
+{
+  "run": 1,
+  "t0": "2026-11-06T15:24:10+00:00",
+  "stimulus_s": 120,
+  "concurrency": 20,
+  "peak_rate_rps": 160.2,
+  "server_p95_max_ms": 23.0,
+  "TrafficAnomaly": {
+    "first_signal_s": 25.0,
+    "mttd_s": 85.0,
+    "resolved_after_stimulus_s": 65.0
+  },
+  "ServiceLatencyHigh": {
+    "mttd_s": null,
+    "fired": false
+  },
+  "z_max": {
+    "robust": 320.0,
+    "mean_std": 7.6,
+    "mean_std_would_fire": true,
+    "mean_std_mttd_s": 85.0
+  },
+  "impact": {
+    "sensor_p95_max_ms": 242.5,
+    "time_to_impact_s": 20.0,
+    "recovery_after_stimulus_s": 45.0,
+    "sensor_readings_ok": 84,
+    "sensor_readings_lost": 0
+  },
+  "soc": {
+    "mttd_s": 93.0,
+    "root_cause": "ssle:pt:avr:mac-m2:ing-01",
+    "alerts": [
+      "TrafficAnomaly"
+    ],
+    "raw_alert_count": 1
+  }
+}
