@@ -44,6 +44,7 @@ sites:
 
 # ─── Elementos ───────────────────────────────────────────────────────────────
 # campos: name, site(ou 'core'), role, ip, exporter(node|flask|global|none),
+#         (flask + role sensor = envia leituras à 1.ª dependência, em :8000/ingest)
 #         deps(lista de instâncias locais), staging(true=entra na fatia reduzida)
 elements:
 
@@ -108,7 +109,7 @@ elements:
     site: opo
     role: sensor
     ip: 10.10.2.50
-    exporter: node
+    exporter: flask          # envia telemetria ao ing-01 (baseline legítima + impacto no cliente)
     deps:
       - ing-01@avr
     staging: true
@@ -116,7 +117,7 @@ elements:
     site: opo
     role: sensor
     ip: 10.10.2.51
-    exporter: node
+    exporter: flask          # envia telemetria ao ing-01 (baseline legítima + impacto no cliente)
     deps:
       - ing-01@avr
     staging: false

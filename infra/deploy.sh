@@ -117,13 +117,15 @@ prov_flask() {  # serviço Flask + node_exporter
   cexec "$n" "$p" mkdir -p /opt/ssle
   cpush "$ROOT/services/app.py" "$n/opt/ssle/app.py" "$p"
   # dependências -> "nome=ip:porta" a partir do grafo/inventário (node_exporter:9100)
-  local depenv=""
+  # sensores: enviam leituras à 1.ª dependência (a ingestão), em :8000/ingest
+  local depenv="" upstream=""
   if [ "$deps" != "-" ]; then
     IFS=',' read -ra ds <<< "$deps"
     for d in "${ds[@]}"; do
       local dn="${d%@*}" dsite="$site"; [[ "$d" == *@* ]] && dsite="${d##*@}"
       local dip; dip="$(awk -F'\t' -v nm="$dn" -v st="$dsite" '$1==nm && $7==st {print $4}' "$BUILD/containers.tsv")"
       [ -n "$dip" ] && depenv="${depenv:+$depenv,}$dn=$dip:9100"
+      [ "$role" = sensor ] && [ -z "$upstream" ] && [ -n "$dip" ] && upstream="http://$dip:8000/ingest"
     done
   fi
   cexec "$n" "$p" sh -c "cat > /etc/systemd/system/ssle-service.service <<UNIT
@@ -131,13 +133,14 @@ prov_flask() {  # serviço Flask + node_exporter
 Description=SSLE service ($role)
 After=network-online.target
 [Service]
-Environment=SSLE_ROLE=$role SSLE_SITE=$site SSLE_INSTANCE=$n SSLE_DEPS=$depenv PORT=8000
+Environment=SSLE_ROLE=$role SSLE_SITE=$site SSLE_INSTANCE=$n SSLE_DEPS=$depenv SSLE_UPSTREAM=$upstream PORT=8000
 ExecStart=/usr/bin/python3 /opt/ssle/app.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
 UNIT
-systemctl daemon-reload && systemctl enable --now ssle-service >/dev/null 2>&1"
+systemctl daemon-reload && systemctl enable ssle-service >/dev/null 2>&1 && systemctl restart ssle-service"
+  # restart (e não só enable --now): um re-deploy com código novo tem de o pôr a correr
 }
 
 prov_prom_site() {  # Prometheus de site
