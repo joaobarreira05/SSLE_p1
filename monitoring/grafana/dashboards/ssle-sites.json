@@ -1,0 +1,13 @@
+{
+  "title": "SSLE — sites",
+  "uid": "ssle-sites",
+  "schemaVersion": 39,
+  "panels": [
+    {"type":"stat","title":"up ratio por site","gridPos":{"h":6,"w":12,"x":0,"y":0},
+     "targets":[{"expr":"site:up:ratio"}]},
+    {"type":"timeseries","title":"elementos em baixo por site","gridPos":{"h":6,"w":12,"x":12,"y":0},
+     "targets":[{"expr":"site:down:count"}]},
+    {"type":"stat","title":"incidentes correlacionados","gridPos":{"h":6,"w":12,"x":0,"y":6},
+     "targets":[{"expr":"correlator_incidents_total"}]}
+  ]
+}

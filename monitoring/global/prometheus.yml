@@ -1,0 +1,37 @@
+# Prometheus GLOBAL (core/obs). Federa só AGREGADOS dos sites (R5: poupa banda).
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    region: pt
+    level: global
+rule_files:
+  - /etc/prometheus/rules/*.yml
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: obs-node
+    static_configs:
+      - targets: ['localhost:9100']
+        labels: {site: core, instance_name: obs, host: HOSTPLACEHOLDER}
+  - job_name: alertmanager
+    static_configs:
+      - targets: ['localhost:9093']
+  - job_name: correlator
+    static_configs:
+      - targets: ['localhost:9095']
+        labels: {site: core, instance_name: obs}
+  - job_name: federate
+    honor_labels: true
+    metrics_path: /federate
+    params:
+      'match[]':
+        - '{__name__=~"site.*:.*"}'   # só as recording rules agregadas dos sites
+        - 'up'                        # liveness por alvo (barato; útil p/ RCA)
+    file_sd_configs:
+      - files: ['/etc/prometheus/federate.json']

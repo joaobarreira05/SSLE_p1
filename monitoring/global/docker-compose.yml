@@ -1,0 +1,33 @@
+# Alvo de produção no T490: stack global dentro do contentor core/obs (nesting).
+# Na VM de staging o deploy.sh instala o equivalente por apt (mais leve).
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./rules.yml:/etc/prometheus/rules/rules.yml:ro
+      - ../../build/federate.json:/etc/prometheus/federate.json:ro
+    network_mode: host
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml"]
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    network_mode: host
+  grafana:
+    image: grafana/grafana:11.6.1
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./grafana:/etc/grafana/provisioning:ro
+    network_mode: host
+  correlator:
+    build: ../../correlator
+    volumes:
+      - ../../correlator:/app:ro
+      - ../../build/graph.json:/app/graph.json:ro
+      - incidents:/var/log/ssle
+    network_mode: host
+volumes:
+  incidents:

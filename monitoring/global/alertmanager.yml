@@ -1,0 +1,27 @@
+route:
+  receiver: correlator
+  group_by: [site, alertname]
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 2h
+  routes:
+    - matchers: ['team="ops-avr"']
+      receiver: correlator
+    - matchers: ['team="ops-opo"']
+      receiver: correlator
+
+# Inibição TOPOLÓGICA: a causa cala os sintomas da MESMA máquina/sítio.
+# (A correlação ENTRE elementos, por dependência, é feita pelo correlator.)
+inhibit_rules:
+  - source_matchers: ['alertname="SiteUnreachable"']
+    target_matchers: ['alertname=~"ElementDown|ServiceDown|ServiceDegraded|TrafficAnomaly"']
+    equal: [site]
+  - source_matchers: ['alertname="ElementDown"']
+    target_matchers: ['alertname=~"ServiceDown|TrafficAnomaly"']
+    equal: [site, instance_name]
+
+receivers:
+  - name: correlator
+    webhook_configs:
+      - url: http://localhost:9095/alerts
+        send_resolved: true

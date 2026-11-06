@@ -1,0 +1,14 @@
+groups:
+- name: global
+  rules:
+  # SiteUnreachable: o prom-01 do site não responde ao global (a federation cai).
+  # É o único alerta de nível de site — o detalhe por elemento vem do próprio site,
+  # já com identidade completa (ElementDown/ServiceDown/ServiceDegraded).
+  - alert: SiteUnreachable
+    expr: up{job="federate"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      kind: availability
+    annotations:
+      summary: "Site inacessível a partir do core: {{ $labels.site }}"
