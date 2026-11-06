@@ -1,0 +1,20 @@
+# promtool test rules monitoring/tests/anomaly_test.yml
+rule_files:
+  - ../site/rules/anomalies.yml
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'site_service:http_requests:rate5m{site="avr",service="ingestion"}'
+        values: '10+0x60 100x10'      # 1 h estável a 10 req/s e depois salto para 100
+    alert_rule_test:
+      - eval_time: 65m
+        alertname: TrafficAnomaly
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              kind: anomaly
+              site: avr
+              service: ingestion
+            exp_annotations:
+              summary: "Tráfego anómalo em ingestion @ avr (z>3)"

@@ -1,0 +1,47 @@
+# promtool test rules monitoring/tests/liveness_test.yml
+rule_files:
+  - ../site/rules/liveness.yml
+evaluation_interval: 15s
+tests:
+  # ElementDown dispara quando o node_exporter deixa de responder (up=0)
+  - interval: 15s
+    input_series:
+      - series: 'up{job="node",region="pt",site="avr",host="mac-m2",instance_name="sto-01",role="storage"}'
+        values: '1 1 1 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 1m30s
+        alertname: ElementDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              kind: availability
+              job: node
+              region: pt
+              site: avr
+              host: mac-m2
+              instance_name: sto-01
+              role: storage
+            exp_annotations:
+              summary: "Elemento em baixo: sto-01 @ avr"
+              identity: "ssle:pt:avr:mac-m2:sto-01"
+  # ServiceDegraded dispara quando uma dependência fica em baixo
+  - interval: 15s
+    input_series:
+      - series: 'ssle_dependency_up{region="pt",site="avr",host="mac-m2",instance_name="ing-01",role="ingestion",dep="sto-01"}'
+        values: '1 1 1 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 1m30s
+        alertname: ServiceDegraded
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              kind: dependency
+              region: pt
+              site: avr
+              host: mac-m2
+              instance_name: ing-01
+              role: ingestion
+              dep: sto-01
+            exp_annotations:
+              summary: "ing-01 degradado: dependência 'sto-01' em baixo @ avr"
+              identity: "ssle:pt:avr:mac-m2:ing-01"

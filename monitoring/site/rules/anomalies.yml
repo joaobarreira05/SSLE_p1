@@ -1,0 +1,13 @@
+groups:
+- name: anomalies
+  rules:
+  - alert: TrafficAnomaly
+    expr: |
+      abs(site_service:http_requests:rate5m - avg_over_time(site_service:http_requests:rate5m[1h]))
+        / clamp_min(stddev_over_time(site_service:http_requests:rate5m[1h]), 0.5) > 3
+    for: 2m
+    labels:
+      severity: warning
+      kind: anomaly
+    annotations:
+      summary: "Tráfego anómalo em {{ $labels.service }} @ {{ $labels.site }} (z>3)"

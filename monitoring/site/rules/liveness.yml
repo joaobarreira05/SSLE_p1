@@ -1,0 +1,30 @@
+groups:
+- name: liveness
+  rules:
+  - alert: ElementDown
+    expr: up{job="node"} == 0
+    for: 30s
+    labels:
+      severity: critical
+      kind: availability
+    annotations:
+      summary: "Elemento em baixo: {{ $labels.instance_name }} @ {{ $labels.site }}"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
+  - alert: ServiceDown
+    expr: up{job="services"} == 0
+    for: 30s
+    labels:
+      severity: critical
+      kind: availability
+    annotations:
+      summary: "Serviço em baixo: {{ $labels.instance_name }} @ {{ $labels.site }}"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
+  - alert: ServiceDegraded
+    expr: ssle_dependency_up == 0
+    for: 30s
+    labels:
+      severity: warning
+      kind: dependency
+    annotations:
+      summary: "{{ $labels.instance_name }} degradado: dependência '{{ $labels.dep }}' em baixo @ {{ $labels.site }}"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"

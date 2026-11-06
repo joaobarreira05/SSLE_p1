@@ -1,0 +1,16 @@
+# Convenção de nome: nivel:metrica:operacoes. SÓ estes agregados sobem ao global.
+groups:
+- name: site-aggregates
+  rules:
+  - record: site:up:count
+    expr: count by (region, site) (up{job="node"})
+  - record: site:up:ratio
+    expr: avg by (region, site) (up{job="node"})
+  - record: site:down:count
+    expr: count by (region, site) (up{job="node"} == 0) or (site:up:count * 0)
+  - record: site_service:http_requests:rate5m
+    expr: sum by (region, site, service) (rate(http_requests_total[5m]))
+  - record: site_service:http_errors:ratio_rate5m
+    expr: |
+      sum by (region, site, service) (rate(http_requests_total{code=~"5.."}[5m]))
+        / clamp_min(sum by (region, site, service) (rate(http_requests_total[5m])), 1)
