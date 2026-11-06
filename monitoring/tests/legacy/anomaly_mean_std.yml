@@ -1,0 +1,15 @@
+# SÓ PARA TESTE (não é deployada): a versão ANTERIOR do TrafficAnomaly — z-score com
+# média/desvio-padrão da última hora — aplicada à mesma série por instância.
+# Serve de contraprova em anomaly_test.yml: dispara no 1.º ataque, mas NÃO no 2.º,
+# porque o 1.º ataque inflacionou o desvio-padrão ("a baseline aprendeu o ataque").
+groups:
+- name: legacy-anomalies
+  rules:
+  - alert: TrafficAnomalyMeanStd
+    expr: |
+      abs(instance:http_requests:rate1m - avg_over_time(instance:http_requests:rate1m[1h]))
+        / clamp_min(stddev_over_time(instance:http_requests:rate1m[1h]), 0.5) > 3
+    for: 1m
+    labels:
+      severity: warning
+      kind: anomaly

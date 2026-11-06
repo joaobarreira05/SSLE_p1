@@ -14,10 +14,10 @@ route:
 # (A correlação ENTRE elementos, por dependência, é feita pelo correlator.)
 inhibit_rules:
   - source_matchers: ['alertname="SiteUnreachable"']
-    target_matchers: ['alertname=~"ElementDown|ServiceDown|ServiceDegraded|TrafficAnomaly"']
+    target_matchers: ['alertname=~"ElementDown|ServiceDown|ServiceDegraded|TrafficAnomaly|ServiceLatencyHigh"']
     equal: [site]
   - source_matchers: ['alertname="ElementDown"']
-    target_matchers: ['alertname=~"ServiceDown|TrafficAnomaly"']
+    target_matchers: ['alertname=~"ServiceDown|TrafficAnomaly|ServiceLatencyHigh"']
     equal: [site, instance_name]
 
 receivers:

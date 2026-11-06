@@ -1,13 +1,45 @@
+# Deteção de anomalias por instância (Ameaça 1 — DoS/DDoS, e qualquer surto de tráfego).
+# Duas camadas, de propósito (defesa em profundidade):
+#   1) RELATIVA — TrafficAnomaly: z-score ROBUSTO face à última hora (aprende o "normal" de cada serviço).
+#   2) ABSOLUTA — ServiceLatencyHigh: o SLO de latência do serviço (não depende de baseline nenhuma).
 groups:
 - name: anomalies
   rules:
   - alert: TrafficAnomaly
+    # Centro = MEDIANA e dispersão = IQR/1,349 (≈ σ numa normal) da última hora.
+    # Porquê robusto: com média/desvio-padrão, um ataque "contamina" a baseline — ao fim de
+    # ~6 min de ataque o desvio-padrão já cresceu tanto que z<3, e um 2.º ataque na mesma hora
+    # NÃO dispara (provado em monitoring/tests/anomaly_test.yml). A mediana e o IQR só se movem
+    # se o ataque ocupar >25 % da janela (ponto de rutura do IQR).
+    # clamp_min(…, 0.5): com tráfego muito regular o IQR≈0; o mínimo evita z infinito
+    # (na prática: dispara acima de mediana + 1,5 pedidos/s).
     expr: |
-      abs(site_service:http_requests:rate5m - avg_over_time(site_service:http_requests:rate5m[1h]))
-        / clamp_min(stddev_over_time(site_service:http_requests:rate5m[1h]), 0.5) > 3
-    for: 2m
+      abs(
+        instance:http_requests:rate1m
+          - quantile_over_time(0.5, instance:http_requests:rate1m[1h])
+      )
+      / clamp_min(
+          (quantile_over_time(0.75, instance:http_requests:rate1m[1h])
+             - quantile_over_time(0.25, instance:http_requests:rate1m[1h])) / 1.349,
+          0.5)
+      > 3
+    for: 1m
     labels:
       severity: warning
       kind: anomaly
     annotations:
-      summary: "Tráfego anómalo em {{ $labels.service }} @ {{ $labels.site }} (z>3)"
+      summary: "Tráfego anómalo em {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }}: {{ $value | printf \"%.1f\" }} desvios robustos"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
+
+  - alert: ServiceLatencyHigh
+    # SLO da API de ingestão: p95 < 100 ms (em repouso o p95 é ~1 ms: margem de 100×).
+    # É o sintoma que o CLIENTE sente — dispara mesmo que o atacante suba a carga devagar
+    # (low-and-slow) e "eduque" a baseline da regra relativa.
+    expr: instance:http_request_duration_seconds:p95_1m > 0.1
+    for: 1m
+    labels:
+      severity: critical
+      kind: performance
+    annotations:
+      summary: "Latência p95 de {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }} acima do SLO: {{ $value | printf \"%.3f\" }} s > 0,100 s"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"

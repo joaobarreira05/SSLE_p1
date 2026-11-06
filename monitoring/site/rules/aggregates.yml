@@ -1,4 +1,4 @@
-# Convenção de nome: nivel:metrica:operacoes. SÓ estes agregados sobem ao global.
+# Convenção de nome: nivel:metrica:operacoes. Só o grupo site-aggregates (site.*:.*) sobe ao global.
 groups:
 - name: site-aggregates
   rules:
@@ -14,3 +14,30 @@ groups:
     expr: |
       sum by (region, site, service) (rate(http_requests_total{code=~"5.."}[5m]))
         / clamp_min(sum by (region, site, service) (rate(http_requests_total[5m])), 1)
+  # Latência (D de RED) e impacto no cliente legítimo (sensores) — também sobem ao global.
+  - record: site_service:http_request_duration_seconds:p95_5m
+    expr: |
+      histogram_quantile(0.95,
+        sum by (le, region, site, service) (rate(http_request_duration_seconds_bucket[5m])))
+  - record: site:ssle_sensor_readings:error_ratio_rate5m
+    expr: |
+      sum by (region, site) (rate(ssle_sensor_readings_total{result="error"}[5m]))
+        / clamp_min(sum by (region, site) (rate(ssle_sensor_readings_total[5m])), 1e-9)
+  - record: site:ssle_sensor_upstream_duration_seconds:p95_5m
+    expr: |
+      histogram_quantile(0.95,
+        sum by (le, region, site) (rate(ssle_sensor_upstream_duration_seconds_bucket[5m])))
+
+# Por INSTÂNCIA: é a granularidade da DETEÇÃO local (o alerta diz qual elemento é, com a
+# identidade completa). Estas NÃO sobem ao global (o match[] do federate é "site.*:.*").
+- name: instance-aggregates
+  rules:
+  - record: instance:http_requests:rate1m
+    expr: |
+      sum by (region, site, host, instance_name, role, service, team)
+        (rate(http_requests_total{job="services"}[1m]))
+  - record: instance:http_request_duration_seconds:p95_1m
+    expr: |
+      histogram_quantile(0.95,
+        sum by (le, region, site, host, instance_name, role, service, team)
+          (rate(http_request_duration_seconds_bucket{job="services"}[1m])))
