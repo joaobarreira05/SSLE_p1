@@ -1,0 +1,9 @@
+build/
+.env
+*.key
+*.pem
+wazuh-install-files.tar
+wazuh-passwords.txt
+*-credentials.txt
+__pycache__/
+*.pyc
