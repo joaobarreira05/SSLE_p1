@@ -1,0 +1,142 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Fonte ÚNICA de verdade do Projeto 1 (SSLE).
+# Daqui saem: projetos e redes Incus, contentores, alvos do Prometheus,
+# inscrição dos agentes Wazuh e rotas do Alertmanager.
+# Acrescentar um site/elemento = acrescentar linhas aqui e correr infra/deploy.sh.
+#
+# NOTA: formato em "block style" puro (sem {flow}) de propósito, para o leitor
+# portável infra/inventory.py conseguir lê-lo sem depender de PyYAML/yq.
+#
+# Identidade canónica de cada elemento:  ssle:<region>:<site>:<host>:<instancia>
+#   ex.: ssle:pt:avr:t490:ing-01
+# O <host> (máquina física) é injetado no deploy (uname): t490 ou mac-m2.
+# ─────────────────────────────────────────────────────────────────────────────
+
+region: pt
+
+# Rede do SOC (core): Wazuh, observabilidade global, responder.
+core:
+  subnet: 10.10.0.0/24
+  gateway: 10.10.0.1
+
+sites:
+  avr:
+    city: Aveiro
+    lat: 40.64
+    lon: -8.65
+    team: ops-avr
+    subnet: 10.10.1.0/24
+    gateway: 10.10.1.1
+  opo:
+    city: Porto
+    lat: 41.15
+    lon: -8.61
+    team: ops-opo
+    subnet: 10.10.2.0/24
+    gateway: 10.10.2.1
+  lis:
+    city: Lisboa
+    lat: 38.72
+    lon: -9.14
+    team: ops-lis
+    subnet: 10.10.3.0/24
+    gateway: 10.10.3.1
+
+# ─── Elementos ───────────────────────────────────────────────────────────────
+# campos: name, site(ou 'core'), role, ip, exporter(node|flask|global|none),
+#         deps(lista de instâncias locais), staging(true=entra na fatia reduzida)
+elements:
+
+  # ---- core / SOC ----
+  - name: obs
+    site: core
+    role: observability
+    ip: 10.10.0.10
+    exporter: global          # Prometheus global + Alertmanager + correlator
+    staging: true
+  - name: wazuh
+    site: core
+    role: siem
+    ip: 10.10.0.30
+    exporter: node
+    staging: false            # pesado (4-6 GiB): só no T490
+  - name: responder
+    site: core
+    role: responder
+    ip: 10.10.0.20
+    exporter: node
+    staging: false
+
+  # ---- site avr (sede + SOC): web/ingestão/storage ----
+  - name: prom-01
+    site: avr
+    role: prometheus
+    ip: 10.10.1.10
+    exporter: node
+    staging: true
+  - name: sto-01
+    site: avr
+    role: storage
+    ip: 10.10.1.40
+    exporter: node
+    staging: true
+  - name: ing-01
+    site: avr
+    role: ingestion
+    ip: 10.10.1.30
+    exporter: flask
+    deps:
+      - sto-01
+    staging: true
+  - name: ana-01
+    site: avr
+    role: analytics
+    ip: 10.10.1.50
+    exporter: flask
+    deps:
+      - sto-01
+    staging: false
+
+  # ---- site opo (IoT): sensores ----
+  - name: prom-01
+    site: opo
+    role: prometheus
+    ip: 10.10.2.10
+    exporter: node
+    staging: true
+  - name: sen-01
+    site: opo
+    role: sensor
+    ip: 10.10.2.50
+    exporter: node
+    deps:
+      - ing-01@avr
+    staging: true
+  - name: sen-02
+    site: opo
+    role: sensor
+    ip: 10.10.2.51
+    exporter: node
+    deps:
+      - ing-01@avr
+    staging: false
+
+  # ---- site lis: web + e-mail ----
+  - name: prom-01
+    site: lis
+    role: prometheus
+    ip: 10.10.3.10
+    exporter: node
+    staging: false
+  - name: web-01
+    site: lis
+    role: web
+    ip: 10.10.3.60
+    exporter: flask
+    staging: false
+  - name: mail-01
+    site: lis
+    role: mail
+    ip: 10.10.3.70
+    exporter: node
+    staging: false
