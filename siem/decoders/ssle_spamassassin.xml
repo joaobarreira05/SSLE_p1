@@ -1,0 +1,10 @@
+<!-- Extrai o score do SpamAssassin das linhas do maillog. Valida com wazuh-logtest. -->
+<decoder name="spamassassin">
+  <program_name>spamd</program_name>
+</decoder>
+<decoder name="spamassassin-score">
+  <parent>spamassassin</parent>
+  <prematch>result: </prematch>
+  <regex>result: \w+ score=(\S+) required=(\S+)</regex>
+  <order>sa_score, sa_required</order>
+</decoder>

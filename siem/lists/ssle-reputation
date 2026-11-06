@@ -1,0 +1,7 @@
+# Lista CDB de reputação (chave:valor). Compilar no manager:
+#   /var/ossec/bin/wazuh-list -i /var/ossec/etc/lists/ssle-reputation
+# Referenciar numa regra com <list field="srcip">etc/lists/ssle-reputation</list>
+# As alterações só entram no ARRANQUE do manager (ou via API). Para bloquear já, usar active-response.
+198.51.100.13:malicious
+203.0.113.7:botnet-c2
+192.0.2.50:spam-source

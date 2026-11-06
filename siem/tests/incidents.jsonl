@@ -1,0 +1,2 @@
+{"origin":"prometheus","severity":"critical","site":"avr","root_cause":"ssle:pt:avr:t490:sto-01","root_cause_instance":"sto-01","root_cause_role":"storage"}
+{"origin":"prometheus","severity":"critical","site":"opo","root_cause":"ssle:pt:opo:t490:sen-03","root_cause_instance":"sen-03","root_cause_role":"sensor"}

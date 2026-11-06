@@ -1,0 +1,96 @@
+<!--
+  SSLE Projeto 1 — regras locais do Wazuh.
+  Gamas: 110000-110099 integração Prometheus/correlator · 1101xx T1 DDoS
+         1102xx T2 botnet · 1103xx T3 spam · 1109xx meta-correlação.
+  NÃO reutiliza 100100-100399 (usadas nas aulas 6-7).
+  Valida sempre com:  /var/ossec/bin/wazuh-logtest   (ver siem/tests/).
+-->
+
+<!-- ===== 110000-110099: incidentes do correlator (Prometheus) ===== -->
+<group name="ssle,prometheus,">
+  <rule id="110000" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="origin">^prometheus$</field>
+    <description>SSLE: incidente de monitorização (correlator).</description>
+  </rule>
+  <rule id="110001" level="10">
+    <if_sid>110000</if_sid>
+    <field name="severity">^critical$</field>
+    <description>SSLE: anomalia CRÍTICA, causa raiz $(root_cause).</description>
+    <group>attack,</group>
+  </rule>
+  <rule id="110002" level="4">
+    <if_sid>110000</if_sid>
+    <field name="status">^resolved$</field>
+    <description>SSLE: incidente de monitorização RESOLVIDO ($(root_cause)).</description>
+  </rule>
+</group>
+
+<!-- ===== 1101xx: Ameaça 1 — DoS/DDoS ===== -->
+<group name="ssle,ddos,attack,">
+  <rule id="110100" level="10" frequency="120" timeframe="10">
+    <if_matched_sid>31100</if_matched_sid>
+    <same_source_ip />
+    <description>SSLE T1: muitos pedidos web da mesma origem (possível DoS).</description>
+  </rule>
+  <rule id="110101" level="12" frequency="300" timeframe="15">
+    <if_matched_sid>31100</if_matched_sid>
+    <description>SSLE T1: volume web anormalmente alto (possível DDoS distribuído).</description>
+  </rule>
+  <rule id="110110" level="12">
+    <if_sid>110001</if_sid>
+    <field name="root_cause_role">^(ingestion|web)$</field>
+    <description>SSLE T1: causa raiz num serviço exposto ($(root_cause_role)).</description>
+  </rule>
+</group>
+
+<!-- ===== 1102xx: Ameaça 2 — botnet sobre a frota IoT ===== -->
+<group name="ssle,botnet,attack,">
+  <rule id="110200" level="10" frequency="8" timeframe="60">
+    <if_matched_sid>5710</if_matched_sid>
+    <same_source_ip />
+    <description>SSLE T2: tentativas de login falhadas repetidas (credenciais fracas).</description>
+    <group>authentication_failures,</group>
+  </rule>
+  <rule id="110201" level="12">
+    <if_sid>554,550</if_sid>
+    <field name="file">/etc/cron.d|/etc/systemd/system|/etc/rc.local|/root/.ssh</field>
+    <description>SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado ($(file)).</description>
+  </rule>
+  <rule id="110202" level="10">
+    <if_sid>533</if_sid>
+    <description>SSLE T2: nova porta à escuta num elemento (possível backdoor/C2).</description>
+  </rule>
+  <rule id="110210" level="12">
+    <if_sid>110001</if_sid>
+    <field name="root_cause_role">^sensor$</field>
+    <description>SSLE T2: sensor IoT é a causa raiz — candidato a QUARENTENA.</description>
+  </rule>
+</group>
+
+<!-- ===== 1103xx: Ameaça 3 — junk e-mail / spam ===== -->
+<group name="ssle,spam,">
+  <rule id="110300" level="7" frequency="20" timeframe="60">
+    <if_matched_sid>3301</if_matched_sid>
+    <same_source_ip />
+    <description>SSLE T3: volume elevado de e-mail da mesma origem.</description>
+  </rule>
+  <rule id="110301" level="10">
+    <decoded_as>spamassassin</decoded_as>
+    <field name="sa_score">^(1[0-9]|[5-9])\.</field>
+    <description>SSLE T3: SpamAssassin marcou spam com score alto ($(sa_score)).</description>
+    <group>attack,</group>
+  </rule>
+  <rule id="110302" level="9" frequency="10" timeframe="60">
+    <if_matched_sid>3303</if_matched_sid>
+    <description>SSLE T3: muitas rejeições do Postfix (relay/reputação).</description>
+  </rule>
+</group>
+
+<!-- ===== 1109xx: meta-correlação entre ameaças ===== -->
+<group name="ssle,meta,attack,">
+  <rule id="110900" level="14" frequency="2" timeframe="900">
+    <if_matched_sid>110210</if_matched_sid>
+    <description>SSLE meta: o MESMO elemento mostra botnet E impacto (DDoS/spam) — "uma botnet, dois impactos".</description>
+  </rule>
+</group>
