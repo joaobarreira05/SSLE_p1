@@ -10,11 +10,11 @@
 | R4 | Localização geográfica + delegação | projetos/redes Incus por site; grupos/`agent.conf` Wazuh; rotas Alertmanager por `team` | ✅ / 🧩 |
 | R5 | (Bónus) monitorizar por localização poupando banda | Prometheus hierárquico; **federation só de agregados** (`site:up:ratio` visível no global) | ✅ |
 | R6 | Localizar rapidamente a origem | labels em todos os alertas + **causa raiz** no `incidents.json` | ✅ |
-| R7 | Prometheus (anomalias) + correlação p/ causa raiz | regras site; Alertmanager (inibição); **correlator** (RCA por grafo) | ✅ |
-| R8 | FCAPS detetar→diagnosticar→correlacionar→resolver→post-mortem | detetar/correlacionar ✅; resolver (active-response) 🧩; post-mortem ✍️ | parcial |
+| R7 | Prometheus (anomalias) + correlação p/ causa raiz | regras site (`TrafficAnomaly` z robusto + `ServiceLatencyHigh`, `monitoring/tests/anomaly_test.yml`); Alertmanager (inibição); **correlator** (RCA por grafo); T1 ao vivo: 3/3 detetados, 0 FP, causa raiz `ing-01` 3/3 (`threats/t1-ddos/evidence/results.md`) | ✅ |
+| R8 | FCAPS detetar→diagnosticar→correlacionar→resolver→post-mortem | detetar/correlacionar ✅ (T1: MTTD 82 s / SOC 93 s); resolver (active-response) 🧩; post-mortem T1 ✅ (`threats/t1-ddos/post-mortem.md`), T2/T3 ✍️ | parcial |
 | R9 | SIEM: 3 tipos de incidente + action-response | `siem/rules` (1101/1102/1103xx) + `siem/active-response` | 🧩 |
 | R10 | SIEM: log management | `siem/shared/*/agent.conf` (localfile, FIM, portas) | 🧩 |
-| R11 | Por ameaça: descrição…post-mortem | `threats/t1,t2,t3/README.md` | 🧩 / ✍️ |
+| R11 | Por ameaça: descrição…post-mortem | T1: `threats/t1-ddos/post-mortem.md` (6 subtítulos do slide 12 + 3 execuções medidas) ✅ · T2/T3: `threats/t2,t3/README.md` 🧩 / ✍️ | parcial |
 | R12 | Conclusões (porque não é perfeita, futuro) | `report/` | ✍️ |
 | R13 | Relatório estilo artigo/tese | `report/` | ✍️ |
 | R14 | Demo + repositórios | este repo + `infra/demo.sh` | ✅ |
