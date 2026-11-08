@@ -148,14 +148,44 @@ prov_prom_site() {  # Prometheus de site
   prov_node "$n" "$p"
   cexec "$n" "$p" sh -c "dpkg -s prometheus >/dev/null 2>&1" || apt_in "$n" "$p" prometheus
   local am; am="$(cut -f3 "$BUILD/obs.tsv"):9093"   # Alertmanager central (obs, via routing)
-  sed -e "s/@@SITE@@/$site/g" -e "s#@@ALERTMANAGER@@#$am#g" \
-      "$ROOT/monitoring/site/prometheus.yml.tmpl" > "$BUILD/prometheus-$site.yml"
+  # template → config: AM central e, se o site tiver reg-01, o HTTP SD (infra/inventory.py siteprom)
+  local args=(siteprom --site "$site" --host "$HOST_LABEL"); [ "$PROFILE" = staging ] && args+=(--staging)
+  python3 "$ROOT/infra/inventory.py" "${args[@]}" > "$BUILD/prometheus-$site.yml"
   cpush "$BUILD/prometheus-$site.yml" "$n/etc/prometheus/prometheus.yml" "$p"
   for r in "$ROOT"/monitoring/site/rules/*.yml; do cpush "$r" "$n/etc/prometheus/rules/$(basename "$r")" "$p"; done
   cpush "$BUILD/targets/$site/node.json"  "$n/etc/prometheus/targets/node.json"  "$p"
   cpush "$BUILD/targets/$site/flask.json" "$n/etc/prometheus/targets/flask.json" "$p"
   cexec "$n" "$p" systemctl restart prometheus
   ok "  prometheus de $site configurado (AM=$am)"
+}
+
+prov_registry() {  # registry do site (R2): leases + HTTP SD + site_info — registry/
+  local n="$1" p="$2" site="$3"
+  prov_node "$n" "$p"
+  cexec "$n" "$p" sh -c "dpkg -s python3-flask >/dev/null 2>&1" || apt_in "$n" "$p" python3-flask python3
+  cexec "$n" "$p" mkdir -p /opt/registry /etc/ssle
+  cpush "$ROOT/registry/core.py" "$n/opt/registry/core.py" "$p"
+  cpush "$ROOT/registry/app.py" "$n/opt/registry/app.py" "$p"
+  cpush "$BUILD/targets/$site/registry.json" "$n/opt/registry/registry.json" "$p"
+  # token de escrita do site: GERADO aqui (nunca fixo no código), fica em build/secrets (fora do Git)
+  local tok="$BUILD/secrets/registry-$site.token"
+  if [ ! -s "$tok" ]; then
+    (umask 077; mkdir -p "$BUILD/secrets"; python3 -c 'import secrets; print(secrets.token_urlsafe(32))' > "$tok")
+  fi
+  incus file push "$tok" "$n/etc/ssle/registry.token" --project "$p" --mode 0600 --uid 0 --gid 0 --quiet
+  cexec "$n" "$p" sh -c 'cat > /etc/systemd/system/ssle-registry.service <<UNIT
+[Unit]
+Description=SSLE registry de site (R2)
+After=network-online.target
+[Service]
+Environment=SSLE_REGISTRY_CONFIG=/opt/registry/registry.json SSLE_REGISTRY_TOKEN_FILE=/etc/ssle/registry.token PORT=5050
+ExecStart=/usr/bin/python3 /opt/registry/app.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload && systemctl enable ssle-registry >/dev/null 2>&1 && systemctl restart ssle-registry'
+  ok "  registry de $site (token em build/secrets/registry-$site.token, 0600 no contentor)"
 }
 
 prov_obs() {  # Prometheus global + Alertmanager + correlator
@@ -224,6 +254,7 @@ provision() {
     [ -z "$name" ] && continue
     case "$exporter" in
       global) prov_obs "$name" "$proj" ;;
+      registry) prov_registry "$name" "$proj" "$site" ;;
       flask)  prov_flask "$name" "$proj" "$role" "$site" "$deps" ;;
       node)   if [ "$role" = prometheus ]; then prov_prom_site "$name" "$proj" "$site"; else prov_node "$name" "$proj"; fi ;;
     esac

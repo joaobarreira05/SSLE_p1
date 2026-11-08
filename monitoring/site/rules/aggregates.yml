@@ -6,6 +6,12 @@ groups:
     expr: count by (region, site) (up{job="node"})
   - record: site:up:ratio
     expr: avg by (region, site) (up{job="node"})
+  # Localização do site (lat/lon do inventário, servida pelo reg-01) → Geomap no Grafana global.
+  - record: site:info:last
+    expr: max by (region, site, city, lat, lon) (site_info)
+  # Elementos registados dinamicamente (R2: o site cresce sem mexer no inventário).
+  - record: site:registry_instances:sum
+    expr: sum by (region, site, kind) (ssle_registry_instances)
   - record: site:down:count
     expr: count by (region, site) (up{job="node"} == 0) or (site:up:count * 0)
   - record: site_service:http_requests:rate5m

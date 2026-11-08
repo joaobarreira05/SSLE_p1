@@ -19,6 +19,8 @@ FLASK_PORT = 8000
 PROM_PORT = 9090
 ALERT_PORT = 9093
 CORRELATOR_PORT = 9095
+REGISTRY_PORT = 5050
+SITE_PROM_TMPL = os.path.join(ROOT, "monitoring", "site", "prometheus.yml.tmpl")
 
 
 # ── parsing ───────────────────────────────────────────────────────────────────
@@ -225,7 +227,7 @@ def site_targets(model, site):
     for e in model["elements"]:
         if e["site"] != site:
             continue
-        if e["exporter"] in ("node", "flask", "global"):
+        if e["exporter"] in ("node", "flask", "global", "registry"):
             node.append({"targets": ["%s:%d" % (e["ip"], NODE_PORT)], "labels": e["labels"]})
         if e["exporter"] == "flask":
             lbl = dict(e["labels"])
@@ -242,6 +244,50 @@ def federate_targets(model):
             out.append({"targets": ["%s:%d" % (e["ip"], PROM_PORT)],
                         "labels": {"site": e["site"], "region": model["region"]}})
     return out
+
+
+def registry_config(model, site):
+    """Config do registry (reg-01) de um site: metadados do site + elementos ESTÁTICOS (inventário)."""
+    net = next((n for n in model["networks"] if n["site"] == site), None)
+    if net is None:
+        return None
+    return {
+        "region": model["region"], "site": site, "host": model["host"],
+        "subnet": net["subnet"], "team": net.get("team"),
+        "city": net.get("city"), "lat": net.get("lat"), "lon": net.get("lon"),
+        "static": [{"name": e["name"], "ip": e["ip"], "role": e["role"]}
+                   for e in model["elements"] if e["site"] == site],
+    }
+
+
+def registry_element(model, site):
+    for e in model["elements"]:
+        if e["site"] == site and e["exporter"] == "registry":
+            return e
+    return None
+
+
+def site_prometheus(model, site):
+    """prometheus.yml do site a partir do template: AM central + (se houver reg-01) o HTTP SD."""
+    with open(SITE_PROM_TMPL, encoding="utf-8") as fh:
+        text = fh.read()
+    obs = obs_element(model)
+    reg = registry_element(model, site)
+    text = text.replace("@@SITE@@", site)
+    text = text.replace("@@ALERTMANAGER@@", "%s:%d" % (obs["ip"], ALERT_PORT) if obs else "localhost:%d" % ALERT_PORT)
+    if reg:
+        text = text.replace("@@REGISTRY@@", "%s:%d" % (reg["ip"], REGISTRY_PORT))
+    else:   # sem registry neste site: tira o bloco inteiro (nada de alvos de SD a falhar para sempre)
+        out, skip = [], False
+        for line in text.splitlines(keepends=True):
+            if line.strip() == "# >>> registry":
+                skip = True
+            if not skip:
+                out.append(line)
+            if line.strip() == "# <<< registry":
+                skip = False
+        text = "".join(out)
+    return text
 
 
 def obs_element(model):
@@ -266,6 +312,9 @@ def render(model, out):
             json.dump(st["node"], fh, indent=2)
         with open(os.path.join(sdir, "flask.json"), "w") as fh:
             json.dump(st["flask"], fh, indent=2)
+
+        with open(os.path.join(sdir, "registry.json"), "w") as fh:
+            json.dump(registry_config(model, site), fh, indent=2, ensure_ascii=False)
 
     with open(os.path.join(out, "federate.json"), "w") as fh:
         json.dump(federate_targets(model), fh, indent=2)
@@ -296,7 +345,7 @@ def render(model, out):
 # ── CLI ───────────────────────────────────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser(description="Leitor do inventário SSLE P1")
-    ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets"])
+    ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets", "siteprom"])
     ap.add_argument("--host", default=default_host())
     ap.add_argument("--staging", action="store_true")
     ap.add_argument("--out", default=os.path.join(ROOT, "build"))
@@ -314,6 +363,8 @@ def main():
         print(json.dumps(site_targets(m, a.site), indent=2, ensure_ascii=False))
     elif a.cmd == "render":
         print(render(m, a.out))
+    elif a.cmd == "siteprom":
+        sys.stdout.write(site_prometheus(m, a.site))
 
 
 if __name__ == "__main__":

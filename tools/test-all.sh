@@ -30,14 +30,15 @@ sed "s/HOSTPLACEHOLDER/t490/" "$ROOT/monitoring/global/prometheus.yml" > "$tmp/g
 sed -i "s#/etc/prometheus/federate.json#$tmp/build/federate.json#; s#/etc/prometheus/rules/\*.yml#$ROOT/monitoring/global/rules.yml#" "$tmp/global.yml"
 run "promtool-3 check config (Prometheus global, renderizado)" "$T/promtool-3" check config --syntax-only "$tmp/global.yml"
 for site in avr opo lis; do
-  sed -e "s/@@SITE@@/$site/g" -e "s#@@ALERTMANAGER@@#10.10.0.10:9093#g" \
-      -e "s#/etc/prometheus/rules/\*.yml#$ROOT/monitoring/site/rules/*.yml#" \
-      -e "s#/etc/prometheus/targets/#$tmp/build/targets/$site/#g" "$ROOT/monitoring/site/prometheus.yml.tmpl" > "$tmp/site-$site.yml"
+  python3 "$ROOT/infra/inventory.py" siteprom --site "$site" --host t490 \
+    | sed -e "s#/etc/prometheus/rules/\*.yml#$ROOT/monitoring/site/rules/*.yml#" \
+          -e "s#/etc/prometheus/targets/#$tmp/build/targets/$site/#g" > "$tmp/site-$site.yml"
   run "promtool-2 check config (Prometheus de site $site, renderizado)" "$T/promtool-2" check config --syntax-only "$tmp/site-$site.yml"
 done
 echo "[3] Python"
 run "correlator: python3 -m unittest correlator/test_rca.py" python3 -m unittest -q "$ROOT/correlator/test_rca.py"
-for f in "$ROOT"/correlator/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py; do
+run "registry: python3 -m unittest registry/test_core.py" python3 -m unittest -q "$ROOT/registry/test_core.py"
+for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py; do
   [ -f "$f" ] && run "py_compile ${f#"$ROOT"/}" python3 -m py_compile "$f"
 done
 echo "[4] shell"

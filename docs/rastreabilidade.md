@@ -5,7 +5,7 @@
 | # | Requisito (slide) | Onde está | Estado |
 |---|---|---|---|
 | R1 | Arquitetura de serviços que escala | `inventory/sites.yaml`, `infra/deploy.sh` (frota por sites) | ✅ |
-| R2 | Identificação/registo escalável (name construction) | convenção `ssle:region:site:host:inst` + labels; registry HTTP SD (aula 2) | ✅ / 🧩 |
+| R2 | Identificação/registo escalável (name construction) | convenção `ssle:region:site:host:inst` + labels; **registry de site** (`registry/`: leases com TTL, escrita autenticada, delegação por site/sub-rede, HTTP SD) — integração provada com Prometheus 2.53.5 real (`registry/it-local.sh`, output em `registry/README.md`); no lab: `reg-01` em avr/opo 🧩 | ✅ (integração) / 🧩 (lab) |
 | R3 | Físico vs lógico | labels `host` (t490/mac-m2), `instance_name`, `project`, `role` | ✅ |
 | R4 | Localização geográfica + delegação | projetos/redes Incus por site; grupos/`agent.conf` Wazuh; rotas Alertmanager por `team` | ✅ / 🧩 |
 | R5 | (Bónus) monitorizar por localização poupando banda | Prometheus hierárquico; **federation só de agregados** (`site:up:ratio` visível no global) | ✅ |

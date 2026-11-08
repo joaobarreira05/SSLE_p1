@@ -43,7 +43,7 @@ sites:
     gateway: 10.10.3.1
 
 # ─── Elementos ───────────────────────────────────────────────────────────────
-# campos: name, site(ou 'core'), role, ip, exporter(node|flask|global|none),
+# campos: name, site(ou 'core'), role, ip, exporter(node|flask|global|registry|none),
 #         (flask + role sensor = envia leituras à 1.ª dependência, em :8000/ingest)
 #         deps(lista de instâncias locais), staging(true=entra na fatia reduzida)
 elements:
@@ -75,6 +75,12 @@ elements:
     ip: 10.10.1.10
     exporter: node
     staging: true
+  - name: reg-01
+    site: avr
+    role: registry
+    ip: 10.10.1.20
+    exporter: registry       # registry do site (R2): leases + HTTP SD + site_info (registry/)
+    staging: false
   - name: sto-01
     site: avr
     role: storage
@@ -105,6 +111,12 @@ elements:
     ip: 10.10.2.10
     exporter: node
     staging: true
+  - name: reg-01
+    site: opo
+    role: registry
+    ip: 10.10.2.20
+    exporter: registry
+    staging: false
   - name: sen-01
     site: opo
     role: sensor

@@ -1,6 +1,7 @@
 # Prometheus de SITE (apt, 2.53.x). Renderizado por infra/deploy.sh:
 #   @@SITE@@         -> código do site (avr, opo, ...)
 #   @@ALERTMANAGER@@ -> endereço do Alertmanager central (perna do obs nesta rede)
+#   @@REGISTRY@@     -> reg-01 do site (ip:5050); sem reg-01 o deploy apaga o bloco ">>> registry"
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -25,3 +26,26 @@ scrape_configs:
     metrics_path: /metrics
     file_sd_configs:
       - files: ['/etc/prometheus/targets/flask.json']
+  # >>> registry
+  # Elementos que se REGISTAM no reg-01 do site (lease com TTL, registry/core.py). Os do inventário
+  # continuam no file_sd acima: se o registry cair, a frota de base continua monitorizada e o HTTP SD
+  # mantém os últimos alvos que conhecia. O relabel põe o MESMO job das regras (up{job="node"}, …),
+  # por isso liveness, agregados e alertas valem para os dinâmicos sem mudar uma linha.
+  - job_name: node-registry
+    http_sd_configs:
+      - url: http://@@REGISTRY@@/sd/node
+        refresh_interval: 15s
+    relabel_configs:
+      - target_label: job
+        replacement: node
+  - job_name: services-registry
+    http_sd_configs:
+      - url: http://@@REGISTRY@@/sd/services
+        refresh_interval: 15s
+    relabel_configs:
+      - target_label: job
+        replacement: services
+  - job_name: registry
+    static_configs:
+      - targets: ['@@REGISTRY@@']
+  # <<< registry

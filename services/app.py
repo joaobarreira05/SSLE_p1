@@ -12,6 +12,10 @@ do alerta ServiceDegraded.
   SSLE_DEPS      "sto-01=10.10.1.40:9100,reg-01=..."  (TCP check)
   SSLE_UPSTREAM  só sensores: URL de ingestão, ex.: http://10.10.1.30:8000/ingest
   SSLE_INTERVAL  só sensores: período médio entre leituras, em s (default 5; ±20 % de jitter)
+  SSLE_REGISTRY  só elementos DINÂMICOS (fora do inventário): URL do reg-01 do site, ex.:
+                 http://10.10.2.20:5050 — regista-se e renova o lease a cada 10 s (registry/)
+  SSLE_REGISTRY_TOKEN_FILE  token de escrita do site (default /etc/ssle/registry.token)
+  SSLE_IP        o IP com que se regista (o registry confirma que é da sub-rede do site)
   PORT           8000
 
 Porquê o modo sensor: é o tráfego LEGÍTIMO da frota IoT (aula 2). Dá à deteção
@@ -30,6 +34,9 @@ SITE = os.environ.get("SSLE_SITE", "?")
 DEPS = [d for d in os.environ.get("SSLE_DEPS", "").split(",") if d.strip()]
 UPSTREAM = os.environ.get("SSLE_UPSTREAM", "")
 INTERVAL = float(os.environ.get("SSLE_INTERVAL", "5"))
+REGISTRY = os.environ.get("SSLE_REGISTRY", "").rstrip("/")
+REGISTRY_TOKEN_FILE = os.environ.get("SSLE_REGISTRY_TOKEN_FILE", "/etc/ssle/registry.token")
+MY_IP = os.environ.get("SSLE_IP", "")
 
 # Fronteiras dos histogramas (s). Iguais no servidor e no sensor para comparar.
 BUCKETS = (0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0)
@@ -144,6 +151,26 @@ def _sensor_loop():
         time.sleep(INTERVAL * random.uniform(0.8, 1.2))
 
 
+# ── registo dinâmico no reg-01 do site (lease com TTL; heartbeat a cada 10 s) ──
+def _registry_loop():
+    try:
+        with open(REGISTRY_TOKEN_FILE) as fh:
+            token = fh.read().strip()
+    except OSError:
+        token = ""
+    body = json.dumps({"name": INSTANCE, "role": ROLE, "site": SITE, "ip": MY_IP}).encode()
+    while True:
+        try:
+            req = urllib.request.Request(
+                REGISTRY + "/register", data=body, method="POST",
+                headers={"Content-Type": "application/json", "Authorization": "Bearer " + token})
+            with urllib.request.urlopen(req, timeout=3) as r:
+                r.read()
+        except Exception:
+            pass        # registry em baixo: tenta outra vez; o lease expira sozinho se nunca voltar
+        time.sleep(10)
+
+
 # ── rotas ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def root():
@@ -219,6 +246,9 @@ if DEPS:
     threading.Thread(target=_probe_loop, daemon=True).start()
 if UPSTREAM:
     threading.Thread(target=_sensor_loop, daemon=True).start()
+if REGISTRY and MY_IP:
+    threading.Thread(target=_registry_loop, daemon=True).start()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8000")), threaded=True)
+    # no lab escuta na rede do site; nos testes locais BIND=127.0.0.1 (não expor por omissão)
+    app.run(host=os.environ.get("BIND", "0.0.0.0"), port=int(os.environ.get("PORT", "8000")), threaded=True)
