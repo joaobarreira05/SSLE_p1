@@ -41,3 +41,18 @@ groups:
       histogram_quantile(0.95,
         sum by (le, region, site, host, instance_name, role, service, team)
           (rate(http_request_duration_seconds_bucket{job="services"}[1m])))
+  # Lado do CLIENTE (só os sensores têm estas séries): o que a frota legítima sente ao enviar
+  # para a ingestão — inclui a fila ANTES de o Flask atender, que o histograma do servidor não vê
+  # (lição da T1: servidor 23 ms, cliente 242 ms). Base dos alertas ClientLatencySLO/ClientUpstreamErrors.
+  - record: instance:ssle_sensor_upstream_duration_seconds:p95_1m
+    expr: |
+      histogram_quantile(0.95,
+        sum by (le, region, site, host, instance_name, role, service, team)
+          (rate(ssle_sensor_upstream_duration_seconds_bucket{job="services"}[1m])))
+  - record: instance:ssle_sensor_readings:error_ratio_rate1m
+    expr: |
+      sum by (region, site, host, instance_name, role, service, team)
+        (rate(ssle_sensor_readings_total{job="services",result="error"}[1m]))
+      / clamp_min(
+          sum by (region, site, host, instance_name, role, service, team)
+            (rate(ssle_sensor_readings_total{job="services"}[1m])), 1e-9)

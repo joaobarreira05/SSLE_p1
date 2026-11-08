@@ -127,8 +127,25 @@ abaixo): o correlator responde "*onde* dói", não "*quem* bate".
    (buraco nas séries) — **fora** das janelas medidas, mas é um lembrete de que o staging não é a produção.
 
 ### Ações futuras
-- [ ] **SLO do lado do cliente:** alerta sobre `ssle_sensor_upstream_duration_seconds` (e/ou `blackbox_exporter`)
-      e **correlação entre sites** no correlator (componentes do grafo, não `site`) → 1 incidente, causa `ing-01`.
+- [x] **SLO do lado do cliente** (08/11, T490): regra `ClientLatencySLO` (p95 do sensor > 100 ms durante 1 min) e
+      `ClientUpstreamErrors` (> 50 % das leituras falham) em
+      [`anomalies.yml`](../../monitoring/site/rules/anomalies.yml), testadas do histograma em bruto até ao alerta
+      ([`client_slo_test.yml`](../../monitoring/tests/client_slo_test.yml): reproduz os 242,5 ms). **Análise
+      retroativa** sobre a evidência guardada (`analyze.py --offline`): teria disparado em **T0 + 80 s nas 3/3**
+      execuções (contra 0/3 do `ServiceLatencyHigh`); em repouso o p95 do sensor nunca passou de 38,7 ms.
+      ⚠️ É uma simulação do `for: 1m` sobre a série a 5 s, **não** uma medição ao vivo — mede-se no T490.
+- [x] **Correlação entre sites** (08/11): o núcleo do correlator ([`rca.py`](../../correlator/rca.py)) deixou de
+      agrupar por `site` e passou a fazer **cobertura gulosa do grafo** (que atravessa sites): o sintoma do sensor
+      de `opo` junta-se ao incidente do `ing-01` de `avr` → **1 incidente, causa `ing-01`, `cross_site=true`**.
+      Bónus: duas falhas independentes passam a dar dois incidentes (antes, o que o melhor candidato não explicava
+      ficava de fora). Testes em [`test_rca.py`](../../correlator/test_rca.py).
+- [x] **Risco novo encontrado ao fazer o ponto anterior** (08/11): se o alerta do sensor chegar ao SOC antes do
+      alerta do servidor, o correlator emitia "causa raiz = sensor" — e a regra Wazuh 110210 trata isso como
+      candidato a **quarentena** (um sensor legítimo isolado por causa de um DoS ao servidor). Corrigido com uma
+      **janela de estabilização** (`CORRELATOR_SETTLE=30` s): uma causa raiz nova só sai quando o sintoma mais
+      antigo tem 30 s. Custo: +≤ 30 s no MTTD do SOC (troca escolhida: precisão > rapidez). O teste
+      `test_without_settle_the_sensor_would_be_blamed` prova o problema e `test_client_first_never_blames_the_sensor`
+      prova a correção.
 - [ ] **NAT só para a Internet** (preserva o IP de origem dentro do lab) — com confirmação.
 - [ ] **T490 (`full`):** Wazuh 110100/110101 + resposta proporcional (*rate-limit* → `firewall-drop` com
       `timeout`) e comparar a recuperação com estes 45 s; variante **distribuída** a partir do `kali-01` e de

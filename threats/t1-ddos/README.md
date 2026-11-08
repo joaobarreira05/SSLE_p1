@@ -6,7 +6,10 @@
   (ponto único de falha da disponibilidade). O `/work` é um endpoint deliberadamente caro.
 - **Deteção (Prometheus, por instância — [`monitoring/site/rules/anomalies.yml`](../../monitoring/site/rules/anomalies.yml)):**
   1. `TrafficAnomaly` — z-score **robusto** (mediana + IQR da última hora) de `instance:http_requests:rate1m` > 3;
-  2. `ServiceLatencyHigh` — p95 da latência servida acima do **SLO de 100 ms** (camada absoluta).
+  2. `ServiceLatencyHigh` — p95 da latência servida acima do **SLO de 100 ms** (camada absoluta, servidor);
+  3. `ClientLatencySLO` / `ClientUpstreamErrors` — o mesmo SLO **visto pelo sensor** (o servidor não vê a fila
+     antes de atender: 23 ms vs 242 ms na PoC). O correlator junta o sintoma do sensor (`opo`) ao incidente do
+     `ing-01` (`avr`) seguindo o grafo do inventário: 1 incidente, causa raiz `ing-01`.
   Linha de base = telemetria legítima dos sensores (`sen-0x` → `POST /ingest` a cada ~5 s).
   Wazuh (perfil `full`) — frequência por origem (regra 110100) e volume (110101).
 - **Resposta:** rate-limit por origem, `firewall-drop` com timeout, degradação graciosa (503), escalar réplica.

@@ -9,15 +9,17 @@ route:
       receiver: correlator
     - matchers: ['team="ops-opo"']
       receiver: correlator
+    - matchers: ['team="ops-lis"']
+      receiver: correlator
 
 # Inibição TOPOLÓGICA: a causa cala os sintomas da MESMA máquina/sítio.
 # (A correlação ENTRE elementos, por dependência, é feita pelo correlator.)
 inhibit_rules:
   - source_matchers: ['alertname="SiteUnreachable"']
-    target_matchers: ['alertname=~"ElementDown|ServiceDown|ServiceDegraded|TrafficAnomaly|ServiceLatencyHigh"']
+    target_matchers: ['alertname=~"ElementDown|ServiceDown|ServiceDegraded|TrafficAnomaly|ServiceLatencyHigh|ClientLatencySLO|ClientUpstreamErrors"']
     equal: [site]
   - source_matchers: ['alertname="ElementDown"']
-    target_matchers: ['alertname=~"ServiceDown|TrafficAnomaly|ServiceLatencyHigh"']
+    target_matchers: ['alertname=~"ServiceDown|TrafficAnomaly|ServiceLatencyHigh|ClientLatencySLO|ClientUpstreamErrors"']
     equal: [site, instance_name]
 
 receivers:

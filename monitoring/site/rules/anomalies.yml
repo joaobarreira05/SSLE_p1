@@ -1,7 +1,10 @@
 # Deteção de anomalias por instância (Ameaça 1 — DoS/DDoS, e qualquer surto de tráfego).
-# Duas camadas, de propósito (defesa em profundidade):
+# Três camadas, de propósito (defesa em profundidade):
 #   1) RELATIVA — TrafficAnomaly: z-score ROBUSTO face à última hora (aprende o "normal" de cada serviço).
-#   2) ABSOLUTA — ServiceLatencyHigh: o SLO de latência do serviço (não depende de baseline nenhuma).
+#   2) ABSOLUTA, servidor — ServiceLatencyHigh: o SLO de latência medido DENTRO da app.
+#   3) ABSOLUTA, cliente — ClientLatencySLO / ClientUpstreamErrors: o que o sensor legítimo SENTE.
+#      O alerta nasce no SENSOR (site opo); o correlator segue a aresta sen-0x -> ing-01@avr do
+#      inventário e junta-o ao incidente do servidor (causa raiz ing-01), em vez de culpar o sensor.
 groups:
 - name: anomalies
   rules:
@@ -42,4 +45,33 @@ groups:
       kind: performance
     annotations:
       summary: "Latência p95 de {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }} acima do SLO: {{ $value | printf \"%.3f\" }} s > 0,100 s"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
+
+  - alert: ClientLatencySLO
+    # SLO visto pelo CLIENTE: p95 do envio sensor -> ingestão < 100 ms (o mesmo SLO do servidor).
+    # Porquê: na T1 (staging, 3 execuções) o servidor mediu p95 = 23 ms e NUNCA disparou o
+    # ServiceLatencyHigh, enquanto o sensor sentia 242,5 ms (a fila antes do Flask atender).
+    # Em repouso o p95 do sensor foi ≤ 38,7 ms (margem 2,6×); análise retroativa das 3 execuções
+    # com esta regra: disparava em T0 + 80 s nas 3 (threats/t1-ddos/post-mortem.md).
+    expr: instance:ssle_sensor_upstream_duration_seconds:p95_1m > 0.1
+    for: 1m
+    labels:
+      severity: critical
+      kind: performance
+      slo: client
+    annotations:
+      summary: "Cliente {{ $labels.instance_name }} @ {{ $labels.site }} sente a ingestão lenta: p95 {{ $value | printf \"%.3f\" }} s > 0,100 s"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
+
+  - alert: ClientUpstreamErrors
+    # Mais de metade das leituras do sensor falham (timeout 5 s / recusa): a ingestão está
+    # inalcançável ou saturada para lá do atraso. É o sintoma remoto de um ing-01 em baixo.
+    expr: instance:ssle_sensor_readings:error_ratio_rate1m > 0.5
+    for: 1m
+    labels:
+      severity: warning
+      kind: dependency
+      slo: client
+    annotations:
+      summary: "Cliente {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | humanizePercentage }} das leituras falham"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"

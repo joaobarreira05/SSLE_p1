@@ -1,6 +1,6 @@
-| run | t0 | taxa_pico_rps | 1o_sinal_s | mttd_TrafficAnomaly_s | mttd_SOC_s | z_robusto_max | z_media_desvio_max | media_desvio_dispararia | p95_servidor_max_ms | ServiceLatencyHigh | p95_sensor_max_ms | tempo_ate_impacto_s | recuperacao_apos_estimulo_s | leituras_perdidas | causa_raiz_SOC |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 15:24:10 | 160.2 | 25.0 | 85.0 | 93.0 | 320.0 | 7.6 | True | 23.0 | False | 242.5 | 20.0 | 45.0 | 0 | ing-01 |
-| 2 | 15:43:15 | 162.2 | 20.0 | 80.0 | 92.9 | 323.9 | 3.3 | False | 23.2 | False | 242.5 | 20.0 | 45.0 | 0 | ing-01 |
-| 3 | 15:53:15 | 157.9 | 20.0 | 80.0 | 92.9 | 315.4 | 2.8 | False | 23.3 | False | 242.5 | 20.0 | 45.0 | 0 | ing-01 |
-| **média ± σ** |  | 160.1 ± 2.2 | 21.7 ± 2.9 | 81.7 ± 2.9 | 92.9 ± 0.1 | 319.8 ± 4.3 | 4.6 ± 2.6 | False/True | 23.2 ± 0.2 | False | 242.5 ± 0.0 | 20.0 ± 0.0 | 45.0 ± 0.0 | 0.0 ± 0.0 | ing-01 |
+| run | t0 | taxa_pico_rps | 1o_sinal_s | mttd_TrafficAnomaly_s | mttd_SOC_s | z_robusto_max | z_media_desvio_max | media_desvio_dispararia | p95_servidor_max_ms | ServiceLatencyHigh | mttd_ClientLatencySLO_s | ClientLatencySLO_retro_s | p95_sensor_max_ms | tempo_ate_impacto_s | recuperacao_apos_estimulo_s | leituras_perdidas | causa_raiz_SOC |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 15:24:10 | 160.2 | 25.0 | 85.0 | 93.0 | 320.0 | 7.6 | True | 23.0 | False | None | 80.0 | 242.5 | 20.0 | 45.0 | 0 | ing-01 |
+| 2 | 15:43:15 | 162.2 | 20.0 | 80.0 | 92.9 | 323.9 | 3.3 | False | 23.2 | False | None | 80.0 | 242.5 | 20.0 | 45.0 | 0 | ing-01 |
+| 3 | 15:53:15 | 157.9 | 20.0 | 80.0 | 92.9 | 315.4 | 2.8 | False | 23.3 | False | None | 80.0 | 242.5 | 20.0 | 45.0 | 0 | ing-01 |
+| **média ± σ** |  | 160.1 ± 2.2 | 21.7 ± 2.9 | 81.7 ± 2.9 | 92.9 ± 0.1 | 319.8 ± 4.3 | 4.6 ± 2.6 | False/True | 23.2 ± 0.2 | False | None | 80.0 ± 0.0 | 242.5 ± 0.0 | 20.0 ± 0.0 | 45.0 ± 0.0 | 0.0 ± 0.0 | ing-01 |

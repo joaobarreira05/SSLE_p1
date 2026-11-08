@@ -1,0 +1,101 @@
+# promtool test rules monitoring/tests/client_slo_test.yml
+# SLO do lado do CLIENTE (lição da T1): do histograma EM BRUTO do sensor até ao alerta.
+# Cenário (amostras a cada 15 s, como o scrape): o sen-01 de opo envia 1 leitura / 5 s (3 por amostra).
+#   t = 0 … 2m15s : repouso — todas as leituras < 10 ms
+#   t = 2m30s …   : ataque à ingestão — todas entre 100 e 250 ms (o bucket onde caíram os 242,5 ms medidos)
+# Com só 4 buckets chega: o histogram_quantile interpola dentro do bucket, tal como em produção.
+rule_files:
+  - ../site/rules/aggregates.yml
+  - ../site/rules/anomalies.yml
+evaluation_interval: 15s
+tests:
+  - interval: 15s
+    input_series:
+      - series: 'ssle_sensor_upstream_duration_seconds_bucket{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",le="0.01"}'
+        values: '0+3x9 27x10'
+      - series: 'ssle_sensor_upstream_duration_seconds_bucket{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",le="0.1"}'
+        values: '0+3x9 27x10'
+      - series: 'ssle_sensor_upstream_duration_seconds_bucket{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",le="0.25"}'
+        values: '0+3x20'
+      - series: 'ssle_sensor_upstream_duration_seconds_bucket{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",le="+Inf"}'
+        values: '0+3x20'
+      # nenhuma leitura perdida (como na T1): o alerta de erros NÃO pode disparar
+      - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="ok"}'
+        values: '0+3x20'
+      - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="error"}'
+        values: '0x20'
+    promql_expr_test:
+      # repouso: p95 = 0,95 × 10 ms (interpolação no 1.º bucket)
+      - expr: instance:ssle_sensor_upstream_duration_seconds:p95_1m
+        eval_time: 2m
+        exp_samples:
+          - labels: 'instance:ssle_sensor_upstream_duration_seconds:p95_1m{region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo"}'
+            value: 0.0095
+      # ataque: 0,1 + 0,15 × 0,95 = 0,2425 s — exatamente o p95 que o sensor viu nas 3 execuções da T1
+      - expr: instance:ssle_sensor_upstream_duration_seconds:p95_1m
+        eval_time: 4m
+        exp_samples:
+          - labels: 'instance:ssle_sensor_upstream_duration_seconds:p95_1m{region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo"}'
+            value: 0.2425
+      - expr: instance:ssle_sensor_readings:error_ratio_rate1m
+        eval_time: 4m
+        exp_samples:
+          - labels: 'instance:ssle_sensor_readings:error_ratio_rate1m{region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo"}'
+            value: 0
+    alert_rule_test:
+      - eval_time: 2m15s
+        alertname: ClientLatencySLO
+        exp_alerts: []
+      # ainda pendente (for: 1m) pouco depois de o ataque começar
+      - eval_time: 3m15s
+        alertname: ClientLatencySLO
+        exp_alerts: []
+      - eval_time: 4m
+        alertname: ClientLatencySLO
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              kind: performance
+              slo: client
+              region: pt
+              site: opo
+              host: t490
+              instance_name: sen-01
+              role: sensor
+              service: sensor
+              team: ops-opo
+            exp_annotations:
+              summary: "Cliente sen-01 @ opo sente a ingestão lenta: p95 0.242 s > 0,100 s"
+              identity: "ssle:pt:opo:t490:sen-01"
+      - eval_time: 4m
+        alertname: ClientUpstreamErrors
+        exp_alerts: []
+
+  # Ingestão inalcançável: 2/3 das leituras falham → ClientUpstreamErrors (sintoma remoto de ing-01 em baixo)
+  - interval: 15s
+    input_series:
+      - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="ok"}'
+        values: '0+3x9 30+1x10'
+      - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="error"}'
+        values: '0x9 0+2x10'
+    alert_rule_test:
+      - eval_time: 2m15s
+        alertname: ClientUpstreamErrors
+        exp_alerts: []
+      - eval_time: 4m30s
+        alertname: ClientUpstreamErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              kind: dependency
+              slo: client
+              region: pt
+              site: opo
+              host: t490
+              instance_name: sen-01
+              role: sensor
+              service: sensor
+              team: ops-opo
+            exp_annotations:
+              summary: "Cliente sen-01 @ opo: 66.67% das leituras falham"
+              identity: "ssle:pt:opo:t490:sen-01"

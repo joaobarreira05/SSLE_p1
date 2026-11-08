@@ -4,6 +4,7 @@
 Ameaça 1 (DoS) — análise de execuções medidas (só stdlib; corre no host).
 
     python3 threats/t1-ddos/analyze.py threats/t1-ddos/evidence/run-*
+    python3 threats/t1-ddos/analyze.py --offline threats/t1-ddos/evidence/run-*   # só a evidência guardada
 
 Para cada diretório run-N lê times.env (T0, T1, TE em epoch), volta a pedir as
 séries ao Prometheus (são a fonte; reanalisar dá o mesmo resultado enquanto
@@ -16,6 +17,11 @@ Definições (iguais às do post-mortem):
   impacto      = p95 da latência vista pelo SENSOR (cliente legítimo) > SLO
   recuperação  = último instante com impacto − T1 (fim do estímulo)
   MTTD SOC     = ts do 1.º incidente do correlator − T0
+  ClientLatencySLO retro = 1.º instante em que o p95 do SENSOR fica > SLO durante 60 s (simula o
+                 for: 1m da regra sobre a série guardada) − T0; serve para execuções anteriores à regra.
+
+--offline: não fala com o Prometheus nem com o Incus; relê os JSON já guardados em run-N/ (as
+consultas que não existiam na altura ficam vazias) e o bloco "soc" do summary.json anterior.
 """
 import json, os, statistics, subprocess, sys, urllib.parse, urllib.request
 from datetime import datetime, timezone
@@ -42,7 +48,11 @@ QUERIES = {
     # impacto no cliente legítimo (sensor de opo → ing-01 de avr)
     "p95-sensor": (PROM_OPO, 'histogram_quantile(0.95, sum by (le) (rate(ssle_sensor_upstream_duration_seconds_bucket[1m])))'),
     "sensor-readings": (PROM_OPO, 'sum by (result) (ssle_sensor_readings_total)'),
+    # SLO do lado do cliente (regra criada depois das execuções de staging de 06/11)
+    "alerts-ClientLatencySLO-pending": (PROM_OPO, 'ALERTS{alertname="ClientLatencySLO",alertstate="pending"}'),
+    "alerts-ClientLatencySLO-firing": (PROM_OPO, 'ALERTS{alertname="ClientLatencySLO",alertstate="firing"}'),
 }
+OFFLINE = False
 
 
 def prom_range(base, expr, start, end):
@@ -142,8 +152,16 @@ def analyze(run_dir):
     start = int(t0) - 120
     docs = {}
     for name, (base, expr) in QUERIES.items():
+        path = os.path.join(run_dir, name + ".json")
+        if OFFLINE:
+            try:
+                with open(path) as fh:
+                    docs[name] = json.load(fh)
+            except OSError:
+                docs[name] = {}
+            continue
         docs[name] = prom_range(base, expr, start, int(te))
-        with open(os.path.join(run_dir, name + ".json"), "w") as fh:
+        with open(path, "w") as fh:
             json.dump(docs[name], fh)
     p = {k: points(v) for k, v in docs.items()}
 
@@ -158,8 +176,20 @@ def analyze(run_dir):
     imp_last = last(p["p95-sensor"], lambda v: v > SLO, lo=t0)
     err = counter_delta(docs["sensor-readings"], "error", t0, te)
     ok = counter_delta(docs["sensor-readings"], "ok", t0, te)
-    incs = [i for i in incidents(t0, te) if i.get("status") != "resolved"]
-    soc = incs[0] if incs else {}
+    cl_fire = first(p["alerts-ClientLatencySLO-firing"], lo=t0 - 30)
+    cl_retro = sustained(p["p95-sensor"], SLO, 60, t0, te)
+    if OFFLINE:
+        try:
+            with open(os.path.join(run_dir, "summary.json")) as fh:
+                old = json.load(fh).get("soc", {})
+        except (OSError, ValueError):
+            old = {}
+        soc = {"_epoch": t0 + old["mttd_s"] if old.get("mttd_s") is not None else None,
+               "root_cause": old.get("root_cause"), "alert_names": old.get("alerts"),
+               "raw_alert_count": old.get("raw_alert_count"), "cross_site": old.get("cross_site")}
+    else:
+        incs = [i for i in incidents(t0, te) if i.get("status") != "resolved"]
+        soc = incs[0] if incs else {}
 
     summary = {
         "run": n,
@@ -170,6 +200,8 @@ def analyze(run_dir):
         "TrafficAnomaly": {"first_signal_s": delta(ta_pend, t0), "mttd_s": delta(ta_fire, t0),
                            "resolved_after_stimulus_s": delta(ta_last, t1)},
         "ServiceLatencyHigh": {"mttd_s": delta(lh_fire, t0), "fired": lh_fire is not None},
+        "ClientLatencySLO": {"mttd_s": delta(cl_fire, t0), "fired": cl_fire is not None,
+                             "retro_mttd_s": delta(cl_retro, t0)},
         "z_max": {"robust": round(max(zr or [0]), 1), "mean_std": round(max(zm or [0]), 1),
                   "mean_std_would_fire": legacy_fire is not None,
                   "mean_std_mttd_s": delta(legacy_fire, t0)},
@@ -178,7 +210,8 @@ def analyze(run_dir):
                    "recovery_after_stimulus_s": delta(imp_last, t1),
                    "sensor_readings_ok": ok, "sensor_readings_lost": err},
         "soc": {"mttd_s": delta(soc.get("_epoch"), t0), "root_cause": soc.get("root_cause"),
-                "alerts": soc.get("alert_names"), "raw_alert_count": soc.get("raw_alert_count")},
+                "alerts": soc.get("alert_names"), "raw_alert_count": soc.get("raw_alert_count"),
+                "cross_site": soc.get("cross_site")},
     }
     with open(os.path.join(run_dir, "summary.json"), "w") as fh:
         json.dump(summary, fh, indent=2, ensure_ascii=False)
@@ -197,6 +230,8 @@ COLS = [  # (cabeçalho, extrator)
     ("media_desvio_dispararia", lambda s: s["z_max"]["mean_std_would_fire"]),
     ("p95_servidor_max_ms", lambda s: s["server_p95_max_ms"]),
     ("ServiceLatencyHigh", lambda s: s["ServiceLatencyHigh"]["fired"]),
+    ("mttd_ClientLatencySLO_s", lambda s: s["ClientLatencySLO"]["mttd_s"]),
+    ("ClientLatencySLO_retro_s", lambda s: s["ClientLatencySLO"]["retro_mttd_s"]),
     ("p95_sensor_max_ms", lambda s: s["impact"]["sensor_p95_max_ms"]),
     ("tempo_ate_impacto_s", lambda s: s["impact"]["time_to_impact_s"]),
     ("recuperacao_apos_estimulo_s", lambda s: s["impact"]["recovery_after_stimulus_s"]),
@@ -233,6 +268,9 @@ def main(dirs):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        sys.exit("uso: analyze.py <evidence/run-N> [...]")
-    main(sys.argv[1:])
+    args = sys.argv[1:]
+    if args and args[0] == "--offline":
+        OFFLINE, args = True, args[1:]
+    if not args:
+        sys.exit("uso: analyze.py [--offline] <evidence/run-N> [...]")
+    main(args)
