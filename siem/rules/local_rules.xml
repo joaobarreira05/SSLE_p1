@@ -21,7 +21,9 @@
   </rule>
   <rule id="110002" level="4">
     <if_sid>110000</if_sid>
-    <field name="status">^resolved$</field>
+    <!-- "status" é um campo ESTÁTICO do Wazuh: usa-se a etiqueta <status>, não <field name="status">
+         (com <field> o analysisd recusa o local_rules.xml inteiro — apanhado pelo run-logtest.sh). -->
+    <status>^resolved$</status>
     <description>SSLE: incidente de monitorização RESOLVIDO ($(root_cause)).</description>
   </rule>
 </group>
@@ -39,7 +41,8 @@
   </rule>
   <rule id="110110" level="12">
     <if_sid>110001</if_sid>
-    <field name="root_cause_role">^(ingestion|web)$</field>
+    <!-- OS_Regex (o motor por omissão) não tem grupos nem [..]: alternância com | entre padrões -->
+    <field name="root_cause_role">^ingestion$|^web$</field>
     <description>SSLE T1: causa raiz num serviço exposto ($(root_cause_role)).</description>
   </rule>
 </group>
@@ -77,7 +80,9 @@
   </rule>
   <rule id="110301" level="10">
     <decoded_as>spamassassin</decoded_as>
-    <field name="sa_score">^(1[0-9]|[5-9])\.</field>
+    <!-- score >= 5 (o required_score da aula 8). PCRE2 porque o OS_Regex não tem [..] nem grupos;
+         a versão anterior, ^(1[0-9]|[5-9])\., além de inválida falhava os scores >= 20. -->
+    <field name="sa_score" type="pcre2">^([5-9]|[1-9]\d+)(\.\d+)?$</field>
     <description>SSLE T3: SpamAssassin marcou spam com score alto ($(sa_score)).</description>
     <group>attack,</group>
   </rule>
