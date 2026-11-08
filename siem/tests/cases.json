@@ -1,0 +1,404 @@
+[
+ {
+  "name": "correlator: incidente warning",
+  "log_format": "json",
+  "location": "/var/log/ssle/incidents.json",
+  "events": [
+   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"warning\",\"status\":\"open\",\"root_cause\":\"ssle:pt:avr:t490:sto-01\",\"root_cause_instance\":\"sto-01\",\"root_cause_role\":\"storage\",\"srcip\":\"10.10.1.40\",\"root_cause_ip\":\"10.10.1.40\",\"incident_count\":1}"
+  ],
+  "expect": {
+   "rule": "110000",
+   "level": 3,
+   "decoder": "json"
+  }
+ },
+ {
+  "name": "correlator: crítico com causa raiz no storage",
+  "log_format": "json",
+  "location": "/var/log/ssle/incidents.json",
+  "events": [
+   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:avr:t490:sto-01\",\"root_cause_instance\":\"sto-01\",\"root_cause_role\":\"storage\",\"srcip\":\"10.10.1.40\",\"root_cause_ip\":\"10.10.1.40\",\"incident_count\":1}"
+  ],
+  "expect": {
+   "rule": "110001",
+   "level": 10,
+   "fields": {
+    "root_cause_instance": "sto-01"
+   }
+  }
+ },
+ {
+  "name": "correlator: incidente resolvido",
+  "log_format": "json",
+  "location": "/var/log/ssle/incidents.json",
+  "events": [
+   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"info\",\"status\":\"resolved\",\"root_cause\":\"ssle:pt:avr:t490:sto-01\",\"root_cause_instance\":\"sto-01\",\"root_cause_role\":\"storage\",\"srcip\":\"10.10.1.40\",\"root_cause_ip\":\"10.10.1.40\",\"incident_count\":1}"
+  ],
+  "expect": {
+   "rule": "110002",
+   "level": 4
+  }
+ },
+ {
+  "name": "T1: causa raiz no ing-01 → limitar débito (não isolar)",
+  "log_format": "json",
+  "location": "/var/log/ssle/incidents.json",
+  "events": [
+   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"srcip\":\"10.10.1.30\",\"root_cause_ip\":\"10.10.1.30\",\"incident_count\":1}"
+  ],
+  "expect": {
+   "rule": "110110",
+   "level": 12,
+   "fields": {
+    "root_cause_role": "ingestion"
+   }
+  }
+ },
+ {
+  "name": "T1: 100 pedidos da mesma origem em 10 s",
+  "events": [
+   {
+    "line": "10.10.9.10 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 120,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   }
+  ],
+  "fires_within": 100,
+  "expect": {
+   "rule": "110100",
+   "level": 10,
+   "decoder": "web-accesslog",
+   "fields": {
+    "srcip": "10.10.9.10"
+   }
+  }
+ },
+ {
+  "name": "T1: 60 pedidos da mesma origem não chegam (sem falso positivo)",
+  "events": [
+   {
+    "line": "10.10.9.11 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 60,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   }
+  ],
+  "expect": {
+   "rule": "110105",
+   "level": 1
+  }
+ },
+ {
+  "name": "T1: 300 pedidos de 4 origens (75 cada) → DDoS distribuído",
+  "events": [
+   {
+    "line": "10.10.9.20 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 75,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   },
+   {
+    "line": "10.10.9.21 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 75,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   },
+   {
+    "line": "10.10.9.22 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 75,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   },
+   {
+    "line": "10.10.9.23 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 75,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   }
+  ],
+  "fires_within": 300,
+  "expect": {
+   "rule": "110101",
+   "level": 12
+  }
+ },
+ {
+  "name": "T2: 8 passwords erradas da mesma origem (como o threats/t2-botnet/run.sh)",
+  "events": [
+   {
+    "line": "Nov  8 20:00:01 sen-02 sshd[4100]: Failed password for root from 10.10.99.66 port 2222 ssh2",
+    "repeat": 8,
+    "log_format": "syslog",
+    "location": "/var/log/auth.log"
+   }
+  ],
+  "expect": {
+   "rule": "110200",
+   "level": 11,
+   "decoder": "sshd",
+   "fields": {
+    "srcip": "10.10.99.66"
+   }
+  }
+ },
+ {
+  "name": "T2: 8 tentativas com utilizador inexistente",
+  "log_format": "syslog",
+  "location": "/var/log/auth.log",
+  "events": [
+   {
+    "line": "Nov  8 20:00:01 sen-02 sshd[5100]: Invalid user admin from 10.10.99.68 port 4444",
+    "repeat": 8
+   }
+  ],
+  "expect": {
+   "rule": "110200",
+   "level": 11
+  }
+ },
+ {
+  "name": "T2: 3 falhas não são força bruta",
+  "events": [
+   {
+    "line": "Nov  8 20:00:01 sen-02 sshd[4100]: Failed password for root from 10.10.99.69 port 2222 ssh2",
+    "repeat": 3,
+    "log_format": "syslog",
+    "location": "/var/log/auth.log"
+   }
+  ],
+  "expect": {
+   "rule": "5760",
+   "level": 5
+  }
+ },
+ {
+  "name": "T2: porta nova à escuta (533 → 110202)",
+  "log_format": "full_command",
+  "location": "netstat listening ports",
+  "events": [
+   "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:22\ntcp 0.0.0.0:8000\ntcp 0.0.0.0:9100",
+   "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:22\ntcp 0.0.0.0:8000\ntcp 0.0.0.0:9100\ntcp 0.0.0.0:31337"
+  ],
+  "expect": {
+   "rule": "110202",
+   "level": 10
+  }
+ },
+ {
+  "name": "T2: portas iguais não alertam",
+  "log_format": "full_command",
+  "location": "netstat listening ports",
+  "events": [
+   "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:22\ntcp 0.0.0.0:8000\ntcp 0.0.0.0:9100\ntcp 0.0.0.0:7000",
+   "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:22\ntcp 0.0.0.0:8000\ntcp 0.0.0.0:9100\ntcp 0.0.0.0:7000"
+  ],
+  "expect": {
+   "rule": "530",
+   "level": 0
+  }
+ },
+ {
+  "name": "T2: sensor é a causa raiz → quarentena",
+  "log_format": "json",
+  "location": "/var/log/ssle/incidents.json",
+  "events": [
+   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-01\",\"root_cause_instance\":\"sen-01\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.50\",\"root_cause_ip\":\"10.10.2.50\",\"incident_count\":1}"
+  ],
+  "expect": {
+   "rule": "110210",
+   "level": 12,
+   "fields": {
+    "srcip": "10.10.2.50",
+    "root_cause_instance": "sen-01"
+   }
+  }
+ },
+ {
+  "name": "T3: spamd 'result: Y 6' → spam",
+  "log_format": "syslog",
+  "location": "/var/log/mail.log",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 spamd[1234]: spamd: result: Y  6 - ALL_TRUSTED,DRUGS_ERECTILE scantime=0.3,size=547,user=debian-spamd,uid=109,required_score=5.0,rhost=::1,raddr=::1,rport=45678,mid=<a@example.com>,autolearn=no autolearn_force=no",
+    "repeat": 1
+   }
+  ],
+  "expect": {
+   "rule": "110301",
+   "level": 7,
+   "decoder": "spamassassin",
+   "fields": {
+    "sa_flag": "Y",
+    "sa_score": "6",
+    "sa_required": "5.0"
+   }
+  }
+ },
+ {
+  "name": "T3: GTUBE (score 1000) → alta confiança",
+  "log_format": "syslog",
+  "location": "/var/log/mail.log",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 spamd[1234]: spamd: result: Y 1000 - GTUBE,ALL_TRUSTED scantime=0.3,size=547,user=debian-spamd,uid=109,required_score=5.0,rhost=::1,raddr=::1,rport=45678,mid=<a@example.com>,autolearn=no autolearn_force=no",
+    "repeat": 1
+   }
+  ],
+  "expect": {
+   "rule": "110304",
+   "level": 10,
+   "fields": {
+    "sa_score": "1000"
+   }
+  }
+ },
+ {
+  "name": "T3: ham (score 0) não alerta",
+  "log_format": "syslog",
+  "location": "/var/log/mail.log",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 spamd[1234]: spamd: result: .  0 - ALL_TRUSTED scantime=0.3,size=547,user=debian-spamd,uid=109,required_score=5.0,rhost=::1,raddr=::1,rport=45678,mid=<a@example.com>,autolearn=no autolearn_force=no",
+    "repeat": 1
+   }
+  ],
+  "expect": {
+   "rule": "3501",
+   "level": 0,
+   "fields": {
+    "sa_flag": "."
+   }
+  }
+ },
+ {
+  "name": "T3: linha 'identified spam' não duplica o alerta",
+  "log_format": "syslog",
+  "location": "/var/log/mail.log",
+  "events": [
+   "Nov  8 20:00:00 mail-01 spamd[1234]: spamd: identified spam (6.2/5.0) for debian-spamd:109 in 0.3 seconds, 547 bytes."
+  ],
+  "expect": {
+   "rule": null
+  }
+ },
+ {
+  "name": "T3: 10 spams em 2 min → vaga",
+  "log_format": "syslog",
+  "location": "/var/log/mail.log",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 spamd[1234]: spamd: result: Y  7 - ALL_TRUSTED,DRUGS_ERECTILE scantime=0.3,size=547,user=debian-spamd,uid=109,required_score=5.0,rhost=::1,raddr=::1,rport=45678,mid=<a@example.com>,autolearn=no autolearn_force=no",
+    "repeat": 12
+   }
+  ],
+  "fires_within": 10,
+  "expect": {
+   "rule": "110300",
+   "level": 10
+  }
+ },
+ {
+  "name": "T3: 5 relays recusados da mesma origem",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.3.99]: 554 5.7.1 <x@external.example>: Relay access denied; from=<a@lis.ssle.lab> to=<x@external.example> proto=ESMTP helo=<sen-01>",
+    "repeat": 5,
+    "log_format": "syslog",
+    "location": "/var/log/mail.log"
+   }
+  ],
+  "expect": {
+   "rule": "110302",
+   "level": 10,
+   "fields": {
+    "srcip": "10.10.3.99"
+   }
+  }
+ },
+ {
+  "name": "T3: rejeição a origem na lista de reputação (CDB)",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[192.0.2.50]: 554 5.7.1 <x@external.example>: Relay access denied; from=<a@lis.ssle.lab> to=<x@external.example> proto=ESMTP helo=<sen-01>",
+    "repeat": 1,
+    "log_format": "syslog",
+    "location": "/var/log/mail.log"
+   }
+  ],
+  "expect": {
+   "rule": "110310",
+   "level": 10,
+   "fields": {
+    "srcip": "192.0.2.50"
+   }
+  }
+ },
+ {
+  "name": "meta: sensor comprometido E origem de relay → uma botnet, dois impactos",
+  "events": [
+   {
+    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-02\",\"root_cause_instance\":\"sen-02\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.51\",\"root_cause_ip\":\"10.10.2.51\",\"incident_count\":1}",
+    "log_format": "json",
+    "location": "/var/log/ssle/incidents.json"
+   },
+   {
+    "line": "Nov  8 20:00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x@external.example>: Relay access denied; from=<a@lis.ssle.lab> to=<x@external.example> proto=ESMTP helo=<sen-01>",
+    "repeat": 5,
+    "log_format": "syslog",
+    "location": "/var/log/mail.log"
+   }
+  ],
+  "expect": {
+   "rule": "110900",
+   "level": 14,
+   "fields": {
+    "srcip": "10.10.2.51"
+   }
+  }
+ },
+ {
+  "name": "meta: sensor comprometido E origem de DoS",
+  "events": [
+   {
+    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-03\",\"root_cause_instance\":\"sen-03\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.52\",\"root_cause_ip\":\"10.10.2.52\",\"incident_count\":1}",
+    "log_format": "json",
+    "location": "/var/log/ssle/incidents.json"
+   },
+   {
+    "line": "10.10.2.52 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
+    "repeat": 110,
+    "log_format": "apache",
+    "location": "/var/log/ssle/access.log"
+   }
+  ],
+  "fires_within": 101,
+  "expect": {
+   "rule": "110900",
+   "level": 14,
+   "fields": {
+    "srcip": "10.10.2.52"
+   }
+  }
+ },
+ {
+  "name": "meta: relay de OUTRA origem não correlaciona com o sensor",
+  "events": [
+   {
+    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-04\",\"root_cause_instance\":\"sen-04\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.53\",\"root_cause_ip\":\"10.10.2.53\",\"incident_count\":1}",
+    "log_format": "json",
+    "location": "/var/log/ssle/incidents.json"
+   },
+   {
+    "line": "Nov  8 20:00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.3.98]: 554 5.7.1 <x@external.example>: Relay access denied; from=<a@lis.ssle.lab> to=<x@external.example> proto=ESMTP helo=<sen-01>",
+    "repeat": 5,
+    "log_format": "syslog",
+    "location": "/var/log/mail.log"
+   }
+  ],
+  "expect": {
+   "rule": "110302",
+   "level": 10
+  }
+ }
+]

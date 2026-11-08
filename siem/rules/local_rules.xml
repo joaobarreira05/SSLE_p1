@@ -3,7 +3,12 @@
   Gamas: 110000-110099 integração Prometheus/correlator · 1101xx T1 DDoS
          1102xx T2 botnet · 1103xx T3 spam · 1109xx meta-correlação.
   NÃO reutiliza 100100-100399 (usadas nas aulas 6-7).
-  Valida sempre com:  /var/ossec/bin/wazuh-logtest   (ver siem/tests/).
+  Valida sempre com:  bash siem/tests/run-logtest.sh   (wazuh-analysisd real + siem/tests/cases.json)
+
+  Grupos que a meta-correlação usa (padrão da regra 40112 do ruleset):
+    ssle_botnet_host → o elemento (srcip) está comprometido/é causa raiz de anomalia na frota;
+    ssle_impact      → o mesmo srcip aparece como ORIGEM de um impacto (DoS, spam/relay, força bruta).
+  O correlator põe srcip = IP da causa raiz no incidente, para o same_source_ip funcionar entre fontes.
 -->
 
 <!-- ===== 110000-110099: incidentes do correlator (Prometheus) ===== -->
@@ -29,73 +34,112 @@
 </group>
 
 <!-- ===== 1101xx: Ameaça 1 — DoS/DDoS ===== -->
+<!-- Os pedidos 200 acabam na 31108 (nível 0, "simple queries"), e o analysisd DESCARTA os eventos de
+     nível 0 antes de os guardar para if_matched_sid (provado no logtest: uma composta sobre a 31108 nunca
+     dispara). Daí a 110105: nível 1 = guarda-se para correlação mas fica abaixo do log_alert_level (3),
+     por isso não enche o alerts.json. O log de acesso vem do serviço (SSLE_ACCESS_LOG, formato combined). -->
 <group name="ssle,ddos,attack,">
-  <rule id="110100" level="10" frequency="120" timeframe="10">
-    <if_matched_sid>31100</if_matched_sid>
-    <same_source_ip />
-    <description>SSLE T1: muitos pedidos web da mesma origem (possível DoS).</description>
+  <rule id="110105" level="1">
+    <if_sid>31108</if_sid>
+    <description>SSLE T1: pedido web normal (base de contagem das 110100/110101; não gera alerta).</description>
   </rule>
-  <rule id="110101" level="12" frequency="300" timeframe="15">
-    <if_matched_sid>31100</if_matched_sid>
-    <description>SSLE T1: volume web anormalmente alto (possível DDoS distribuído).</description>
+  <rule id="110100" level="10" frequency="100" timeframe="10" ignore="60">
+    <if_matched_sid>110105</if_matched_sid>
+    <same_source_ip />
+    <description>SSLE T1: ≥100 pedidos web em 10 s da mesma origem $(srcip) (possível DoS).</description>
+    <mitre><id>T1498</id></mitre>
+    <group>ssle_impact,</group>
+  </rule>
+  <rule id="110101" level="12" frequency="300" timeframe="10" ignore="60">
+    <if_matched_sid>110105</if_matched_sid>
+    <description>SSLE T1: ≥300 pedidos web em 10 s no total (possível DDoS distribuído).</description>
+    <mitre><id>T1498</id></mitre>
   </rule>
   <rule id="110110" level="12">
     <if_sid>110001</if_sid>
     <!-- OS_Regex (o motor por omissão) não tem grupos nem [..]: alternância com | entre padrões -->
     <field name="root_cause_role">^ingestion$|^web$</field>
-    <description>SSLE T1: causa raiz num serviço exposto ($(root_cause_role)).</description>
+    <description>SSLE T1: causa raiz num serviço exposto ($(root_cause_instance), $(root_cause_role)) — limitar débito, NÃO isolar.</description>
+    <mitre><id>T1498</id></mitre>
   </rule>
 </group>
 
 <!-- ===== 1102xx: Ameaça 2 — botnet sobre a frota IoT ===== -->
 <group name="ssle,botnet,attack,">
-  <rule id="110200" level="10" frequency="8" timeframe="60">
-    <if_matched_sid>5710</if_matched_sid>
-    <same_source_ip />
-    <description>SSLE T2: tentativas de login falhadas repetidas (credenciais fracas).</description>
-    <group>authentication_failures,</group>
+  <!-- Vetor de infeção: força bruta SSH. Filha das compostas do ruleset (5712 utilizador inexistente,
+       5720/5763 password errada; 8 falhas da mesma origem), em vez de contar outra vez por cima. -->
+  <rule id="110200" level="11">
+    <if_sid>5712,5720,5763</if_sid>
+    <description>SSLE T2: força bruta SSH a partir de $(srcip) (vetor de infeção da botnet).</description>
+    <mitre><id>T1110</id></mitre>
+    <group>authentication_failures,ssle_impact,</group>
   </rule>
+  <!-- FIM (syscheck): o logtest não injeta eventos de FIM — testado no lab (siem/tests/README.md §3). -->
   <rule id="110201" level="12">
     <if_sid>554,550</if_sid>
-    <field name="file">/etc/cron.d|/etc/systemd/system|/etc/rc.local|/root/.ssh</field>
+    <field name="file">^/etc/cron.d|^/etc/systemd/system|^/etc/rc.local|^/root/.ssh</field>
     <description>SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado ($(file)).</description>
+    <mitre><id>T1053.003</id><id>T1543.002</id></mitre>
   </rule>
+  <!-- A 533 só existe para o alias "netstat listening ports" (check_diff: alerta quando a saída muda);
+       o comando vem do agent.conf do grupo role-sensor (precisa de logcollector.remote_commands=1). -->
   <rule id="110202" level="10">
     <if_sid>533</if_sid>
-    <description>SSLE T2: nova porta à escuta num elemento (possível backdoor/C2).</description>
+    <description>SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).</description>
+    <mitre><id>T1571</id></mitre>
   </rule>
   <rule id="110210" level="12">
     <if_sid>110001</if_sid>
     <field name="root_cause_role">^sensor$</field>
-    <description>SSLE T2: sensor IoT é a causa raiz — candidato a QUARENTENA.</description>
+    <description>SSLE T2: sensor IoT $(root_cause_instance) ($(srcip)) é a causa raiz — candidato a QUARENTENA.</description>
+    <group>ssle_botnet_host,</group>
   </rule>
 </group>
 
 <!-- ===== 1103xx: Ameaça 3 — junk e-mail / spam ===== -->
+<!-- Duas linhas por mensagem no spamd; alerta-se UMA (a "result:", filha da 3501, que tem o veredito).
+     A raiz 3500 do ruleset casa ^spamd primeiro: uma regra de topo com decoded_as nunca a ganhava. -->
 <group name="ssle,spam,">
-  <rule id="110300" level="7" frequency="20" timeframe="60">
-    <if_matched_sid>3301</if_matched_sid>
-    <same_source_ip />
-    <description>SSLE T3: volume elevado de e-mail da mesma origem.</description>
+  <rule id="110301" level="7">
+    <if_sid>3501</if_sid>
+    <field name="sa_flag">^Y$</field>
+    <description>SSLE T3: SpamAssassin marcou spam (score $(sa_score) ≥ $(sa_required)).</description>
   </rule>
-  <rule id="110301" level="10">
-    <decoded_as>spamassassin</decoded_as>
-    <!-- score >= 5 (o required_score da aula 8). PCRE2 porque o OS_Regex não tem [..] nem grupos;
-         a versão anterior, ^(1[0-9]|[5-9])\., além de inválida falhava os scores >= 20. -->
-    <field name="sa_score" type="pcre2">^([5-9]|[1-9]\d+)(\.\d+)?$</field>
-    <description>SSLE T3: SpamAssassin marcou spam com score alto ($(sa_score)).</description>
+  <rule id="110304" level="10">
+    <if_sid>110301</if_sid>
+    <!-- score inteiro no "result:" (%2d); ≥ 15 = muito acima do limiar (o GTUBE dá 1000) -->
+    <field name="sa_score" type="pcre2">^(1[5-9]|[2-9]\d|\d{3,})$</field>
+    <description>SSLE T3: spam de alta confiança (score $(sa_score); testes $(sa_tests)).</description>
+  </rule>
+  <rule id="110300" level="10" frequency="10" timeframe="120" ignore="120">
+    <if_matched_sid>110301</if_matched_sid>
+    <description>SSLE T3: vaga de spam (≥10 mensagens marcadas em 2 min).</description>
     <group>attack,</group>
   </rule>
-  <rule id="110302" level="9" frequency="10" timeframe="60">
-    <if_matched_sid>3303</if_matched_sid>
-    <description>SSLE T3: muitas rejeições do Postfix (relay/reputação).</description>
+  <rule id="110302" level="10" frequency="5" timeframe="60" ignore="60">
+    <if_matched_sid>3301</if_matched_sid>
+    <same_source_ip />
+    <description>SSLE T3: $(srcip) a tentar usar o MTA como relay (≥5 rejeições em 60 s).</description>
+    <mitre><id>T1114</id></mitre>
+    <group>attack,ssle_impact,</group>
+  </rule>
+  <rule id="110310" level="10">
+    <if_sid>3301,3302,3303</if_sid>
+    <list field="srcip" lookup="address_match_key">etc/lists/ssle-reputation</list>
+    <description>SSLE T3: rejeição a uma origem com má reputação (CDB ssle-reputation: $(srcip)).</description>
+    <group>attack,</group>
   </rule>
 </group>
 
 <!-- ===== 1109xx: meta-correlação entre ameaças ===== -->
 <group name="ssle,meta,attack,">
-  <rule id="110900" level="14" frequency="2" timeframe="900">
-    <if_matched_sid>110210</if_matched_sid>
-    <description>SSLE meta: o MESMO elemento mostra botnet E impacto (DDoS/spam) — "uma botnet, dois impactos".</description>
+  <!-- "Uma botnet, dois impactos": um impacto (DoS/relay/força bruta) cuja ORIGEM é um elemento que o
+       correlator já apontou como causa raiz comprometida, nos últimos 15 min. Padrão da 40112:
+       evento atual num grupo + evento anterior noutro grupo + mesmo srcip. -->
+  <rule id="110900" level="14" timeframe="900" ignore="300">
+    <if_group>ssle_impact</if_group>
+    <if_matched_group>ssle_botnet_host</if_matched_group>
+    <same_source_ip />
+    <description>SSLE meta: $(srcip) é causa raiz comprometida E origem de um impacto — "uma botnet, dois impactos".</description>
   </rule>
 </group>

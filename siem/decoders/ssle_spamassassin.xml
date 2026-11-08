@@ -1,10 +1,30 @@
-<!-- Extrai o score do SpamAssassin das linhas do maillog. Valida com wazuh-logtest. -->
+<!--
+  SpamAssassin (spamd) → campos para as regras 1103xx. Validado no wazuh-analysisd 4.14.10
+  (bash siem/tests/run-logtest.sh). O spamd escreve, por mensagem, DUAS linhas (aula 8 §5):
+
+    spamd[1234]: spamd: identified spam (6.2/5.0) for debian-spamd:109 in 0.3 seconds, 547 bytes.
+    spamd[1234]: spamd: result: Y 6 - ALL_TRUSTED,DRUGS_ERECTILE scantime=0.3,size=547,…,required_score=5.0,…
+
+  · "result:"  → veredito (Y = spam, "." = ham), score INTEIRO ("%2d": "Y  6", "Y 1000", ".  0", ". -1"),
+                 lista de testes e o required_score;
+  · "identified spam / clean message" → score com décimas e limiar (é o que fica no relatório).
+  A versão anterior procurava "score=… required=…", que o spamd não escreve: nunca extraía nada.
+  PCRE2 porque o OS_Regex não tem grupos opcionais nem sinal negativo.
+-->
 <decoder name="spamassassin">
   <program_name>spamd</program_name>
 </decoder>
-<decoder name="spamassassin-score">
+
+<decoder name="spamassassin-result">
   <parent>spamassassin</parent>
-  <prematch>result: </prematch>
-  <regex>result: \w+ score=(\S+) required=(\S+)</regex>
-  <order>sa_score, sa_required</order>
+  <prematch>^spamd: result: </prematch>
+  <regex type="pcre2">^spamd: result: (\S) +(-?\d+) - (\S+) .*required_score=([\d.]+)</regex>
+  <order>sa_flag, sa_score, sa_tests, sa_required</order>
+</decoder>
+
+<decoder name="spamassassin-verdict">
+  <parent>spamassassin</parent>
+  <prematch>^spamd: identified spam |^spamd: clean message </prematch>
+  <regex type="pcre2">^spamd: (identified spam|clean message) \((-?[\d.]+)/([\d.]+)\) for (\S+?):\d+ </regex>
+  <order>sa_verdict, sa_score, sa_required, dstuser</order>
 </decoder>

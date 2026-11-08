@@ -11,6 +11,8 @@ Cada caso é uma SESSÃO do logtest (um token): os eventos são enviados por ord
 (frequency/timeframe/if_matched_sid) acumula-se, como no manager a sério. Formato de um caso:
   {"name": "...", "log_format": "syslog|json", "location": "...",
    "events": ["linha", ...]           # ou {"line": "...", "repeat": N}  ou lista dos dois
+                                      # (um dict pode trocar "log_format"/"location" só para esse evento:
+                                      #  a meta-correlação mistura o JSON do correlator com syslog)
    "expect": {"rule": "110001", "level": 10, "decoder": "json", "fields": {"campo": "valor"}},
    "fires_within": 130}              # opcional: a regra tem de aparecer em ALGUM dos primeiros N eventos
 Sem "fires_within", o "expect" aplica-se ao ÚLTIMO evento. "expect": {"rule": null} = não alerta.
@@ -35,12 +37,14 @@ def call(command, parameters):
 
 
 def expand(events):
+    """[(linha, {overrides de log_format/location}), ...] pela ordem de envio."""
     out = []
     for e in events if isinstance(events, list) else [events]:
         if isinstance(e, dict):
-            out += [e["line"]] * int(e.get("repeat", 1))
+            over = {k: e[k] for k in ("log_format", "location") if k in e}
+            out += [(e["line"], over)] * int(e.get("repeat", 1))
         else:
-            out.append(e)
+            out.append((e, {}))
     return out
 
 
@@ -74,8 +78,8 @@ def check(out, exp):
 def run_case(c):
     token, outs = None, []
     params = {"location": c.get("location", "stdin"), "log_format": c.get("log_format", "syslog")}
-    for line in expand(c["events"]):
-        p = dict(params, event=line)
+    for line, over in expand(c["events"]):
+        p = dict(params, event=line, **over)
         if token:
             p["token"] = token
         data = call("log_processing", p)
