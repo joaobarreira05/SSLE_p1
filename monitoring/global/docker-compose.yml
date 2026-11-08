@@ -1,5 +1,8 @@
-# Alvo de produção no T490: stack global dentro do contentor core/obs (nesting).
-# Na VM de staging o deploy.sh instala o equivalente por apt (mais leve).
+# ⚠️ NÃO USADO pelo infra/deploy.sh (decisão de 08/11): o core/obs é provisionado por apt + systemd
+# também no T490 — o mesmo caminho validado ao vivo em staging, sem Docker aninhado no contentor.
+# Ficheiro mantido só como referência e DESATUALIZADO: o Grafana está em monitoring/grafana/
+# (provider + dashboards gerados), o correlator precisa de rca.py e não há Dockerfile.
+# (Ideia original: stack global dentro do contentor core/obs com nesting.)
 services:
   prometheus:
     image: prom/prometheus:v3.5.0
