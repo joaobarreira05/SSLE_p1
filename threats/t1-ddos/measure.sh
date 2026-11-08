@@ -18,6 +18,10 @@ DUR="${2:-120}"; CONC="${3:-20}"
 ING_IP="${ING_IP:-10.10.1.30}"           # alvo: avr/ing-01
 SETTLE="${SETTLE:-300}"
 EV="$HERE/evidence/run-$N"; mkdir -p "$EV"
+# Com NAT entre sites o ing-01 vê o atacante e os sensores como o gateway: avisar (infra/nat.sh off)
+if [ "$(incus network get net-avr ipv4.nat 2>/dev/null </dev/null || true)" = true ]; then
+  echo "[t1/run-$N] ⚠️ NAT ligado na net-avr: a origem do ataque não é atribuível (correr 'bash infra/nat.sh off')"
+fi
 
 T0=$(date +%s.%N)
 bash "$HERE/run.sh" "$ING_IP" "$DUR" "$CONC" | tee "$EV/run.log"
