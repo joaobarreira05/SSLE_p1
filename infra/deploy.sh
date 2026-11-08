@@ -199,19 +199,20 @@ systemctl daemon-reload && systemctl enable --now alertmanager'
   # correlator
   cexec "$n" "$p" mkdir -p /opt/correlator /var/log/ssle
   cpush "$ROOT/correlator/app.py" "$n/opt/correlator/app.py" "$p"
+  cpush "$ROOT/correlator/rca.py" "$n/opt/correlator/rca.py" "$p"     # núcleo RCA (o app.py importa-o)
   cpush "$BUILD/graph.json" "$n/opt/correlator/graph.json" "$p"
   cexec "$n" "$p" sh -c 'cat > /etc/systemd/system/ssle-correlator.service <<UNIT
 [Unit]
 Description=SSLE correlator (RCA)
 After=network-online.target
 [Service]
-Environment=CORRELATOR_GRAPH=/opt/correlator/graph.json CORRELATOR_LOG=/var/log/ssle/incidents.json PORT=9095
+Environment=CORRELATOR_GRAPH=/opt/correlator/graph.json CORRELATOR_LOG=/var/log/ssle/incidents.json CORRELATOR_SETTLE=30 PORT=9095
 ExecStart=/usr/bin/python3 /opt/correlator/app.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
 UNIT
-systemctl daemon-reload && systemctl enable --now ssle-correlator'
+systemctl daemon-reload && systemctl enable ssle-correlator >/dev/null 2>&1 && systemctl restart ssle-correlator'
   cexec "$n" "$p" systemctl restart prometheus
   ok "  obs: prometheus global + alertmanager + correlator configurados"
 }
