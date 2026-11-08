@@ -6,6 +6,7 @@
 #   SSLE_HOST=<label>           (default: auto por uname → t490 / mac-m2)
 #   SSLE_IMAGE=images:debian/trixie
 #   SSLE_SKIP_APPS=1            (só infra: projetos, redes, contentores)
+#   SSLE_GRAFANA=0|1            (default: 1 no full, 0 no staging — o Grafana precisa de ~300 MiB)
 #
 # Reentrante: correr várias vezes só acrescenta/corrige o que falta.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -243,8 +244,54 @@ Restart=always
 WantedBy=multi-user.target
 UNIT
 systemctl daemon-reload && systemctl enable ssle-correlator >/dev/null 2>&1 && systemctl restart ssle-correlator'
+  # node_exporter do HOST (só escuta em 127.0.0.1 — infra/t490/setup-host.sh): um proxy device do Incus
+  # com bind=instance abre 127.0.0.1:9101 DENTRO do obs e liga-o ao 127.0.0.1:9100 do host, sem expor nada
+  if [ "$HOST_LABEL" = t490 ] && [ "$PROFILE" = full ]; then
+    incus config device show "$n" --project "$p" 2>/dev/null | grep -q '^hostnode:' || \
+      incus config device add "$n" hostnode proxy listen=tcp:127.0.0.1:9101 connect=tcp:127.0.0.1:9100 \
+        bind=instance --project "$p" >/dev/null </dev/null
+    printf '[{"targets": ["localhost:9101"], "labels": {"site": "core", "instance_name": "%s", "host": "%s", "role": "hypervisor"}}]\n' \
+      "$HOST_LABEL" "$HOST_LABEL" > "$BUILD/hypervisor.json"
+  else
+    echo '[]' > "$BUILD/hypervisor.json"
+  fi
+  cpush "$BUILD/hypervisor.json" "$n/etc/prometheus/hypervisor.json" "$p"
   cexec "$n" "$p" systemctl restart prometheus
   ok "  obs: prometheus global + alertmanager + correlator configurados"
+  local want_grafana=0; [ "$PROFILE" = full ] && want_grafana=1
+  [ "${SSLE_GRAFANA:-$want_grafana}" = 1 ] && prov_grafana "$n" "$p"
+  return 0
+}
+
+prov_grafana() {  # Grafana no obs: datasources do inventário + dashboards como código (monitoring/grafana/)
+  local n="$1" p="$2" ver=11.6.1
+  if ! cexec "$n" "$p" sh -c "dpkg -s grafana 2>/dev/null | grep -q '^Version: $ver'"; then
+    apt_in "$n" "$p" ca-certificates curl gnupg
+    cexec "$n" "$p" sh -c "mkdir -p /etc/apt/keyrings && curl -fsSL https://apt.grafana.com/gpg.key | gpg --dearmor --yes -o /etc/apt/keyrings/grafana.gpg \
+      && echo 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main' > /etc/apt/sources.list.d/grafana.list \
+      && $APT update -qq && $APT install -y -qq grafana=$ver"
+  fi
+  local args=(grafana --host "$HOST_LABEL"); [ "$PROFILE" = staging ] && args+=(--staging)
+  python3 "$ROOT/infra/inventory.py" "${args[@]}" > "$BUILD/grafana-datasources.yml"
+  cpush "$BUILD/grafana-datasources.yml" "$n/etc/grafana/provisioning/datasources/ssle.yml" "$p"
+  cpush "$ROOT/monitoring/grafana/providers/ssle.yml" "$n/etc/grafana/provisioning/dashboards/ssle.yml" "$p"
+  for d in "$ROOT"/monitoring/grafana/dashboards/*.json; do
+    cpush "$d" "$n/var/lib/grafana/dashboards/ssle/$(basename "$d")" "$p"
+  done
+  # só na rede do core (chega-se por túnel SSH a partir do host/Mac), sem anónimo, sem telemetria
+  local obs_ip; obs_ip="$(cut -f3 "$BUILD/obs.tsv")"
+  cexec "$n" "$p" sh -c "mkdir -p /etc/systemd/system/grafana-server.service.d && cat > /etc/systemd/system/grafana-server.service.d/ssle.conf <<UNIT
+[Service]
+Environment=GF_SERVER_HTTP_ADDR=$obs_ip GF_AUTH_ANONYMOUS_ENABLED=false GF_ANALYTICS_REPORTING_ENABLED=false
+Environment=GF_ANALYTICS_CHECK_FOR_UPDATES=false GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false GF_NEWS_NEWS_FEED_ENABLED=false
+UNIT
+chown -R grafana:grafana /var/lib/grafana/dashboards && systemctl daemon-reload && systemctl enable grafana-server >/dev/null 2>&1 && systemctl restart grafana-server"
+  # password de admin GERADA (nunca a 'admin' por omissão), guardada fora do Git
+  local pw="$BUILD/secrets/grafana-admin.pass"
+  [ -s "$pw" ] || (umask 077; mkdir -p "$BUILD/secrets"; python3 -c 'import secrets; print(secrets.token_urlsafe(18))' > "$pw")
+  incus file push "$pw" "$n/root/grafana-admin.pass" --project "$p" --mode 0600 --quiet
+  cexec "$n" "$p" sh -c 'sleep 5; grafana cli --homepath /usr/share/grafana admin reset-admin-password "$(cat /root/grafana-admin.pass)" >/dev/null 2>&1; rm -f /root/grafana-admin.pass'
+  ok "  grafana $ver em http://$obs_ip:3000 (admin: build/secrets/grafana-admin.pass; túnel: ssh -L 3000:$obs_ip:3000 …)"
 }
 
 provision() {

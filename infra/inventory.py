@@ -290,6 +290,23 @@ def site_prometheus(model, site):
     return text
 
 
+def grafana_datasources(model):
+    """Datasources do Grafana (corre no core/obs): o global + um Prometheus por site (drill-down por
+    instância, que o global não tem — só federa agregados) + o Alertmanager. UIDs estáveis: os
+    dashboards em monitoring/grafana/dashboards/ referem-nos."""
+    lines = ["# GERADO por infra/inventory.py grafana (fonte: inventory/sites.yaml) — não editar à mão",
+             "apiVersion: 1", "datasources:",
+             "  - {name: Prometheus-Global, uid: prom-global, type: prometheus, access: proxy, "
+             "url: 'http://localhost:%d', isDefault: true}" % PROM_PORT,
+             "  - {name: Alertmanager, uid: alertmanager, type: alertmanager, access: proxy, "
+             "url: 'http://localhost:%d', jsonData: {implementation: prometheus}}" % ALERT_PORT]
+    for e in model["elements"]:
+        if e["role"] == "prometheus":
+            lines.append("  - {name: Prometheus-%s, uid: prom-%s, type: prometheus, access: proxy, "
+                         "url: 'http://%s:%d'}" % (e["site"], e["site"], e["ip"], PROM_PORT))
+    return "\n".join(lines) + "\n"
+
+
 def obs_element(model):
     for e in model["elements"]:
         if e["exporter"] == "global":
@@ -345,7 +362,7 @@ def render(model, out):
 # ── CLI ───────────────────────────────────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser(description="Leitor do inventário SSLE P1")
-    ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets", "siteprom"])
+    ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets", "siteprom", "grafana"])
     ap.add_argument("--host", default=default_host())
     ap.add_argument("--staging", action="store_true")
     ap.add_argument("--out", default=os.path.join(ROOT, "build"))
@@ -365,6 +382,8 @@ def main():
         print(render(m, a.out))
     elif a.cmd == "siteprom":
         sys.stdout.write(site_prometheus(m, a.site))
+    elif a.cmd == "grafana":
+        sys.stdout.write(grafana_datasources(m))
 
 
 if __name__ == "__main__":

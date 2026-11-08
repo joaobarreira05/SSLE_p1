@@ -35,14 +35,28 @@ for site in avr opo lis; do
           -e "s#/etc/prometheus/targets/#$tmp/build/targets/$site/#g" > "$tmp/site-$site.yml"
   run "promtool-2 check config (Prometheus de site $site, renderizado)" "$T/promtool-2" check config --syntax-only "$tmp/site-$site.yml"
 done
+# Grafana: as expressões PromQL dos dashboards, embrulhadas em recording rules → promtool valida a sintaxe
+python3 - "$ROOT/monitoring/grafana/dashboards" > "$tmp/dash-rules.yml" <<'PY'
+import glob, json, os, sys
+print("groups:\n- name: dashboards\n  rules:")
+n = 0
+for f in sorted(glob.glob(os.path.join(sys.argv[1], "*.json"))):
+    for p in json.load(open(f))["panels"]:
+        for t in p.get("targets", []):
+            n += 1
+            print("  - record: dashboard:expr_%d:check\n    expr: %s" % (n, json.dumps(t["expr"])))
+PY
+run "promtool-3 check: PromQL dos dashboards ($(grep -c 'record:' "$tmp/dash-rules.yml") expressões)" "$T/promtool-3" check rules "$tmp/dash-rules.yml"
+run "dashboards gerados = build_dashboards.py (sem edições à mão)" sh -c "cd '$ROOT' && cp -r monitoring/grafana/dashboards '$tmp/dash-before' && python3 monitoring/grafana/build_dashboards.py >/dev/null && diff -r '$tmp/dash-before' monitoring/grafana/dashboards"
 echo "[3] Python"
 run "correlator: python3 -m unittest correlator/test_rca.py" python3 -m unittest -q "$ROOT/correlator/test_rca.py"
 run "registry: python3 -m unittest registry/test_core.py" python3 -m unittest -q "$ROOT/registry/test_core.py"
-for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py; do
+for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/monitoring/grafana/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py; do
   [ -f "$f" ] && run "py_compile ${f#"$ROOT"/}" python3 -m py_compile "$f"
 done
 echo "[4] shell"
-mapfile -t SH < <(find "$ROOT/infra" "$ROOT/threats" "$ROOT/tools" "$ROOT/siem" "$ROOT/evaluation" -name '*.sh' | sort)
+mapfile -t SH < <(find "$ROOT/infra" "$ROOT/threats" "$ROOT/tools" "$ROOT/siem" "$ROOT/evaluation" \
+                       "$ROOT/monitoring" "$ROOT/registry" -name '*.sh' | sort)
 for f in "${SH[@]}"; do run "bash -n ${f#"$ROOT"/}" bash -n "$f"; done
 if command -v shellcheck >/dev/null 2>&1; then SC=(shellcheck); elif command -v uvx >/dev/null 2>&1; then SC=(uvx -q --from shellcheck-py shellcheck); else SC=(); fi
 # C.UTF-8 e caminhos relativos: o caminho do repo tem acentos ("Área de Trabalho") e o shellcheck não os escreve em LC_ALL=C

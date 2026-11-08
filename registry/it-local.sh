@@ -47,7 +47,7 @@ for _ in $(seq 1 30); do curl -sf "http://$PROM/-/ready" >/dev/null && break; sl
 echo "[it] (2) arranca o sen-07 (services/app.py) — NÃO está no inventário"
 BIND=127.0.0.1 PORT=18000 SSLE_ROLE=sensor SSLE_INSTANCE=sen-07 SSLE_SITE=opo SSLE_IP=10.10.2.57 \
   SSLE_REGISTRY="http://$REG" SSLE_REGISTRY_TOKEN_FILE="$W/token" "${PY[@]}" "$ROOT/services/app.py" \
-  >"$W/sen.log" 2>&1 & SEN=$!; PIDS+=($SEN)
+  >"$W/sen.log" 2>&1 & SEN=$!; PIDS+=("$SEN")
 found=""
 for _ in $(seq 1 40); do found=$(targets); [ "$(grep -c . <<<"$found")" -ge 2 ] && break; sleep 1; done
 echo "$found" | sed 's/^/      /'

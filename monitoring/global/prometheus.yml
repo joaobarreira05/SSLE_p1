@@ -19,6 +19,9 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9100']
         labels: {site: core, instance_name: obs, host: HOSTPLACEHOLDER}
+  - job_name: hypervisor            # node_exporter do host físico (proxy device do Incus; [] fora do T490)
+    file_sd_configs:
+      - files: ['/etc/prometheus/hypervisor.json']
   - job_name: alertmanager
     static_configs:
       - targets: ['localhost:9093']
@@ -33,5 +36,12 @@ scrape_configs:
       'match[]':
         - '{__name__=~"site.*:.*"}'   # só as recording rules agregadas dos sites
         - 'up'                        # liveness por alvo (barato; útil p/ RCA)
+        - 'ALERTS{alertstate="firing"}'  # alertas ATIVOS dos sites (poucas séries) → vista do SOC no Grafana
     file_sd_configs:
       - files: ['/etc/prometheus/federate.json']
+    metric_relabel_configs:
+      # o ALERTS federado passa a site:alerts:firing (não se mistura com o ALERTS das regras do global)
+      - source_labels: [__name__]
+        regex: ALERTS
+        target_label: __name__
+        replacement: site:alerts:firing

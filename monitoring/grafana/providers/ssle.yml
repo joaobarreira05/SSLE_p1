@@ -1,0 +1,13 @@
+# Provider de dashboards: o Grafana lê os JSON desta pasta no arranque (e a cada 30 s).
+# No core/obs o deploy copia monitoring/grafana/dashboards/ para /var/lib/grafana/dashboards/ssle.
+# allowUiUpdates: false — a fonte é o Git (build_dashboards.py); mudanças na UI não se guardam.
+apiVersion: 1
+providers:
+  - name: ssle
+    folder: SSLE
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/ssle
