@@ -8,7 +8,7 @@ Portável: usa PyYAML se existir; senão cai para um mini-parser de YAML em
 "block style" (stdlib), suficiente para o nosso sites.yaml. Assim o deploy
 corre tanto nesta VM (sem yq/PyYAML) como no T490.
 """
-import json, os, sys, argparse, platform
+import json, os, re, sys, argparse, platform
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -21,6 +21,7 @@ ALERT_PORT = 9093
 CORRELATOR_PORT = 9095
 REGISTRY_PORT = 5050
 SITE_PROM_TMPL = os.path.join(ROOT, "monitoring", "site", "prometheus.yml.tmpl")
+WAZUH_MANAGER_TMPL = os.path.join(ROOT, "siem", "manager", "ossec-ssle.conf")
 
 
 # ── parsing ───────────────────────────────────────────────────────────────────
@@ -213,7 +214,7 @@ def graph(model):
     nodes, edges = [], []
     for e in model["elements"]:
         nodes.append({"identity": e["identity"], "site": e["site"],
-                      "instance_name": e["name"], "role": e["role"]})
+                      "instance_name": e["name"], "role": e["role"], "ip": e.get("ip")})
         for d in e["deps"]:
             tgt = _resolve_dep(d, e["site"], by_key)
             if tgt:
@@ -307,6 +308,65 @@ def grafana_datasources(model):
     return "\n".join(lines) + "\n"
 
 
+def wazuh_agent_name(e):
+    """Nome do agente Wazuh: <site>-<nome> (prom-01/reg-01 repetem-se entre sites; o Wazuh exige únicos)."""
+    return "%s-%s" % (e["site"], e["name"])
+
+
+def wazuh_agents(model):
+    """Uma linha por agente a inscrever: nome, projeto, instância, IP, grupos (o SIEM não monitoriza-se a si)."""
+    rows = []
+    for e in model["elements"]:
+        if e["role"] == "siem":
+            continue
+        groups = ["core" if e["site"] == "core" else "site-%s" % e["site"], "role-%s" % e["role"]]
+        rows.append("\t".join([wazuh_agent_name(e), e["project"], e["name"], e["ip"], ",".join(groups)]))
+    return "\n".join(rows) + "\n"
+
+
+def wazuh_manager_conf(model, agents):
+    """siem/manager/ossec-ssle.conf com os @@…@@ resolvidos. agents = {nome_do_agente: id}.
+    Falha fechada: um <active-response> cujo agente-alvo não está inscrito SAI (com aviso), em vez de
+    ficar a apontar para um ID errado ou inexistente."""
+    with open(WAZUH_MANAGER_TMPL, encoding="utf-8") as fh:
+        text = fh.read()
+    keep = [e["ip"] for e in model["elements"] if e["site"] == "core" or e["role"] == "prometheus"]
+    text = text.replace("@@WHITE_LIST@@", "\n".join("    <white_list>%s</white_list>" % ip for ip in keep))
+    svc = []
+    for e in model["elements"]:
+        if e["role"] in ("ingestion", "web"):
+            svc.append("  <!-- %s: causa raiz de T1 (110110) → limitar débito por origem no próprio serviço -->\n"
+                       "  <active-response>\n    <command>ssle-ratelimit</command>\n"
+                       "    <location>defined-agent</location>\n    <agent_id>@@AGENT_ID:%s@@</agent_id>\n"
+                       "    <rules_id>110110</rules_id>\n    <timeout>300</timeout>\n  </active-response>"
+                       % (wazuh_agent_name(e), wazuh_agent_name(e)))
+    text = text.replace("@@AR_SERVICE_RATELIMIT@@", "\n".join(svc))
+
+    def resolve(m):
+        block = m.group(0)
+        for name in re.findall(r"@@AGENT_ID:([\w.-]+)@@", block):
+            if name not in agents:
+                sys.stderr.write("aviso: agente %s não inscrito — resposta omitida (falha fechada)\n" % name)
+                return ""
+            block = block.replace("@@AGENT_ID:%s@@" % name, agents[name])
+        return block
+    text = re.sub(r"[ \t]*(<!--[^\n]*-->\n[ \t]*)?<active-response>.*?</active-response>\n?", resolve, text, flags=re.S)
+    if "@@" in text:
+        raise SystemExit("ossec-ssle.conf: marcadores por resolver: %s" % sorted(set(re.findall(r"@@[^@]+@@", text))))
+    return text
+
+
+def read_agent_ids(path):
+    """'id nome …' por linha (as 2 primeiras colunas do client.keys do manager; o resto — a chave — ignora-se)."""
+    out = {}
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            p = line.split()
+            if len(p) >= 2 and p[0].isdigit() and not p[1].startswith("!"):   # "!" = agente removido
+                out[p[1]] = p[0]
+    return out
+
+
 def obs_element(model):
     for e in model["elements"]:
         if e["exporter"] == "global":
@@ -362,11 +422,13 @@ def render(model, out):
 # ── CLI ───────────────────────────────────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser(description="Leitor do inventário SSLE P1")
-    ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets", "siteprom", "grafana"])
+    ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets", "siteprom", "grafana",
+                                    "wazuh-agents", "wazuh-manager"])
     ap.add_argument("--host", default=default_host())
     ap.add_argument("--staging", action="store_true")
     ap.add_argument("--out", default=os.path.join(ROOT, "build"))
     ap.add_argument("--site", default=None)
+    ap.add_argument("--agents", default=None, help="wazuh-manager: ficheiro 'id nome' (client.keys sem as chaves)")
     a = ap.parse_args()
 
     m = build(a.host, a.staging)
@@ -384,6 +446,10 @@ def main():
         sys.stdout.write(site_prometheus(m, a.site))
     elif a.cmd == "grafana":
         sys.stdout.write(grafana_datasources(m))
+    elif a.cmd == "wazuh-agents":
+        sys.stdout.write(wazuh_agents(m))
+    elif a.cmd == "wazuh-manager":
+        sys.stdout.write(wazuh_manager_conf(m, read_agent_ids(a.agents) if a.agents else {}))
 
 
 if __name__ == "__main__":

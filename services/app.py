@@ -16,6 +16,8 @@ do alerta ServiceDegraded.
                  http://10.10.2.20:5050 — regista-se e renova o lease a cada 10 s (registry/)
   SSLE_REGISTRY_TOKEN_FILE  token de escrita do site (default /etc/ssle/registry.token)
   SSLE_IP        o IP com que se regista (o registry confirma que é da sub-rede do site)
+  SSLE_ACCESS_LOG  opcional: log de acesso no formato "combined" do Apache (o que o decoder web-accesslog
+                 do Wazuh reconhece; o do werkzeug não), rodado a 10 MiB × 2 — o agente Wazuh lê-o (T1)
   PORT           8000
 
 Porquê o modo sensor: é o tráfego LEGÍTIMO da frota IoT (aula 2). Dá à deteção
@@ -23,7 +25,7 @@ de anomalias uma linha de base real (sem ele, o ing-01 está a zero e o primeiro
 pico só "se compara consigo próprio") e mede o impacto de um ataque do ponto de
 vista do cliente (latência/erros das leituras), que é o que conta para o MTTR.
 """
-import bisect, json, math, os, random, socket, threading, time
+import bisect, json, logging, logging.handlers, math, os, random, socket, threading, time
 import urllib.request
 from collections import defaultdict
 from flask import Flask, Response, g, request
@@ -37,6 +39,7 @@ INTERVAL = float(os.environ.get("SSLE_INTERVAL", "5"))
 REGISTRY = os.environ.get("SSLE_REGISTRY", "").rstrip("/")
 REGISTRY_TOKEN_FILE = os.environ.get("SSLE_REGISTRY_TOKEN_FILE", "/etc/ssle/registry.token")
 MY_IP = os.environ.get("SSLE_IP", "")
+ACCESS_LOG = os.environ.get("SSLE_ACCESS_LOG", "")
 
 # Fronteiras dos histogramas (s). Iguais no servidor e no sensor para comparar.
 BUCKETS = (0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0)
@@ -44,6 +47,14 @@ BUCKETS = (0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0)
 UNCOUNTED = {"/metrics", "/healthz"}
 
 app = Flask(__name__)
+_access = None
+if ACCESS_LOG:   # retenção limitada: sob DoS perde-se log antigo, nunca se enche o disco
+    _access = logging.getLogger("ssle.access")
+    _access.propagate = False
+    _access.setLevel(logging.INFO)
+    _h = logging.handlers.RotatingFileHandler(ACCESS_LOG, maxBytes=10 << 20, backupCount=2)
+    _h.setFormatter(logging.Formatter("%(message)s"))
+    _access.addHandler(_h)
 _lock = threading.Lock()
 # Contadores pré-inicializados a 0: a série existe desde o arranque, por isso a
 # linha de base começa a acumular antes do primeiro pedido (boa prática Prometheus).
@@ -95,6 +106,11 @@ def _count(resp):
         with _lock:
             _req[str(resp.status_code)] += 1
             _dur.observe(dt)
+        if _access:
+            _access.info('%s - - [%s] "%s %s %s" %d %s "-" "%s"', request.remote_addr,
+                         time.strftime("%d/%b/%Y:%H:%M:%S +0000", time.gmtime()), request.method,
+                         request.path, request.environ.get("SERVER_PROTOCOL", "HTTP/1.1"), resp.status_code,
+                         resp.calculate_content_length() or "-", request.user_agent.string or "-")
     return resp
 
 

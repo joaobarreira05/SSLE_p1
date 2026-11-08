@@ -106,12 +106,15 @@ class Settle(unittest.TestCase):
         self.assertEqual(inc["status"], "open")
         self.assertEqual(inc["noise_reduction"], 2.0)
         self.assertFalse(any(o.get("root_cause_role") == "sensor" for o in out))
+        self.assertEqual(inc["srcip"], "10.10.1.30")    # IP do ing-01 no inventário → same_source_ip no Wazuh
+        self.assertEqual(inc["root_cause_ip"], "10.10.1.30")
 
     def test_without_settle_the_sensor_would_be_blamed(self):
         """Contraprova: com settle=0 (o comportamento antigo) sai 1.º um incidente a culpar o sensor."""
         c, out, clk = make(settle=0)
         c.ingest({"alerts": [alert("ClientLatencySLO", "opo", "sen-01", "critical")]})
         self.assertEqual(out[0]["root_cause_role"], "sensor")
+        self.assertEqual(out[0]["srcip"], "10.10.2.50")  # sen-01: é este IP que a meta-correlação 110900 procura
 
     def test_growth_updates_same_incident_and_resolves(self):
         c, out, clk = make(settle=30)
@@ -132,6 +135,7 @@ class Settle(unittest.TestCase):
         self.assertEqual(out[-1]["status"], "resolved")
         self.assertEqual(out[-1]["root_cause"], ident("avr", "ing-01"))
         self.assertEqual(out[-1]["incident_id"], out[0]["incident_id"])
+        self.assertEqual(out[-1]["srcip"], "10.10.1.30")
         self.assertEqual(c.metrics["open_incidents"], 0)
         self.assertEqual(c.metrics["incidents_total"], 1)
 

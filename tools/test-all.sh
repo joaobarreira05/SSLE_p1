@@ -51,7 +51,7 @@ run "dashboards gerados = build_dashboards.py (sem edições à mão)" sh -c "cd
 echo "[3] Python"
 run "correlator: python3 -m unittest correlator/test_rca.py" python3 -m unittest -q "$ROOT/correlator/test_rca.py"
 run "registry: python3 -m unittest registry/test_core.py" python3 -m unittest -q "$ROOT/registry/test_core.py"
-for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/monitoring/grafana/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py; do
+for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/monitoring/grafana/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py "$ROOT"/siem/*/*.py; do
   [ -f "$f" ] && run "py_compile ${f#"$ROOT"/}" python3 -m py_compile "$f"
 done
 echo "[4] shell"
@@ -62,8 +62,12 @@ if command -v shellcheck >/dev/null 2>&1; then SC=(shellcheck); elif command -v 
 # C.UTF-8 e caminhos relativos: o caminho do repo tem acentos ("Área de Trabalho") e o shellcheck não os escreve em LC_ALL=C
 [ ${#SC[@]} -gt 0 ] && run "shellcheck -S warning (${#SH[@]} scripts)" \
   env LC_ALL=C.UTF-8 sh -c 'cd "$1" && shift && "$@"' _ "$ROOT" "${SC[@]}" -S warning "${SH[@]#"$ROOT"/}"
+echo "[5] SIEM sem Docker"
+run "active-response: siem/active-response/test-ar.sh (incus falso + nft num namespace próprio)" bash "$ROOT/siem/active-response/test-ar.sh"
+run "ossec-ssle.conf renderiza a partir do inventário (sem marcadores por resolver)" \
+  sh -c "printf '001 core-responder\n002 avr-ing-01\n003 lis-web-01\n' > '$tmp/agents' && python3 '$ROOT/infra/inventory.py' wazuh-manager --host t490 --agents '$tmp/agents' > /dev/null"
 if [ "${SSLE_LOGTEST:-0}" = 1 ]; then
-  echo "[5] Wazuh"
+  echo "[6] Wazuh"
   run "wazuh-logtest (siem/tests/run-logtest.sh)" bash "$ROOT/siem/tests/run-logtest.sh"
 fi
 echo

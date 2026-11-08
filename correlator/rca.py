@@ -71,6 +71,10 @@ class Graph:
             stack.extend(self.adj.get(cur, ()))
         return seen
 
+    def ip(self, identity):
+        """IP do nó no inventário (None para pseudo-nós de site ou identidades desconhecidas)."""
+        return (self.nodes.get(identity) or {}).get("ip")
+
     def describe(self, identity):
         """(instância, papel) do nó; pseudo-nó de site -> (site, 'site')."""
         n = self.nodes.get(identity)
@@ -173,18 +177,24 @@ class Correlator:
                 self.emit(inc)
         for root in [r for r in self.open if r not in current]:
             o = self.open.pop(root)
-            self.emit({"ts": _now_iso(now), "origin": "prometheus", "site": o["site"], "severity": "info",
-                       "status": "resolved", "root_cause": root, "root_cause_instance": o["instance"],
-                       "incident_id": o["id"], "incident_count": 0})
+            self.emit(dict({"ts": _now_iso(now), "origin": "prometheus", "site": o["site"], "severity": "info",
+                            "status": "resolved", "root_cause": root, "root_cause_instance": o["instance"],
+                            "incident_id": o["id"], "incident_count": 0}, **self._ip_fields(root)))
         self.metrics.update(active_alerts=len(self.active), open_incidents=len(self.open),
                             pending_incidents=pending)
+
+    def _ip_fields(self, root):
+        # srcip é o nome do campo ESTÁTICO do Wazuh: com ele, a meta-correlação 110900 junta este incidente
+        # aos impactos (DoS, relay, força bruta) cuja ORIGEM é o mesmo elemento (<same_source_ip/>).
+        ip = self.graph.ip(root)
+        return {"root_cause_ip": ip, "srcip": ip} if ip else {}
 
     def _incident(self, root, explained, alerts, now):
         inst, role = self.graph.describe(root)
         sev = max((a.get("labels", {}).get("severity", "info") for a in alerts),
                   key=lambda s: SEV_ORDER.get(s, 0))
         sites = sorted({_parts(m)["site"] for m in explained})
-        return {
+        return dict({
             "ts": _now_iso(now),
             "origin": "prometheus",
             "site": _parts(root)["site"],               # site da CAUSA RAIZ (é onde se responde)
@@ -199,4 +209,4 @@ class Correlator:
             "raw_alert_count": len(alerts),
             "incident_count": 1,
             "noise_reduction": round(len(alerts) / 1.0, 2),
-        }
+        }, **self._ip_fields(root))
