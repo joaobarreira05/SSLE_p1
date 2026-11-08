@@ -3,7 +3,9 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD="$ROOT/build"; PROFILE="${SSLE_PROFILE:-staging}"
-[ -f "$BUILD/containers.tsv" ] || python3 "$ROOT/infra/inventory.py" render --out "$BUILD" $([ "$PROFILE" = staging ] && echo --staging) >/dev/null
+# renderiza SEMPRE para o profile pedido: um build/ de outro profile apagaria a lista errada
+args=(render --out "$BUILD"); [ "$PROFILE" = staging ] && args+=(--staging)
+python3 "$ROOT/infra/inventory.py" "${args[@]}" >/dev/null
 echo "Vai APAGAR os contentores/redes/projetos do profile '$PROFILE':"
 cut -f1,2 "$BUILD/containers.tsv" | sed 's/\t/ @ /'
 if [ "${SSLE_YES:-0}" != 1 ]; then read -r -p "Confirmar? (escreve 'sim'): " a; [ "$a" = sim ] || { echo "cancelado"; exit 1; }; fi
