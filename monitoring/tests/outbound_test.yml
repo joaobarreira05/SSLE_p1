@@ -1,0 +1,39 @@
+# promtool test rules monitoring/tests/outbound_test.yml
+# T2 (beaconing): 1 h de envio legítimo (~0,2 ligações de saída/s, com o jitter de ±20 % do sensor),
+# depois 3 min de beacon a cada 3 s (+0,33/s) no sen-01; o sen-02 fica sempre normal (contraprova).
+rule_files:
+  - ../site/rules/anomalies.yml
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'instance:node_tcp_active_opens:rate1m{region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",team="ops-opo"}'
+        values: '0.2 0.18 0.22 0.2 0.19 0.21x54 0.53x3 0.2x10'
+      - series: 'instance:node_tcp_active_opens:rate1m{region="pt",site="opo",host="t490",instance_name="sen-02",role="sensor",team="ops-opo"}'
+        values: '0.2 0.18 0.22 0.2 0.19 0.21x67'
+    alert_rule_test:
+      # repouso (com jitter): nada
+      - eval_time: 59m
+        alertname: OutboundAnomaly
+        exp_alerts: []
+      # 2.º minuto de beacon: dispara (for: 1m), só no sen-01, critical (→ correlator → 110210 → quarentena)
+      - eval_time: 61m
+        alertname: OutboundAnomaly
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              kind: anomaly
+              threat: botnet
+              region: pt
+              site: opo
+              host: t490
+              instance_name: sen-01
+              role: sensor
+              team: ops-opo
+            exp_annotations:
+              summary: "Ligações de saída anómalas em sen-01 @ opo: 6.4 desvios robustos (beaconing?)"
+              identity: "ssle:pt:opo:t490:sen-01"
+      # o beacon acaba: o alerta resolve
+      - eval_time: 66m
+        alertname: OutboundAnomaly
+        exp_alerts: []

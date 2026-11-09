@@ -116,6 +116,20 @@ class Settle(unittest.TestCase):
         self.assertEqual(out[0]["root_cause_role"], "sensor")
         self.assertEqual(out[0]["srcip"], "10.10.2.50")  # sen-01: é este IP que a meta-correlação 110900 procura
 
+    def test_beaconing_sensor_is_root_cause_with_wazuh_fields(self):
+        """T2: OutboundAnomaly só no sen-01 → incidente com os campos que a Wazuh 110210 exige para a quarentena."""
+        c, out, clk = make(settle=30)
+        c.ingest({"alerts": [alert("OutboundAnomaly", "opo", "sen-01", "critical")]})
+        clk.t += 30
+        c.tick()
+        self.assertEqual(len(out), 1)
+        inc = out[0]
+        self.assertEqual(inc["root_cause"], ident("opo", "sen-01"))
+        self.assertEqual(inc["root_cause_role"], "sensor")        # 110210: root_cause_role ^sensor$
+        self.assertIn("OutboundAnomaly", inc["alert_names"])     # 110210: alert_names OutboundAnomaly
+        self.assertEqual(inc["severity"], "critical")             # 110001: severity ^critical$
+        self.assertEqual(inc["srcip"], "10.10.2.50")              # 110900: same_source_ip com o impacto
+
     def test_growth_updates_same_incident_and_resolves(self):
         c, out, clk = make(settle=30)
         c.ingest({"alerts": [alert("TrafficAnomaly", "avr", "ing-01")]})

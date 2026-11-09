@@ -1,2 +1,2 @@
-{"origin":"prometheus","severity":"critical","site":"avr","root_cause":"ssle:pt:avr:t490:sto-01","root_cause_instance":"sto-01","root_cause_role":"storage","root_cause_ip":"10.10.1.40","srcip":"10.10.1.40"}
-{"origin":"prometheus","severity":"critical","site":"opo","root_cause":"ssle:pt:opo:t490:sen-02","root_cause_instance":"sen-02","root_cause_role":"sensor","root_cause_ip":"10.10.2.51","srcip":"10.10.2.51"}
+{"origin":"prometheus","severity":"critical","site":"avr","root_cause":"ssle:pt:avr:t490:sto-01","root_cause_instance":"sto-01","root_cause_role":"storage","root_cause_ip":"10.10.1.40","srcip":"10.10.1.40","alert_names":["ElementDown","ServiceDegraded"]}
+{"origin":"prometheus","severity":"critical","site":"opo","root_cause":"ssle:pt:opo:t490:sen-02","root_cause_instance":"sen-02","root_cause_role":"sensor","root_cause_ip":"10.10.2.51","srcip":"10.10.2.51","alert_names":["OutboundAnomaly"]}

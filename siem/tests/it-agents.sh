@@ -145,7 +145,7 @@ web() {  # web <ip> <n> → linhas "combined" no log de acesso do ing-01 (o que 
   docker exec $P-ing sh -c "for i in \$(seq 1 $2); do echo '$1 - - [08/Nov/2026:20:00:01 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"' >> /var/log/ssle/access.log; done"
 }
 incident() {  # incident <site> <inst> <papel> <ip> → linha do correlator no obs
-  docker exec $P-obs sh -c "echo '{\"origin\":\"prometheus\",\"status\":\"open\",\"severity\":\"critical\",\"site\":\"$1\",\"root_cause\":\"ssle:pt:$1:t490:$2\",\"root_cause_instance\":\"$2\",\"root_cause_role\":\"$3\",\"root_cause_ip\":\"$4\",\"srcip\":\"$4\"}' >> /var/log/ssle/incidents.json"
+  docker exec $P-obs sh -c "echo '{\"origin\":\"prometheus\",\"status\":\"open\",\"severity\":\"critical\",\"site\":\"$1\",\"root_cause\":\"ssle:pt:$1:t490:$2\",\"root_cause_instance\":\"$2\",\"root_cause_role\":\"$3\",\"root_cause_ip\":\"$4\",\"srcip\":\"$4\",\"alert_names\":[\"OutboundAnomaly\"]}' >> /var/log/ssle/incidents.json"
 }
 # estímulo com repetição: se um agente estiver a meio de uma recarga do merged.mg, o logcollector reabre os
 # ficheiros no FIM e perde as linhas escritas entretanto (visto: 7 s de diferença). Repetir não mascara a

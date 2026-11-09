@@ -1,4 +1,4 @@
-# Deteção de anomalias por instância (Ameaça 1 — DoS/DDoS, e qualquer surto de tráfego).
+# Deteção de anomalias por instância (Ameaça 1 — DoS/DDoS, e qualquer surto de tráfego; Ameaça 2 — beaconing).
 # Três camadas, de propósito (defesa em profundidade):
 #   1) RELATIVA — TrafficAnomaly: z-score ROBUSTO face à última hora (aprende o "normal" de cada serviço).
 #   2) ABSOLUTA, servidor — ServiceLatencyHigh: o SLO de latência medido DENTRO da app.
@@ -74,4 +74,29 @@ groups:
       slo: client
     annotations:
       summary: "Cliente {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | humanizePercentage }} das leituras falham"
+      identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
+
+  - alert: OutboundAnomaly
+    # T2: o sensor abre ligações de SAÍDA fora do seu ritmo (beaconing de um C2). Mesmo z-score robusto da
+    # TrafficAnomaly, sobre instance:node_tcp_active_opens:rate1m. clamp_min(…, 0.05): o envio legítimo é
+    # muito regular (IQR≈0); com o mínimo, dispara acima de mediana + 0,15 ligações/s — um beacon a cada 3 s
+    # soma 0,33/s (z ≈ 6,7). CRITICAL de propósito: é o que leva o correlator → Wazuh 110210 → quarentena
+    # (incus pause, reversível em 600 s). Custo de um falso positivo: um sensor pausado 10 min.
+    expr: |
+      abs(
+        instance:node_tcp_active_opens:rate1m
+          - quantile_over_time(0.5, instance:node_tcp_active_opens:rate1m[1h])
+      )
+      / clamp_min(
+          (quantile_over_time(0.75, instance:node_tcp_active_opens:rate1m[1h])
+             - quantile_over_time(0.25, instance:node_tcp_active_opens:rate1m[1h])) / 1.349,
+          0.05)
+      > 3
+    for: 1m
+    labels:
+      severity: critical
+      kind: anomaly
+      threat: botnet
+    annotations:
+      summary: "Ligações de saída anómalas em {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | printf \"%.1f\" }} desvios robustos (beaconing?)"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"

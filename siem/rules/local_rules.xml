@@ -89,11 +89,21 @@
     <description>SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).</description>
     <mitre><id>T1571</id></mitre>
   </rule>
+  <!-- Quarentena só com o INDICADOR de botnet (OutboundAnomaly: ligações de saída anómalas no sensor). Um
+       sensor que é causa raiz por outro motivo (p.ex. ClientLatencySLO na T1, se a janela do correlador
+       falhar) é a VÍTIMA, não um bot: 110211, sem resposta. A ordem importa (a 1.ª filha que casa ganha). -->
   <rule id="110210" level="12">
     <if_sid>110001</if_sid>
     <field name="root_cause_role">^sensor$</field>
-    <description>SSLE T2: sensor IoT $(root_cause_instance) ($(srcip)) é a causa raiz — candidato a QUARENTENA.</description>
+    <field name="alert_names">OutboundAnomaly</field>
+    <description>SSLE T2: sensor IoT $(root_cause_instance) ($(srcip)) com ligações de saída anómalas é a causa raiz — QUARENTENA.</description>
+    <mitre><id>T1071</id></mitre>
     <group>ssle_botnet_host,</group>
+  </rule>
+  <rule id="110211" level="10">
+    <if_sid>110001</if_sid>
+    <field name="root_cause_role">^sensor$</field>
+    <description>SSLE T2: sensor IoT $(root_cause_instance) é a causa raiz sem indicador de botnet ($(alert_names)) — investigar, sem quarentena.</description>
   </rule>
 </group>
 

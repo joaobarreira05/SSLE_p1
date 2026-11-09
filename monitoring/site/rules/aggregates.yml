@@ -55,6 +55,12 @@ groups:
       histogram_quantile(0.95,
         sum by (le, region, site, host, instance_name, role, service, team)
           (rate(ssle_sensor_upstream_duration_seconds_bucket{job="services"}[1m])))
+  # T2 (botnet): ligações TCP de SAÍDA novas por sensor (node_exporter, netstat). O normal é ~0,2/s (um POST
+  # à ingestão a cada ~5 s); o beaconing de um C2 soma-lhe um ritmo próprio. Base do OutboundAnomaly.
+  - record: instance:node_tcp_active_opens:rate1m
+    expr: |
+      sum by (region, site, host, instance_name, role, team)
+        (rate(node_netstat_Tcp_ActiveOpens{job="node", role="sensor"}[1m]))
   - record: instance:ssle_sensor_readings:error_ratio_rate1m
     expr: |
       sum by (region, site, host, instance_name, role, service, team)

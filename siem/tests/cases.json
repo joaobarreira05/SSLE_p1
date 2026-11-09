@@ -199,11 +199,11 @@
   }
  },
  {
-  "name": "T2: sensor é a causa raiz → quarentena",
+  "name": "T2: sensor com OutboundAnomaly é a causa raiz → quarentena",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
-   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-01\",\"root_cause_instance\":\"sen-01\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.50\",\"root_cause_ip\":\"10.10.2.50\",\"incident_count\":1}"
+   "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-01\",\"root_cause_instance\":\"sen-01\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.50\",\"root_cause_ip\":\"10.10.2.50\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}"
   ],
   "expect": {
    "rule": "110210",
@@ -212,6 +212,18 @@
     "srcip": "10.10.2.50",
     "root_cause_instance": "sen-01"
    }
+  }
+ },
+ {
+  "name": "T2: sensor causa raiz só por latência (vítima da T1) → SEM quarentena",
+  "log_format": "json",
+  "location": "/var/log/ssle/incidents.json",
+  "events": [
+   "{\"origin\":\"prometheus\",\"severity\":\"critical\",\"status\":\"open\",\"site\":\"opo\",\"root_cause\":\"ssle:pt:opo:t490:sen-01\",\"root_cause_instance\":\"sen-01\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.50\",\"alert_names\":[\"ClientLatencySLO\"]}"
+  ],
+  "expect": {
+   "rule": "110211",
+   "level": 10
   }
  },
  {
@@ -354,7 +366,7 @@
   "name": "meta: sensor comprometido E origem de relay → uma botnet, dois impactos",
   "events": [
    {
-    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-02\",\"root_cause_instance\":\"sen-02\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.51\",\"root_cause_ip\":\"10.10.2.51\",\"incident_count\":1}",
+    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-02\",\"root_cause_instance\":\"sen-02\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.51\",\"root_cause_ip\":\"10.10.2.51\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}",
     "log_format": "json",
     "location": "/var/log/ssle/incidents.json"
    },
@@ -377,7 +389,7 @@
   "name": "meta: sensor comprometido E origem de DoS",
   "events": [
    {
-    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-03\",\"root_cause_instance\":\"sen-03\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.52\",\"root_cause_ip\":\"10.10.2.52\",\"incident_count\":1}",
+    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-03\",\"root_cause_instance\":\"sen-03\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.52\",\"root_cause_ip\":\"10.10.2.52\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}",
     "log_format": "json",
     "location": "/var/log/ssle/incidents.json"
    },
@@ -401,7 +413,7 @@
   "name": "meta: relay de OUTRA origem não correlaciona com o sensor",
   "events": [
    {
-    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-04\",\"root_cause_instance\":\"sen-04\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.53\",\"root_cause_ip\":\"10.10.2.53\",\"incident_count\":1}",
+    "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-04\",\"root_cause_instance\":\"sen-04\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.53\",\"root_cause_ip\":\"10.10.2.53\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}",
     "log_format": "json",
     "location": "/var/log/ssle/incidents.json"
    },
