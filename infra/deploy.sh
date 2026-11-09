@@ -297,6 +297,15 @@ chown -R grafana:grafana /var/lib/grafana/dashboards && systemctl daemon-reload 
   ok "  grafana $ver em http://$obs_ip:3000 (admin: build/secrets/grafana-admin.pass; túnel: ssh -L 3000:$obs_ip:3000 …)"
 }
 
+prov_mail() {  # MTA do site (T3): Postfix + SpamAssassin da aula 8 — threats/t3-spam/mail-setup.sh
+  local n="$1" p="$2" site="$3"
+  prov_node "$n" "$p"
+  local subnet; subnet="$(awk -F'\t' -v b="net-$site" '$1 == b {print $2}' "$BUILD/networks.tsv")"
+  cpush "$ROOT/threats/t3-spam/mail-setup.sh" "$n/tmp/mail-setup.sh" "$p"
+  cexec "$n" "$p" bash /tmp/mail-setup.sh "127.0.0.0/8 $subnet" "$site.ssle.lab"
+  ok "  mail-01 de $site: relay só para $subnet; saída para fora desligada"
+}
+
 provision() {
   [ "${SSLE_SKIP_APPS:-0}" = 1 ] && { warn "SSLE_SKIP_APPS=1 — salto o provisionamento"; return; }
   log "provisionamento (apt + configs)"
@@ -306,7 +315,11 @@ provision() {
       global) prov_obs "$name" "$proj" ;;
       registry) prov_registry "$name" "$proj" "$site" ;;
       flask)  prov_flask "$name" "$proj" "$role" "$site" "$deps" ;;
-      node)   if [ "$role" = prometheus ]; then prov_prom_site "$name" "$proj" "$site"; else prov_node "$name" "$proj"; fi ;;
+      node)   case "$role" in
+                prometheus) prov_prom_site "$name" "$proj" "$site" ;;
+                mail) prov_mail "$name" "$proj" "$site" ;;
+                *) prov_node "$name" "$proj" ;;
+              esac ;;
     esac
   done 3< "$BUILD/containers.tsv"
 }

@@ -299,6 +299,22 @@
   }
  },
  {
+  "name": "T3: 10 GTUBE (cada uma acaba na 110304) → vaga na mesma",
+  "log_format": "syslog",
+  "location": "/var/log/mail.log",
+  "events": [
+   {
+    "line": "Nov  8 20:00:00 mail-01 spamd[1234]: spamd: result: Y 1000 - GTUBE,ALL_TRUSTED scantime=0.1,size=600,user=debian-spamd,uid=109,required_score=5.0,rhost=::1,raddr=::1,rport=45679,mid=<b@example.com>,autolearn=no autolearn_force=no",
+    "repeat": 12
+   }
+  ],
+  "fires_within": 10,
+  "expect": {
+   "rule": "110300",
+   "level": 10
+  }
+ },
+ {
   "name": "T3: 5 relays recusados da mesma origem",
   "events": [
    {

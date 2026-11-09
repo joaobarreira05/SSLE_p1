@@ -23,7 +23,7 @@ say() { echo "[agent:$NAME] $*"; }
 extra=(jq)
 case "$ROLE" in
   sensor) extra+=(rsyslog iproute2) ;;         # iproute2: o "ss" do comando da 533 (agent.conf role-sensor)
-  mail) extra+=(rsyslog) ;;
+  mail) extra+=(rsyslog iptables) ;;           # iptables: o firewall-drop do Wazuh (110302)
   ingestion|web) extra+=(nftables) ;;
 esac
 need=()

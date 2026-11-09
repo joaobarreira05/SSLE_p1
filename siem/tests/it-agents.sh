@@ -4,7 +4,8 @@
 # trixie) numa rede Docker própria, instalados com OS MESMOS scripts do deploy (siem/manager/
 # configure-manager.sh e siem/agent/install-agent.sh). Prova, ponta a ponta, o que o logtest não chega:
 # inscrição por grupos, agent.conf partilhado, FIM (110201), comando remoto (110202), correlação ENTRE
-# agentes (110900) e as respostas a executar nos agentes certos (nft no ing-01, "incus pause" no responder).
+# agentes (110900), a T3 num MTA real (Postfix + spamd, threats/t3-spam/mail-setup.sh) e as respostas a
+# executar nos agentes certos (nft no ing-01, "incus pause" no responder, firewall-drop no mail-01).
 #
 #   bash siem/tests/it-agents.sh             # ~6–10 min; sai ≠ 0 se algum passo falhar
 #   SSLE_IT_KEEP=1 bash siem/tests/it-agents.sh   # deixa os contentores (para inspecionar)
@@ -27,18 +28,20 @@ T="$(mktemp -d)"
 AGENTS="core-obs $P-obs obs core,role-observability observability core obs -
 core-responder $P-resp responder core,role-responder responder core responder -
 avr-ing-01 $P-ing ing-01 site-avr,role-ingestion ingestion avr ing-01 --cap-add=NET_ADMIN
-opo-sen-01 $P-sen sen-01 site-opo,role-sensor sensor opo sen-01 -"
+opo-sen-01 $P-sen sen-01 site-opo,role-sensor sensor opo sen-01 -
+lis-mail-01 $P-mail mail-01 site-lis,role-mail mail lis mail-01 --cap-add=NET_ADMIN"
+NAG=$(grep -c . <<<"$AGENTS")
 cleanup() {
   rm -rf "$T"
   [ "${SSLE_IT_KEEP:-0}" = 1 ] && { echo "(SSLE_IT_KEEP=1: contentores $P-* mantidos)"; return; }
-  docker rm -f $P-mgr $P-obs $P-resp $P-ing $P-sen >/dev/null 2>&1 || true
+  docker rm -f $P-mgr $P-obs $P-resp $P-ing $P-sen $P-mail >/dev/null 2>&1 || true
   docker network rm $NET >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 mx() { docker exec $P-mgr "$@"; }
 
 step "rede e contentores"
-docker rm -f $P-mgr $P-obs $P-resp $P-ing $P-sen >/dev/null 2>&1 || true
+docker rm -f $P-mgr $P-obs $P-resp $P-ing $P-sen $P-mail >/dev/null 2>&1 || true
 docker network inspect $NET >/dev/null 2>&1 || docker network create $NET >/dev/null
 docker run -d --name $P-mgr --hostname wazuh --network $NET --memory 1500m "$MGR_IMAGE" >/dev/null
 while read -r _ c h _ _ _ _ flags; do
@@ -47,7 +50,7 @@ while read -r _ c h _ _ _ _ flags; do
 done <<<"$AGENTS"
 MGR_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $P-mgr)
 for _ in $(seq 1 60); do mx test -S /var/ossec/queue/sockets/logtest 2>/dev/null && break; sleep 2; done
-ok "manager $MGR_IMAGE em $MGR_IP (sem portas no host) + 4 contentores $AG_IMAGE"
+ok "manager $MGR_IMAGE em $MGR_IP (sem portas no host) + $NAG contentores $AG_IMAGE"
 
 bundle() {  # bundle <ficheiro id-nome> → $T/siem (o pacote que o configure-manager.sh consome)
   rm -rf "$T/siem"; mkdir -p "$T/siem"
@@ -79,7 +82,10 @@ while read -r name c h groups role site inst _; do
                docker cp "$T/fleet.tsv" "$c:/tmp/ssle-fleet.tsv"
                docker cp "$T/incus" "$c:/usr/local/bin/incus"; docker exec "$c" chmod 755 /usr/local/bin/incus ;;
   esac
-  ( docker exec "$c" bash /tmp/install-agent.sh "$MGR_IP" "$name" "$groups" "$role" "$site" "$inst" t490 \
+  [ "$role" = mail ] && docker cp "$ROOT/threats/t3-spam/mail-setup.sh" "$c:/tmp/mail-setup.sh"
+  # mail: o MTA primeiro (como no deploy); mynetworks só o loopback → os outros contentores são "de fora"
+  ( { { [ "$role" != mail ] || docker exec "$c" bash /tmp/mail-setup.sh "127.0.0.0/8"; } \
+      && docker exec "$c" bash /tmp/install-agent.sh "$MGR_IP" "$name" "$groups" "$role" "$site" "$inst" t490; } \
       > "$T/install-$name.log" 2>&1; echo $? > "$T/rc-$name" ) &
 done <<<"$AGENTS"
 wait
@@ -91,10 +97,10 @@ done <<<"$AGENTS"
 
 wait_active() {
   for _ in $(seq 1 60); do
-    [ "$(mx /var/ossec/bin/agent_control -l 2>/dev/null | grep -c 'Active$')" -ge 4 ] && return 0; sleep 3
+    [ "$(mx /var/ossec/bin/agent_control -l 2>/dev/null | grep -c 'Active$')" -ge "$NAG" ] && return 0; sleep 3
   done; return 1
 }
-wait_active && ok "4 agentes inscritos e Active" || { bad "agentes não ficaram Active"; mx /var/ossec/bin/agent_control -l; exit 1; }
+wait_active && ok "$NAG agentes inscritos e Active" || { bad "agentes não ficaram Active"; mx /var/ossec/bin/agent_control -l; exit 1; }
 
 step "manager: 2.ª passagem com os IDs reais (client.keys: só as colunas id e nome saem do contentor)"
 mx sh -c "cut -d' ' -f1,2 /var/ossec/etc/client.keys" > "$T/agents"
@@ -191,6 +197,25 @@ sleep 50   # o ignore=60 da 110100 (disparou para 10.10.9.10 há pouco)
 try_alert 110900 avr-ing-01 30 2 "sen-02 é causa raiz (obs) E origem de DoS (ing-01)" web 10.10.2.51 110
 wait_in $P-resp 45 "quarentena do sen-02" "grep -qx 'pause t490:sen-02 --project site-opo' /tmp/incus-calls"
 echo "      chamadas ao incus (falso) no responder:"; docker exec $P-resp cat /tmp/incus-calls | sed 's/^/        /'
+
+step "T3 no mail-01 (Postfix + spamd reais) + firewall-drop"
+MAIL_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $P-mail)
+OBS_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $P-obs)
+SEN_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $P-sen)
+for c in $P-obs $P-sen; do docker cp "$ROOT/threats/t3-spam/smtp-poc.sh" "$c:/tmp/smtp-poc.sh"; done
+poc() { docker exec "$P-$1" bash /tmp/smtp-poc.sh "$MAIL_IP" "$2" "$3" | sed 's/^/      /'; }   # poc <cliente> <spam> <relay>
+try_alert 110304 lis-mail-01 45 2 "GTUBE aceite e marcada pelo spamd (score 1000)" poc obs 1 0
+try_alert 110300 lis-mail-01 60 1 "vaga: mais 10 GTUBE em 2 min" poc obs 10 0
+try_alert 110302 lis-mail-01 45 1 "5 relays recusados (554) a partir do obs" poc obs 0 5
+wait_in $P-mail 45 "firewall-drop executado NO mail-01: $OBS_IP bloqueado" "iptables -S | grep -q -- '-s $OBS_IP/32 -j DROP'"
+echo "      do lado do cliente, depois do bloqueio:"; docker exec $P-obs bash /tmp/smtp-poc.sh "$MAIL_IP" 1 0 | sed 's/^/        /'
+
+step "meta-correlação por relay (obs + mail-01): o sensor comprometido tenta usar o MTA"
+try_alert 110210 core-obs 30 2 "sen-01 é a causa raiz (agente obs, srcip $SEN_IP)" incident opo sen-01 sensor "$SEN_IP"
+sleep 50   # o ignore=60 da 110302 (disparou para o obs há pouco)
+try_alert 110900 lis-mail-01 45 2 "sen-01 é causa raiz (obs) E tenta relay no mail-01" poc sen 0 5
+wait_in $P-mail 45 "firewall-drop NO mail-01 também pela 110900: $SEN_IP bloqueado" "iptables -S | grep -q -- '-s $SEN_IP/32 -j DROP'"
+echo "      o bot, do lado do cliente, depois do bloqueio:"; docker exec $P-sen bash /tmp/smtp-poc.sh "$MAIL_IP" 1 0 | sed 's/^/        /'
 
 echo
 [ $FAIL -eq 0 ] && echo "RESULTADO: integração SIEM OK ✅" || echo "RESULTADO: há falhas ✗"
