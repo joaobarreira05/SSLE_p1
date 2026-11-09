@@ -20,7 +20,7 @@ Esqueleto completo em [`outline.md`](outline.md).
 
 | Figura | Ficheiro | Como se gera | Estado |
 |---|---|---|---|
-| Arquitetura | — | — | ✍️ |
+| Arquitetura | [`figures/arquitetura.png`](figures/arquitetura.png) (+ `.svg`) | `python3 report/figures/build_architecture.py` (do inventário: 4 fluxos) | ✅ |
 | Topologia de nomes | [`figures/topologia.png`](figures/topologia.png) (+ `.svg`) | `python3 report/figures/build_topology.py` (do inventário) | ✅ |
 | 3 ADTrees | [`figures/adtree-t1.png`](figures/adtree-t1.png), [`t2`](figures/adtree-t2.png), [`t3`](figures/adtree-t3.png) (+ `.svg`) | `python3 report/figures/build_adtrees.py` (notação Kordy et al.; defesas ✓ testadas / ○ planeadas) | ✅ |
 | Linha temporal de cada PoC | T1: tabela no post-mortem | — | 🟡 |
