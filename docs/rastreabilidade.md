@@ -14,7 +14,7 @@
 | R8 | FCAPS detetar→diagnosticar→correlacionar→resolver→post-mortem | detetar/correlacionar ✅ (T1: MTTD 82 s / SOC 93 s); resolver: respostas executadas por agentes reais (`siem/tests/it-agents.sh`: nft no `ing-01`, `incus pause` no responder) ✅, medição do MTTR no T490 🧩; post-mortem T1 ✅, T2/T3 ✍️ | parcial |
 | R9 | SIEM: 3 tipos de incidente + action-response | `siem/rules` (1100–1109xx): **23/23 casos** no `wazuh-analysisd` real (`siem/tests/run-logtest.sh`) + integração com 4 agentes reais (`siem/tests/it-agents.sh`, incl. meta-correlação entre agentes); respostas `siem/active-response` (`test-ar.sh`) e `siem/manager/ossec-ssle.conf` gerado do inventário | ✅ (sem lab) / 🧩 (T490) |
 | R10 | SIEM: log management | `siem/shared/*/agent.conf` por grupo (site/papel): auth.log, log de acesso *combined*, mail.log, `incidents.json`, FIM, comando de portas; labels de identidade em cada alerta (`it-agents.sh`) | ✅ (sem lab) / 🧩 (T490) |
-| R11 | Por ameaça: descrição…post-mortem | T1: `threats/t1-ddos/post-mortem.md` (6 subtítulos do slide 12 + 3 execuções medidas) ✅ · T2/T3: `threats/t2,t3/README.md` 🧩 / ✍️ | parcial |
+| R11 | Por ameaça: descrição…post-mortem | T1: `threats/t1-ddos/post-mortem.md` (6 subtítulos do slide 12 + 3 execuções medidas) ✅ · T2/T3: deteção+resposta validadas com agentes reais (`report/sections/05-2-*`, `05-3-*`; MTA real em `threats/t3-spam/`) ✅, PoC e tempos no T490 🧩 | parcial |
 | R12 | Conclusões (porque não é perfeita, futuro) | `report/` | ✍️ |
 | R13 | Relatório estilo artigo/tese | `report/` | ✍️ |
 | R14 | Demo + repositórios | este repo + `infra/demo.sh` | ✅ |

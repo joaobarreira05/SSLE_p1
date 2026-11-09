@@ -12,7 +12,7 @@ Esqueleto completo em [`outline.md`](outline.md).
 | 4. Gestão e mitigação de risco (ADTrees) | [`sections/04-risco.md`](sections/04-risco.md) | 🟡 rascunho (08/11): ativos, matriz de risco, 3 ADTrees, CAPEC/ATT&CK + mapa de controlos |
 | 5.1 Ameaça 1 — DoS/DDoS | [`sections/05-1-ameaca-dos.md`](sections/05-1-ameaca-dos.md) | 🟡 rascunho com dados de staging; falta a resposta (T490) |
 | 5.2 Ameaça 2 — botnet | [`sections/05-2-ameaca-botnet.md`](sections/05-2-ameaca-botnet.md) | 🟡 rascunho (09/11): deteção e resposta validadas com agentes reais em Docker; falta a PoC na frota do T490 |
-| 5.3 Ameaça 3 — spam | — | ✍️ depois da PoC |
+| 5.3 Ameaça 3 — spam | [`sections/05-3-ameaca-spam.md`](sections/05-3-ameaca-spam.md) | 🟡 rascunho (09/11): MTA, deteção e resposta validados com Postfix/spamd e agente reais em Docker; falta a PoC no T490 |
 | 6. Avaliação | — | ✍️ (F4: eficácia, escala, largura de banda) |
 | 7. Conclusões | — | ✍️ (as limitações já estão nos post-mortems e nos "Limites" de cada README) |
 

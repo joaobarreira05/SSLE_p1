@@ -101,9 +101,9 @@ fica só para **sensores** (110210, 110900) — e o script confirma-o no mapa da
 bash siem/tests/it-agents.sh            # ou: SSLE_IT=1 bash tools/test-all.sh   (~8 min, Docker + rede)
 ```
 
-Manager `wazuh/wazuh-manager:4.14.10` + 4 contentores Debian trixie com **`wazuh-agent` 4.14.10 real**
-(`core-obs`, `core-responder`, `avr-ing-01`, `opo-sen-01`) numa rede Docker própria, sem portas publicadas no
-host. Cada nó é instalado com **os mesmos scripts do `infra/deploy.sh`** — `siem/manager/configure-manager.sh`
+Manager `wazuh/wazuh-manager:4.14.10` + 5 contentores Debian trixie com **`wazuh-agent` 4.14.10 real**
+(`core-obs`, `core-responder`, `avr-ing-01`, `opo-sen-01` e `lis-mail-01` com **Postfix + `spamd` reais** montados
+por `threats/t3-spam/mail-setup.sh`) numa rede Docker própria, sem portas publicadas no host. Cada nó é instalado com **os mesmos scripts do `infra/deploy.sh`** — `siem/manager/configure-manager.sh`
 (2 passagens: grupos antes das inscrições, respostas depois, com os IDs do `client.keys`) e
 `siem/agent/install-agent.sh` — por isso o teste vale pelo deploy. O `incus` do responder é falso (regista os
 argumentos). Output real (09/11/2026):
@@ -125,7 +125,20 @@ argumentos). Output real (09/11/2026):
 [it] meta-correlação ENTRE agentes (obs + ing-01): uma botnet, dois impactos
   ✓ sen-02 é causa raiz (obs) E origem de DoS (ing-01) → 110900 L14 agent=avr-ing-01 srcip=10.10.2.51
   ✓ quarentena do sen-02
-RESULTADO: integração SIEM OK ✅
+[it] T3 no mail-01 (Postfix + spamd reais) + firewall-drop
+      [t3] 1 spam + 0 relay para 172.19.0.7 → 250×1
+  ✓ GTUBE aceite e marcada pelo spamd (score 1000) → 110304 L10 agent=lis-mail-01 | … (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,…)
+      [t3] 10 spam + 0 relay para 172.19.0.7 → 250×10
+  ✓ vaga: mais 10 GTUBE em 2 min → 110300 L10 agent=lis-mail-01
+      [t3] 0 spam + 5 relay para 172.19.0.7 → 554×5
+  ✓ 5 relays recusados (554) a partir do obs → 110302 L10 agent=lis-mail-01 srcip=172.19.0.3
+  ✓ firewall-drop executado NO mail-01: 172.19.0.3 bloqueado
+        [t3] 1 spam + 0 relay para 172.19.0.7 → sem-ligação×1
+[it] meta-correlação por relay (obs + mail-01): o sensor comprometido tenta usar o MTA
+  ✓ sen-01 é a causa raiz (agente obs, srcip 172.19.0.6) → 110210 L12 agent=core-obs
+  ✓ sen-01 é causa raiz (obs) E tenta relay no mail-01 → 110900 L14 agent=lis-mail-01 srcip=172.19.0.6
+  ✓ firewall-drop NO mail-01 também pela 110900: 172.19.0.6 bloqueado
+RESULTADO: integração SIEM OK ✅        (34 verificações; o desbloqueio automático, alerta 652, chega 600 s depois)
 ```
 
 ### O que a integração apanhou e o logtest não podia apanhar
@@ -137,6 +150,8 @@ RESULTADO: integração SIEM OK ✅
 | A regex que tira as respostas sem agente engolia os `<command>` | 1.ª passagem: `ERROR: (1303): Invalid command 'ssle-ratelimit'` — o `configure-manager.sh` repôs o último estado bom | blocos ancorados ao início da linha + teste de regressão no `tools/test-all.sh` |
 | FIM sem pasta para vigiar | `cannot create /etc/cron.d/ssle-marker: Directory nonexistent` | `install-agent.sh` cria `/etc/cron.d`, `/etc/systemd/system`, `/root/.ssh` nos sensores |
 | Linhas perdidas no arranque | o rsyslog só cria o `auth.log` na 1.ª mensagem e o logcollector só lê o que chega depois de abrir | `touch` dos logs de cada papel antes de arrancar o agente; o teste repete o estímulo e di-lo ("tentativa 2") |
+| A meta de um bot tapava a de **outro** durante 5 min | 110900 do `sen-02` (DoS) e, 2 min depois, nada para o relay do `sen-01` | o `ignore="300"` da 110900 é por regra: tirado (a quarentena já é deduplicada pelo `check_keys`) |
+| Com a meta, o bot **continuava a enviar** | o alerta da filha 110900 substitui o da 110302 → o `firewall-drop` da 110302 não corria (`250×1` depois da meta) | `firewall-drop` (local) ligado também à 110900: bloqueia no alvo E isola na origem |
 | Avisos transitórios tratados como erro | `wazuh-remoted: WARNING: (1246): Unable to send file 'merged.mg'` durante o restart | do `remoted` só contam `ERROR`/`CRITICAL` |
 
 🎓 **Aprende:** o logtest testa **uma** sessão de **uma** origem. Tudo o que depende de vários agentes, do
