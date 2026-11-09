@@ -69,11 +69,12 @@ networks() {
 
 # ── 3. contentores ─────────────────────────────────────────────────────────────
 launch_one() {
-  local name="$1" proj="$2" net="$3" ip="$4" exporter="$5" role="$6" site="$7" team="$8"
+  local name="$1" proj="$2" net="$3" ip="$4" exporter="$5" role="$6" site="$7" team="$8" img="${9:--}"
+  [ "$img" = - ] && img="$IMAGE"            # imagem própria só se o inventário a der (ex.: wazuh)
   if exists_inst "$name" "$proj"; then
     ok "$proj/$name (existe)"
   else
-    incus launch "$IMAGE" "$name" --project "$proj" --network "$net" >/dev/null </dev/null
+    incus launch "$img" "$name" --project "$proj" --network "$net" >/dev/null </dev/null
     incus config device set "$name" eth0 ipv4.address="$ip" --project "$proj" >/dev/null </dev/null
     ok "$proj/$name lançado em $net ($ip)"
   fi
@@ -84,9 +85,9 @@ launch_one() {
 
 containers() {
   log "contentores"
-  while IFS=$'\t' read -r name proj net ip exporter role site team deps <&3; do
+  while IFS=$'\t' read -r name proj net ip exporter role site team deps image <&3; do
     [ -z "$name" ] && continue
-    launch_one "$name" "$proj" "$net" "$ip" "$exporter" "$role" "$site" "$team"
+    launch_one "$name" "$proj" "$net" "$ip" "$exporter" "$role" "$site" "$team" "$image"
   done 3< "$BUILD/containers.tsv"
   log "à espera de rede (rota default) nos contentores…"
   while IFS=$'\t' read -r name proj net ip rest <&3; do
@@ -115,8 +116,10 @@ prov_flask() {  # serviço Flask + node_exporter
   local n="$1" p="$2" role="$3" site="$4" deps="$5"
   prov_node "$n" "$p"
   cexec "$n" "$p" sh -c "dpkg -s python3-flask >/dev/null 2>&1" || apt_in "$n" "$p" python3-flask python3
-  cexec "$n" "$p" mkdir -p /opt/ssle
+  cexec "$n" "$p" mkdir -p /opt/ssle /var/log/ssle
   cpush "$ROOT/services/app.py" "$n/opt/ssle/app.py" "$p"
+  # serviços expostos (T1): log de acesso "combined" que o agente Wazuh lê (siem/shared/role-<papel>/agent.conf)
+  local accesslog=""; case "$role" in ingestion|web) accesslog="SSLE_ACCESS_LOG=/var/log/ssle/access.log" ;; esac
   # dependências -> "nome=ip:porta" a partir do grafo/inventário (node_exporter:9100)
   # sensores: enviam leituras à 1.ª dependência (a ingestão), em :8000/ingest
   local depenv="" upstream=""
@@ -134,7 +137,7 @@ prov_flask() {  # serviço Flask + node_exporter
 Description=SSLE service ($role)
 After=network-online.target
 [Service]
-Environment=SSLE_ROLE=$role SSLE_SITE=$site SSLE_INSTANCE=$n SSLE_DEPS=$depenv SSLE_UPSTREAM=$upstream PORT=8000
+Environment=SSLE_ROLE=$role SSLE_SITE=$site SSLE_INSTANCE=$n SSLE_DEPS=$depenv SSLE_UPSTREAM=$upstream PORT=8000 $accesslog
 ExecStart=/usr/bin/python3 /opt/ssle/app.py
 Restart=always
 [Install]
@@ -297,7 +300,7 @@ chown -R grafana:grafana /var/lib/grafana/dashboards && systemctl daemon-reload 
 provision() {
   [ "${SSLE_SKIP_APPS:-0}" = 1 ] && { warn "SSLE_SKIP_APPS=1 — salto o provisionamento"; return; }
   log "provisionamento (apt + configs)"
-  while IFS=$'\t' read -r name proj net ip exporter role site team deps <&3; do
+  while IFS=$'\t' read -r name proj net ip exporter role site team deps _image <&3; do
     [ -z "$name" ] && continue
     case "$exporter" in
       global) prov_obs "$name" "$proj" ;;
@@ -308,9 +311,108 @@ provision() {
   done 3< "$BUILD/containers.tsv"
 }
 
+# ── 5. SIEM (só no full): Wazuh all-in-one, agentes por grupo, respostas ─────────────────────────────────
+# Os passos DENTRO dos contentores são os mesmos scripts que o siem/tests/it-agents.sh prova em Docker
+# (manager e agentes reais): siem/manager/configure-manager.sh e siem/agent/install-agent.sh.
+WAZUH_VERSION=""
+siem_node() { awk -F'\t' -v r="$1" '$6 == r {print $1 "\t" $2 "\t" $4; exit}' "$BUILD/containers.tsv"; }
+
+siem_bundle() {  # siem_bundle <ficheiro "id nome"> → build/siem (o pacote que o configure-manager.sh consome)
+  local out="$BUILD/siem"; rm -rf "$out"; mkdir -p "$out"
+  cp -r "$ROOT/siem/rules" "$ROOT/siem/decoders" "$ROOT/siem/lists" "$ROOT/siem/shared" "$out/"
+  cp "$ROOT/siem/manager/apply.py" "$out/"
+  cut -f5 "$BUILD/wazuh-agents.tsv" | tr ',' '\n' | sort -u > "$out/groups.txt"
+  python3 "$ROOT/infra/inventory.py" wazuh-manager --host "$HOST_LABEL" --agents "$1" > "$out/ossec-ssle.conf"
+}
+
+siem_configure() {  # siem_configure <ficheiro "id nome">
+  local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node siem)"
+  siem_bundle "$1"
+  cexec "$n" "$p" rm -rf /tmp/siem
+  incus file push -r "$BUILD/siem" "$n/tmp/" --project "$p" --quiet
+  cpush "$ROOT/siem/manager/configure-manager.sh" "$n/tmp/configure-manager.sh" "$p"
+  cexec "$n" "$p" bash /tmp/configure-manager.sh /tmp/siem
+}
+
+siem_manager() {  # Wazuh all-in-one como na aula 6 (manager + indexer + dashboard), ~10 min na 1.ª vez
+  local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node siem)"
+  [ -n "$n" ] || { warn "inventário sem elemento role=siem — salto o SIEM"; return 1; }
+  if ! cexec "$n" "$p" sh -c 'dpkg -s wazuh-manager >/dev/null 2>&1'; then
+    log "  wazuh-install.sh -a -i em $p/$n (manager+indexer+dashboard; ~10 min)"
+    apt_in "$n" "$p" curl ca-certificates
+    cexec "$n" "$p" sh -c 'cd /root && curl -fsSO https://packages.wazuh.com/4.14/wazuh-install.sh && bash wazuh-install.sh -a -i'
+  fi
+  # passwords GERADAS pelo instalador → build/secrets (fora do Git), 0600; ficam também no tar, só root, no contentor
+  local pw="$BUILD/secrets/wazuh-passwords.txt"
+  [ -s "$pw" ] || (umask 077; mkdir -p "$BUILD/secrets"
+    cexec "$n" "$p" tar -O -xf /root/wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt > "$pw")
+  WAZUH_VERSION="$(cexec "$n" "$p" dpkg-query -W -f='${Version}' wazuh-manager)"
+  ok "  wazuh-manager $WAZUH_VERSION em $ip (passwords: build/secrets/wazuh-passwords.txt; dashboard: ssh -L 8443:$ip:443 …)"
+}
+
+siem_agents() {  # um agente por elemento (menos o próprio SIEM), com o grupo do site e o do papel
+  local wip; wip="$(siem_node siem | cut -f3)"
+  while IFS=$'\t' read -r agent proj inst _ip groups <&3; do
+    [ -z "$agent" ] && continue
+    local role; role="$(awk -F'\t' -v n="$inst" -v p="$proj" '$1 == n && $2 == p {print $6}' "$BUILD/containers.tsv")"
+    cexec "$inst" "$proj" sh -c 'rm -rf /tmp/ssle-ar && mkdir -p /tmp/ssle-ar'
+    cpush "$ROOT/siem/agent/install-agent.sh" "$inst/tmp/install-agent.sh" "$proj"
+    case "$role" in
+      ingestion|web) cpush "$ROOT/siem/active-response/ssle-ratelimit.sh" "$inst/tmp/ssle-ar/ssle-ratelimit.sh" "$proj" ;;
+      responder) cpush "$ROOT/siem/active-response/ssle-quarantine.sh" "$inst/tmp/ssle-ar/ssle-quarantine.sh" "$proj"
+                 cpush "$BUILD/wazuh-agents.tsv" "$inst/tmp/ssle-fleet.tsv" "$proj" ;;
+    esac
+    cexec "$inst" "$proj" env WAZUH_AGENT_VERSION="$WAZUH_VERSION" \
+      bash /tmp/install-agent.sh "$wip" "$agent" "$groups" "$role" "${agent%%-*}" "$inst" "$HOST_LABEL"
+  done 3< "$BUILD/wazuh-agents.tsv"
+}
+
+siem_responder() {  # API do Incus só na bridge do core + certificado RESTRITO aos site-* (menor privilégio)
+  local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node responder)"
+  [ -n "$n" ] || return 0
+  local want; want="$(awk -F'\t' '$1 == "net-core" {print $3}' "$BUILD/networks.tsv"):8443"
+  local addr; addr="$(incus config get core.https_address </dev/null)"
+  if [ -z "$addr" ]; then
+    incus config set core.https_address "$want" </dev/null; ok "  API do Incus só em $want (bridge do core)"
+  elif [ "$addr" != "$want" ]; then
+    warn "core.https_address já é '$addr' (não fui eu: não mexo) — quarentena por configurar"; return 0
+  fi
+  cexec "$n" "$p" sh -c 'command -v incus >/dev/null' || apt_in "$n" "$p" incus-client
+  if ! cexec "$n" "$p" sh -c 'incus remote list --format csv 2>/dev/null | grep -q "^t490,"'; then
+    incus config trust revoke-token responder </dev/null >/dev/null 2>&1 || true      # token pendente antigo
+    local tok; tok="$(incus config trust add responder --restricted --projects site-avr,site-opo,site-lis </dev/null | tail -1)"
+    cexec "$n" "$p" incus remote add t490 "$tok" >/dev/null
+  fi
+  # prova do menor privilégio: vê os sites, NÃO vê o core. Se vir o core → retira o certificado (falha fechada)
+  if cexec "$n" "$p" incus list t490: --project site-opo --format csv >/dev/null 2>&1; then ok "  responder vê site-opo"
+  else warn "responder não chega à API do Incus (quarentena não vai funcionar)"; fi
+  if cexec "$n" "$p" incus list t490: --project core --format csv >/dev/null 2>&1; then
+    warn "o certificado do responder VÊ o projeto core — a retirá-lo (falha fechada)"
+    local fp; fp="$(incus config trust list --format csv </dev/null | awk -F, '$2 == "responder" {print $4}')"
+    [ -n "$fp" ] && incus config trust remove "$fp" </dev/null
+  else ok "  responder NÃO vê o projeto core (certificado restrito aos site-*)"; fi
+}
+
+siem() {
+  [ "$PROFILE" = full ] || return 0
+  [ "${SSLE_SKIP_APPS:-0}" = 1 ] && return 0
+  log "SIEM (Wazuh) — manager, agentes por grupo, respostas"
+  python3 "$ROOT/infra/inventory.py" wazuh-agents --host "$HOST_LABEL" > "$BUILD/wazuh-agents.tsv"
+  siem_manager || return 0
+  : > "$BUILD/wazuh-agent-ids.txt"
+  siem_configure "$BUILD/wazuh-agent-ids.txt"           # 1.ª passagem: regras/grupos ANTES das inscrições
+  siem_agents
+  local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node siem)"
+  # só as colunas id e nome do client.keys saem do contentor (as chaves ficam lá)
+  cexec "$n" "$p" sh -c "cut -d' ' -f1,2 /var/ossec/etc/client.keys" > "$BUILD/wazuh-agent-ids.txt"
+  siem_configure "$BUILD/wazuh-agent-ids.txt"           # 2.ª passagem: respostas com os IDs reais
+  siem_responder
+  ok "  SIEM: $(grep -c . "$BUILD/wazuh-agent-ids.txt") agentes inscritos"
+}
+
 main() {
   log "=== SSLE P1 deploy (profile=$PROFILE, image=$IMAGE, host=$HOST_LABEL) ==="
-  render; projects; networks; containers; provision
+  render; projects; networks; containers; provision; siem
   log "=== concluído. 'incus list --all-projects' para ver a frota. ==="
 }
 main "$@"

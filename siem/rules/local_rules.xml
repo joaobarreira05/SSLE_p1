@@ -43,24 +43,25 @@
     <if_sid>31108</if_sid>
     <description>SSLE T1: pedido web normal (base de contagem das 110100/110101; não gera alerta).</description>
   </rule>
+  <!-- ignore=60 é por REGRA (não por origem): uma origem por minuto; várias origens → 110101/110110 -->
   <rule id="110100" level="10" frequency="100" timeframe="10" ignore="60">
     <if_matched_sid>110105</if_matched_sid>
     <same_source_ip />
     <description>SSLE T1: ≥100 pedidos web em 10 s da mesma origem $(srcip) (possível DoS).</description>
-    <mitre><id>T1498</id></mitre>
+    <mitre><id>T1499.003</id></mitre>
     <group>ssle_impact,</group>
   </rule>
   <rule id="110101" level="12" frequency="300" timeframe="10" ignore="60">
     <if_matched_sid>110105</if_matched_sid>
     <description>SSLE T1: ≥300 pedidos web em 10 s no total (possível DDoS distribuído).</description>
-    <mitre><id>T1498</id></mitre>
+    <mitre><id>T1499.003</id></mitre>
   </rule>
   <rule id="110110" level="12">
     <if_sid>110001</if_sid>
     <!-- OS_Regex (o motor por omissão) não tem grupos nem [..]: alternância com | entre padrões -->
     <field name="root_cause_role">^ingestion$|^web$</field>
     <description>SSLE T1: causa raiz num serviço exposto ($(root_cause_instance), $(root_cause_role)) — limitar débito, NÃO isolar.</description>
-    <mitre><id>T1498</id></mitre>
+    <mitre><id>T1499.003</id></mitre>
   </rule>
 </group>
 
@@ -120,7 +121,7 @@
     <if_matched_sid>3301</if_matched_sid>
     <same_source_ip />
     <description>SSLE T3: $(srcip) a tentar usar o MTA como relay (≥5 rejeições em 60 s).</description>
-    <mitre><id>T1114</id></mitre>
+    <mitre><id>T1496</id></mitre>
     <group>attack,ssle_impact,</group>
   </rule>
   <rule id="110310" level="10">
@@ -135,11 +136,14 @@
 <group name="ssle,meta,attack,">
   <!-- "Uma botnet, dois impactos": um impacto (DoS/relay/força bruta) cuja ORIGEM é um elemento que o
        correlator já apontou como causa raiz comprometida, nos últimos 15 min. Padrão da 40112:
-       evento atual num grupo + evento anterior noutro grupo + mesmo srcip. -->
+       evento atual num grupo + evento anterior noutro grupo + mesmo srcip.
+       global_frequency: no manager o estado das compostas é POR AGENTE; sem isto a 110210 (agente obs) e o
+       impacto (agente ing-01 / mail-01) nunca se encontram — o logtest não o mostra, o it-agents.sh sim. -->
   <rule id="110900" level="14" timeframe="900" ignore="300">
     <if_group>ssle_impact</if_group>
     <if_matched_group>ssle_botnet_host</if_matched_group>
     <same_source_ip />
+    <global_frequency />
     <description>SSLE meta: $(srcip) é causa raiz comprometida E origem de um impacto — "uma botnet, dois impactos".</description>
   </rule>
 </group>

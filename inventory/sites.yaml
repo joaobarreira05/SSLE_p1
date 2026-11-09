@@ -45,7 +45,8 @@ sites:
 # ─── Elementos ───────────────────────────────────────────────────────────────
 # campos: name, site(ou 'core'), role, ip, exporter(node|flask|global|registry|none),
 #         (flask + role sensor = envia leituras à 1.ª dependência, em :8000/ingest)
-#         deps(lista de instâncias locais), staging(true=entra na fatia reduzida)
+#         deps(lista de instâncias locais), staging(true=entra na fatia reduzida),
+#         image(opcional: imagem Incus só deste elemento; por omissão a SSLE_IMAGE do deploy)
 elements:
 
   # ---- core / SOC ----
@@ -60,6 +61,7 @@ elements:
     role: siem
     ip: 10.10.0.30
     exporter: node
+    image: images:ubuntu/22.04   # o caminho provado na aula 6 (wazuh-install.sh -a -i, 4.14)
     staging: false            # pesado (4-6 GiB): só no T490
   - name: responder
     site: core

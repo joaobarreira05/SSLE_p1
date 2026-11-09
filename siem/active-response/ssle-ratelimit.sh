@@ -5,8 +5,11 @@
 # inet ssle_rl — não toca em mais nada da firewall). Os sensores legítimos enviam ~0,2 pedidos/s; o
 # limite (20/s por origem) só morde quem inunda.
 #   110100 (srcip conhecido)  → limita SÓ esse srcip              (location local)
-#   110110 (correlator: causa raiz = este serviço, sem srcip) → limita TODAS as origens, cada uma
-#          com o seu próprio balde (defined-agent; o script confirma que o alvo é ele próprio)
+#   110101 (volume total, DDoS distribuído) → limita TODAS as origens, cada uma com o seu balde (local)
+#   110110 (correlator: causa raiz = este serviço, sem srcip) → idem (defined-agent; o script confirma
+#          que o alvo é ele próprio)
+# Porquê o modo "todas": o ignore=60 da 110100 é POR REGRA no manager (provado no it-agents.sh), por isso
+# ela só apanha UMA origem por minuto; contra várias origens quem atua é a 110101/110110.
 # Reversível: "delete" (o execd manda-o ao fim do <timeout>) tira a origem; além disso cada elemento do
 # set expira sozinho (rede de segurança se o delete se perder). Tudo registado em active-responses.log.
 # Protocolo Wazuh 4.x: JSON no stdin; num "add" pergunta check_keys ao execd e só segue com "continue".
@@ -28,8 +31,8 @@ rule=$(jq -r '.parameters.alert.rule.id // empty' <<<"$INPUT")
 ip=$(jq -r '.parameters.alert.data.srcip // empty' <<<"$INPUT")
 target=$(jq -r '.parameters.alert.data.root_cause_instance // empty' <<<"$INPUT")
 
-if [ "$rule" = 110110 ] || [ -z "$ip" ]; then
-  # incidente do correlator: o srcip é o da causa raiz (este serviço), não o do atacante
+if [ "$rule" = 110110 ] || [ "$rule" = 110101 ] || [ -z "$ip" ]; then
+  # 110110: o srcip é o da causa raiz (este serviço), não o do atacante; 110101: é só o do último pedido
   if [ -n "$target" ] && [ "$target" != "$ME" ]; then log "rule=$rule: alvo $target não sou eu — nada feito"; exit 0; fi
   key="0.0.0.0/0"; what="todas as origens (balde por origem)"
 else

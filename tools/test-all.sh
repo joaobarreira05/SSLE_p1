@@ -4,6 +4,7 @@
 #   bash tools/fetch-tools.sh     # 1.ª vez: promtool-2/-3 + amtool em build/tools (sha256 conferido)
 #   bash tools/test-all.sh        # sai ≠ 0 se alguma coisa falhar
 # Opcional: SSLE_LOGTEST=1 também corre o wazuh-logtest (siem/tests/run-logtest.sh, precisa de Docker).
+#           SSLE_IT=1 também corre a integração com agentes reais (siem/tests/it-agents.sh, Docker + rede, ~8 min).
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
 export LC_ALL=C
@@ -51,7 +52,7 @@ run "dashboards gerados = build_dashboards.py (sem edições à mão)" sh -c "cd
 echo "[3] Python"
 run "correlator: python3 -m unittest correlator/test_rca.py" python3 -m unittest -q "$ROOT/correlator/test_rca.py"
 run "registry: python3 -m unittest registry/test_core.py" python3 -m unittest -q "$ROOT/registry/test_core.py"
-for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/monitoring/grafana/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py "$ROOT"/siem/*/*.py; do
+for f in "$ROOT"/correlator/*.py "$ROOT"/registry/*.py "$ROOT"/monitoring/grafana/*.py "$ROOT"/services/*.py "$ROOT"/infra/*.py "$ROOT"/threats/*/*.py "$ROOT"/siem/*/*.py "$ROOT"/report/figures/*.py; do
   [ -f "$f" ] && run "py_compile ${f#"$ROOT"/}" python3 -m py_compile "$f"
 done
 echo "[4] shell"
@@ -64,11 +65,17 @@ if command -v shellcheck >/dev/null 2>&1; then SC=(shellcheck); elif command -v 
   env LC_ALL=C.UTF-8 sh -c 'cd "$1" && shift && "$@"' _ "$ROOT" "${SC[@]}" -S warning "${SH[@]#"$ROOT"/}"
 echo "[5] SIEM sem Docker"
 run "active-response: siem/active-response/test-ar.sh (incus falso + nft num namespace próprio)" bash "$ROOT/siem/active-response/test-ar.sh"
+run "ossec-ssle.conf SEM agentes inscritos: só saem os defined-agent, os 2 <command> ficam" \
+  sh -c ": > '$tmp/none' && test \"\$(python3 '$ROOT/infra/inventory.py' wazuh-manager --host t490 --agents '$tmp/none' 2>/dev/null | grep -c '<name>ssle-')\" = 2"
 run "ossec-ssle.conf renderiza a partir do inventário (sem marcadores por resolver)" \
   sh -c "printf '001 core-responder\n002 avr-ing-01\n003 lis-web-01\n' > '$tmp/agents' && python3 '$ROOT/infra/inventory.py' wazuh-manager --host t490 --agents '$tmp/agents' > /dev/null"
 if [ "${SSLE_LOGTEST:-0}" = 1 ]; then
   echo "[6] Wazuh"
   run "wazuh-logtest (siem/tests/run-logtest.sh)" bash "$ROOT/siem/tests/run-logtest.sh"
+fi
+if [ "${SSLE_IT:-0}" = 1 ]; then
+  echo "[7] Wazuh com agentes reais"
+  run "integração (siem/tests/it-agents.sh)" bash "$ROOT/siem/tests/it-agents.sh"
 fi
 echo
 [ $FAIL -eq 0 ] && echo "RESULTADO: tudo verde ✅" || echo "RESULTADO: há falhas ✗"

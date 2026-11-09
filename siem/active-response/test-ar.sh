@@ -85,6 +85,8 @@ rl "$(alert delete 110100 '{"srcip":"127.0.0.1"}')"; echo "del_ip=$(elems)"
 echo "after_del=$(burst)"
 rl "$(alert add 110110 '{"root_cause_instance":"web-01","srcip":"10.10.3.60"}')" "$CONT"; echo "other_target=$(elems)"
 rl "$(alert add 110110 '{"root_cause_instance":"ing-01","srcip":"10.10.1.30"}')" "$CONT"; echo "all=$(elems)"
+rl "$(alert delete 110110 '{"root_cause_instance":"ing-01"}')"
+rl "$(alert add 110101 '{"srcip":"10.10.9.99"}')" "$CONT"; echo "ddos=$(elems)"
 rl "$(alert add 110100 '{"srcip":"10.0.0.1; reboot"}')" "$CONT"; echo "inject=$(elems)"
 kill $srv 2>/dev/null
 EOF
@@ -101,6 +103,8 @@ EOF
   [ "$(v del_ip)" = "(vazio)" ] && [ "$after" = 40 ] && ok "delete → set vazio e 40/40 outra vez" || bad "delete: $(v del_ip), $after/40"
   [ "$(v other_target)" = "(vazio)" ] && ok "110110 para web-01 no ing-01 → ignorado" || bad "other_target: $(v other_target)"
   grep -q '0.0.0.0/0' <<<"$(v all)" && ok "110110 para ing-01 → todas as origens (balde por origem)" || bad "all: $(v all)"
+  { grep -q '0.0.0.0/0' <<<"$(v ddos)" && ! grep -q '10.10.9.99' <<<"$(v ddos)"; } \
+    && ok "110101 (DDoS) → todas as origens, não só o IP do último pedido" || bad "ddos: $(v ddos)"
   grep -q 'reboot' <<<"$out$(cat "$T/rl.log" 2>/dev/null | grep -v 'recusado')" && bad "srcip injetado passou" \
     || ok "srcip injetado ('10.0.0.1; reboot') recusado"
   echo "    active-responses.log:"; sed 's/^/      /' "$T/rl.log"

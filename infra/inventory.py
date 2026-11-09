@@ -187,6 +187,7 @@ def build(host, staging):
             "ip": e.get("ip"),
             "exporter": e.get("exporter", "node"),
             "deps": e.get("deps") or [],
+            "image": e.get("image") or "",            # vazio = SSLE_IMAGE do deploy
             "project": project_name(site),
             "network": net_name(site),
             "team": teams.get(site, "soc"),
@@ -350,7 +351,10 @@ def wazuh_manager_conf(model, agents):
                 return ""
             block = block.replace("@@AGENT_ID:%s@@" % name, agents[name])
         return block
-    text = re.sub(r"[ \t]*(<!--[^\n]*-->\n[ \t]*)?<active-response>.*?</active-response>\n?", resolve, text, flags=re.S)
+    # blocos ancorados ao início da linha: o comentário do cabeçalho também diz "<active-response>" e uma
+    # regex solta começava a casar aí e engolia os <command> (apanhado pelo siem/tests/it-agents.sh)
+    text = re.sub(r"^(?:[ \t]*<!--[^\n]*-->\n)?[ \t]*<active-response>\n.*?^[ \t]*</active-response>\n",
+                  resolve, text, flags=re.S | re.M)
     if "@@" in text:
         raise SystemExit("ossec-ssle.conf: marcadores por resolver: %s" % sorted(set(re.findall(r"@@[^@]+@@", text))))
     return text
@@ -404,12 +408,12 @@ def render(model, out):
             fh.write("\t".join(str(x) for x in
                      [n["bridge"], n["subnet"], n["gateway"], n["dns"]]) + "\n")
 
-    # containers.tsv : name project network ip exporter role site team deps-csv
+    # containers.tsv : name project network ip exporter role site team deps-csv image(-=default)
     with open(os.path.join(out, "containers.tsv"), "w") as fh:
         for e in model["elements"]:
             fh.write("\t".join(str(x) for x in [
                 e["name"], e["project"], e["network"], e["ip"], e["exporter"],
-                e["role"], e["site"], e["team"], ",".join(e["deps"]) or "-",
+                e["role"], e["site"], e["team"], ",".join(e["deps"]) or "-", e["image"] or "-",
             ]) + "\n")
 
     obs = obs_element(model)
