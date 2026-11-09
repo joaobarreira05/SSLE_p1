@@ -13,7 +13,7 @@ Esqueleto completo em [`outline.md`](outline.md).
 | 5.1 Ameaça 1 — DoS/DDoS | [`sections/05-1-ameaca-dos.md`](sections/05-1-ameaca-dos.md) | 🟡 rascunho com dados de staging; falta a resposta (T490) |
 | 5.2 Ameaça 2 — botnet | [`sections/05-2-ameaca-botnet.md`](sections/05-2-ameaca-botnet.md) | 🟡 rascunho (09/11): deteção e resposta validadas com agentes reais em Docker; falta a PoC na frota do T490 |
 | 5.3 Ameaça 3 — spam | [`sections/05-3-ameaca-spam.md`](sections/05-3-ameaca-spam.md) | 🟡 rascunho (09/11): MTA, deteção e resposta validados com Postfix/spamd e agente reais em Docker; falta a PoC no T490 |
-| 6. Avaliação | — | ✍️ (F4: eficácia, escala, largura de banda) |
+| 6. Avaliação | [`sections/06-avaliacao.md`](sections/06-avaliacao.md) | 🟡 rascunho (09/11): eficácia (T1, T2), correlação, validação do SIEM; falta F4 (escala, banda) no T490 |
 | 7. Conclusões | [`sections/07-conclusoes.md`](sections/07-conclusoes.md) | 🟡 rascunho (09/11): o que fica, 8 limitações, trabalho futuro; faltam os números do T490 |
 
 ## Figuras (obrigatórias no plano §8)
