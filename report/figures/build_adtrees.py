@@ -59,7 +59,7 @@ TREES = {
                cm=D("FIM em tempo real (role-sensor) → 110201")),
              A("Comando e controlo",
                A("Beaconing periódico",
-                 cm=D("Anomalia no sensor → correlator → 110210 → quarentena (incus pause)",
+                 cm=D("OutboundAnomaly (z robusto) → correlator → 110210 → quarentena (incus pause)",
                       cm=A("C2 lento, em 443, com jitter",
                            cm=D("Meta 110900: causa raiz E origem de impacto", state="✓")))),
                A("Porta nova à escuta (backdoor)",

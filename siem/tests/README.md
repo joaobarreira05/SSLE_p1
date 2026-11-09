@@ -36,7 +36,7 @@ wazuh-analysisd: INFO: Total rules enabled: '8468'
 (qualquer carácter), `^`, `$` e `|` entre padrões inteiros — **sem** `[...]`, `(...)` nem *backtracking*. Para
 mais do que isso: `type="pcre2"` no `<field>`/`<regex>`/`<match>`.
 
-## 2. Casos de regra — `cases.json` (23 casos, com asserções)
+## 2. Casos de regra — `cases.json` (25 casos, com asserções)
 
 O `run-logtest.sh` corre cada caso numa **sessão** do logtest (o estado de `frequency`/`if_matched_*` acumula-se
 como no manager a sério) e compara regra, nível, decoder e campos. Há casos **negativos** (o que NÃO pode
@@ -52,7 +52,7 @@ alertar) ao lado de cada positivo — sem eles, uma regra que dispara sempre pas
   ✓ meta: sensor comprometido E origem de relay → uma botnet, dois impactos — regra 110900
   ✓ meta: relay de OUTRA origem não correlaciona com o sensor — regra 110302
   …
-23/23 casos passaram
+25/25 casos passaram      (desde 09/11: + vaga só com GTUBE; + sensor vítima da T1 SEM quarentena → 110211)
 ```
 
 ### Defeitos que os casos apanharam (08/11/2026, manager 4.14.10 real)
