@@ -25,5 +25,5 @@ Esqueleto completo em [`outline.md`](outline.md).
 | 3 ADTrees | [`figures/adtree-t1.png`](figures/adtree-t1.png), [`t2`](figures/adtree-t2.png), [`t3`](figures/adtree-t3.png) (+ `.svg`) | `python3 report/figures/build_adtrees.py` (notação Kordy et al.; defesas ✓ testadas / ○ planeadas) | ✅ |
 | Linha temporal de cada PoC | T1: tabela no post-mortem | — | 🟡 |
 | Grafana durante uma PoC | [`figures/t1-replay-run1-dashboard.png`](figures/t1-replay-run1-dashboard.png) | `bash monitoring/grafana/replay-t1.sh 1` (**replay** de staging) | 🟡 (a definitiva sai do T490) |
-| Largura de banda (federation) | — | F4 | ✍️ |
+| Largura de banda (federation) | tabela em [`../evaluation/federation-bytes.md`](../evaluation/federation-bytes.md) e §6.4 | `bash evaluation/federation-bytes.sh` (Prometheus + exporters reais, N = 10/25/50) | ✅ (tabela; gráfico opcional) |
 | Tabela de escala (10/25/50) | — | F4 | ✍️ |
