@@ -95,10 +95,57 @@ frota real do inventário; `ssle-ratelimit` com **nft real** num namespace de re
 quarentena seria fazer o DoS pelo atacante. A quarentena (`incus pause`, preserva o estado para a forense)
 fica só para **sensores** (110210, 110900) — e o script confirma-o no mapa da frota, não no que vem no alerta.
 
-## 4. O que só se testa no lab (T490, perfil full)
+## 4. Integração com agentes reais — `it-agents.sh` (sem o lab Incus)
 
-- **110201 (FIM):** o logtest não injeta eventos de syscheck. No lab: `bash threats/t2-botnet/run.sh sen-01
-  site-opo` cria `/etc/cron.d/ssle-marker` → alerta 110201 no `alerts.json` do manager.
-- **Respostas a sério:** `active-responses.log` no `core/responder` (`incus pause`) e no `ing-01` (`nft list
-  table inet ssle_rl`), e o `delete` ao fim do `timeout`.
-- **`white_list`:** confirmar que um alerta com `srcip` do core não gera resposta.
+```bash
+bash siem/tests/it-agents.sh            # ou: SSLE_IT=1 bash tools/test-all.sh   (~8 min, Docker + rede)
+```
+
+Manager `wazuh/wazuh-manager:4.14.10` + 4 contentores Debian trixie com **`wazuh-agent` 4.14.10 real**
+(`core-obs`, `core-responder`, `avr-ing-01`, `opo-sen-01`) numa rede Docker própria, sem portas publicadas no
+host. Cada nó é instalado com **os mesmos scripts do `infra/deploy.sh`** — `siem/manager/configure-manager.sh`
+(2 passagens: grupos antes das inscrições, respostas depois, com os IDs do `client.keys`) e
+`siem/agent/install-agent.sh` — por isso o teste vale pelo deploy. O `incus` do responder é falso (regista os
+argumentos). Output real (09/11/2026):
+
+```text
+[it] T2 no sensor (opo-sen-01)
+  ✓ força bruta SSH (logger -t sshd, …) → 110200 L11 agent=opo-sen-01 labels=host=t490,instance=sen-01,region=pt,role=sensor,site=opo srcip=10.10.99.66 (tentativa 2)
+  ✓ FIM em tempo real: marcador de persistência em /etc/cron.d → 110201 L12 agent=opo-sen-01 … path=/etc/cron.d/ssle-marker
+  ✓ porta nova à escuta (31337) via comando remoto do agent.conf → 110202 L10 agent=opo-sen-01
+[it] T1 no ing-01: white_list primeiro, depois a resposta (o ignore=60 da 110100 é por regra)
+  ✓ o padrão de DoS vindo do prom-01 (10.10.1.10, na white_list) → 110100 L10 agent=avr-ing-01 srcip=10.10.1.10
+  ✓ white_list: 10.10.1.10 alertou mas NÃO foi limitado
+  ✓ 100 pedidos da mesma origem em 10 s (10.10.9.10) → 110100 L10 agent=avr-ing-01 srcip=10.10.9.10
+  ✓ resposta executada NO ing-01: 10.10.9.10 no set nft inet ssle_rl limited
+      2026-11-09T08:29:13+00:00 ssle-ratelimit[ing-01]: RATELIMIT add rule=110100 origem 10.10.9.10 → 20 lig./s (burst 40) na porta 8000
+[it] T2 → quarentena (correlator no obs → 110210 → ssle-quarantine no responder)
+  ✓ incidente do correlator: sensor sen-01 é a causa raiz → 110210 L12 agent=core-obs srcip=10.10.2.50
+  ✓ resposta executada NO responder: incus pause t490:sen-01 --project site-opo
+[it] meta-correlação ENTRE agentes (obs + ing-01): uma botnet, dois impactos
+  ✓ sen-02 é causa raiz (obs) E origem de DoS (ing-01) → 110900 L14 agent=avr-ing-01 srcip=10.10.2.51
+  ✓ quarentena do sen-02
+RESULTADO: integração SIEM OK ✅
+```
+
+### O que a integração apanhou e o logtest não podia apanhar
+
+| Defeito | Como se viu | Correção |
+|---|---|---|
+| A 110900 **nunca** correlacionava entre agentes | 110210 (agente `obs`) e 110100 (agente `ing-01`) com o mesmo `srcip`, 6 s de distância, e nada | no manager o estado das compostas é **por agente**: `<global_frequency/>` na 110900 (provado ao vivo) |
+| O `ignore="60"` da 110100 é **por regra**, não por origem | a 2.ª origem em menos de 60 s não alertou (no logtest alertava: lá era o contador a esvaziar-se) | a 110101 (volume total) passou a ativar o modo "todas as origens" do `ssle-ratelimit` |
+| A regex que tira as respostas sem agente engolia os `<command>` | 1.ª passagem: `ERROR: (1303): Invalid command 'ssle-ratelimit'` — o `configure-manager.sh` repôs o último estado bom | blocos ancorados ao início da linha + teste de regressão no `tools/test-all.sh` |
+| FIM sem pasta para vigiar | `cannot create /etc/cron.d/ssle-marker: Directory nonexistent` | `install-agent.sh` cria `/etc/cron.d`, `/etc/systemd/system`, `/root/.ssh` nos sensores |
+| Linhas perdidas no arranque | o rsyslog só cria o `auth.log` na 1.ª mensagem e o logcollector só lê o que chega depois de abrir | `touch` dos logs de cada papel antes de arrancar o agente; o teste repete o estímulo e di-lo ("tentativa 2") |
+| Avisos transitórios tratados como erro | `wazuh-remoted: WARNING: (1246): Unable to send file 'merged.mg'` durante o restart | do `remoted` só contam `ERROR`/`CRITICAL` |
+
+🎓 **Aprende:** o logtest testa **uma** sessão de **uma** origem. Tudo o que depende de vários agentes, do
+tempo real (`ignore`, recargas) ou do sistema de ficheiros do agente só aparece com agentes a sério.
+
+## 5. O que só se testa no lab (T490, perfil full)
+
+- **`incus pause` a sério** (o certificado restrito do `responder`, `infra/deploy.sh` → `siem_responder`) e o
+  `delete` ao fim do `timeout` (600 s / 300 s).
+- **A cadeia Prometheus → correlator → Wazuh** com anomalias reais (no `it-agents.sh` a linha do correlator é
+  escrita à mão) e os tempos (MTTD/MTTR) da T1 com resposta.
+- **`wazuh-install.sh -a -i`** (manager + indexer + dashboard) no contentor `core/wazuh` (ubuntu/22.04).
