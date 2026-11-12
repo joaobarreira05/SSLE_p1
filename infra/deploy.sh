@@ -359,6 +359,12 @@ siem_manager() {  # Wazuh all-in-one como na aula 6 (manager + indexer + dashboa
   local pw="$BUILD/secrets/wazuh-passwords.txt"
   [ -s "$pw" ] || (umask 077; mkdir -p "$BUILD/secrets"
     cexec "$n" "$p" tar -O -xf /root/wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt > "$pw")
+  # LimitNOFILE do serviço systemd (65536 por omissão) < analysisd.rlimit_nofile (458752) → EPERM em contentores
+  cexec "$n" "$p" sh -c 'mkdir -p /etc/systemd/system/wazuh-manager.service.d && cat > /etc/systemd/system/wazuh-manager.service.d/nofile.conf <<UNIT
+[Service]
+LimitNOFILE=524288
+UNIT
+systemctl daemon-reload'
   WAZUH_VERSION="$(cexec "$n" "$p" dpkg-query -W -f='${Version}' wazuh-manager)"
   ok "  wazuh-manager $WAZUH_VERSION em $ip (passwords: build/secrets/wazuh-passwords.txt; dashboard: ssh -L 8443:$ip:443 …)"
 }
@@ -397,11 +403,12 @@ siem_responder() {  # API do Incus só na bridge do core + certificado RESTRITO 
     cexec "$n" "$p" incus remote add t490 "$tok" >/dev/null
   fi
   # prova do menor privilégio: vê os sites, NÃO vê o core. Se vir o core → retira o certificado (falha fechada)
-  if cexec "$n" "$p" incus list t490: --project site-opo --format csv >/dev/null 2>&1; then ok "  responder vê site-opo"
+  if cexec "$n" "$p" incus list t490: --project site-opo --format csv -c n 2>/dev/null | grep -q .; then ok "  responder vê site-opo"
   else warn "responder não chega à API do Incus (quarentena não vai funcionar)"; fi
-  if cexec "$n" "$p" incus list t490: --project core --format csv >/dev/null 2>&1; then
+  # incus list retorna 0 com output vazio em projetos restritos — usar incus info num contentor concreto
+  if cexec "$n" "$p" incus info t490:obs --project core >/dev/null 2>&1; then
     warn "o certificado do responder VÊ o projeto core — a retirá-lo (falha fechada)"
-    local fp; fp="$(incus config trust list --format csv </dev/null | awk -F, '$2 == "responder" {print $4}')"
+    local fp; fp="$(incus config trust list --format csv </dev/null | awk -F, '$1 == "responder" {print $4}')"
     [ -n "$fp" ] && incus config trust remove "$fp" </dev/null
   else ok "  responder NÃO vê o projeto core (certificado restrito aos site-*)"; fi
 }
