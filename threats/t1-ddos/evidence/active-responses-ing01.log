@@ -1,0 +1,15 @@
+2026/11/12 13:46:17 active-response/bin/restart.sh agent reload
+2026/11/12 13:49:39 active-response/bin/restart.sh agent reload
+2026/11/12 13:52:24 active-response/bin/restart.sh agent reload
+2026/11/12 13:55:33 active-response/bin/restart.sh agent reload
+2026-11-12T14:00:53+00:00 ssle-ratelimit[ing-01]: RATELIMIT add rule=110100 origem 10.10.1.1 → 20 lig./s (burst 40) na porta 8000
+2026-11-12T14:01:55+00:00 ssle-ratelimit[ing-01]: rule=110100: origem 10.10.1.1 já limitada (abort)
+2026-11-12T14:02:46+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-12T14:03:44+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-12T14:06:56+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110100 origem 10.10.1.1
+2026-11-12T14:08:45+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110101 todas as origens (balde por origem)
+2026-11-12T14:09:31+00:00 ssle-ratelimit[ing-01]: RATELIMIT add rule=110100 origem 10.10.1.1 → 20 lig./s (burst 40) na porta 8000
+2026-11-12T14:10:31+00:00 ssle-ratelimit[ing-01]: rule=110100: origem 10.10.1.1 já limitada (abort)
+2026-11-12T14:11:30+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-12T14:12:28+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-12T14:15:32+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110100 origem 10.10.1.1
