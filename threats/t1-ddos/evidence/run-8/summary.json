@@ -1,0 +1,46 @@
+{
+  "run": 8,
+  "t0": "2026-11-14T09:40:32.333986+00:00",
+  "stimulus_s": 139,
+  "concurrency": 20,
+  "peak_rate_rps": 20.9,
+  "server_p95_max_ms": 478.5,
+  "TrafficAnomaly": {
+    "first_signal_s": 19.7,
+    "mttd_s": 79.7,
+    "resolved_after_stimulus_s": 25.6
+  },
+  "ServiceLatencyHigh": {
+    "mttd_s": 79.7,
+    "fired": true
+  },
+  "ClientLatencySLO": {
+    "mttd_s": 79.7,
+    "fired": true,
+    "retro_mttd_s": 64.7
+  },
+  "z_max": {
+    "robust": 41.1,
+    "mean_std": 3.5,
+    "mean_std_would_fire": false,
+    "mean_std_mttd_s": null
+  },
+  "impact": {
+    "sensor_p95_max_ms": 1937.5,
+    "time_to_impact_s": 4.7,
+    "recovery_after_stimulus_s": 25.6,
+    "sensor_readings_ok": 167,
+    "sensor_readings_lost": 0
+  },
+  "soc": {
+    "mttd_s": 126.2,
+    "root_cause": "ssle:pt:avr:t490:ing-01",
+    "alerts": [
+      "ClientLatencySLO",
+      "ServiceLatencyHigh",
+      "TrafficAnomaly"
+    ],
+    "raw_alert_count": 4,
+    "cross_site": true
+  }
+}

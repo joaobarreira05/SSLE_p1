@@ -1,0 +1,84 @@
+{
+  "ts": "2026-11-12T14:02:44.713491+00:00",
+  "origin": "prometheus",
+  "site": "avr",
+  "sites": [
+    "avr",
+    "opo"
+  ],
+  "cross_site": true,
+  "severity": "critical",
+  "root_cause": "ssle:pt:avr:t490:ing-01",
+  "root_cause_instance": "ing-01",
+  "root_cause_role": "ingestion",
+  "affected": [
+    "ssle:pt:avr:t490:ing-01",
+    "ssle:pt:opo:t490:sen-01"
+  ],
+  "alert_names": [
+    "ClientLatencySLO",
+    "TrafficAnomaly"
+  ],
+  "raw_alert_count": 2,
+  "incident_count": 1,
+  "noise_reduction": 2.0,
+  "root_cause_ip": "10.10.1.30",
+  "srcip": "10.10.1.30",
+  "incident_id": "ssle:pt:avr:t490:ing-01@1794492164",
+  "status": "open"
+}
+{
+  "ts": "2026-11-12T14:18:42.960292+00:00",
+  "origin": "prometheus",
+  "site": "avr",
+  "sites": [
+    "avr",
+    "opo"
+  ],
+  "cross_site": true,
+  "severity": "critical",
+  "root_cause": "ssle:pt:avr:t490:ing-01",
+  "root_cause_instance": "ing-01",
+  "root_cause_role": "ingestion",
+  "affected": [
+    "ssle:pt:avr:t490:ing-01",
+    "ssle:pt:opo:t490:sen-01"
+  ],
+  "alert_names": [
+    "ClientLatencySLO",
+    "TrafficAnomaly"
+  ],
+  "raw_alert_count": 2,
+  "incident_count": 1,
+  "noise_reduction": 2.0,
+  "root_cause_ip": "10.10.1.30",
+  "srcip": "10.10.1.30",
+  "incident_id": "ssle:pt:avr:t490:ing-01@1794493122",
+  "status": "open"
+}
+{
+  "ts": "2026-11-12T14:27:29.807571+00:00",
+  "origin": "prometheus",
+  "site": "opo",
+  "sites": [
+    "opo"
+  ],
+  "cross_site": false,
+  "severity": "critical",
+  "root_cause": "ssle:pt:opo:t490:sen-01",
+  "root_cause_instance": "sen-01",
+  "root_cause_role": "sensor",
+  "affected": [
+    "ssle:pt:opo:t490:sen-01"
+  ],
+  "alert_names": [
+    "OutboundAnomaly"
+  ],
+  "raw_alert_count": 1,
+  "incident_count": 1,
+  "noise_reduction": 1.0,
+  "root_cause_ip": "10.10.2.50",
+  "srcip": "10.10.2.50",
+  "incident_id": "ssle:pt:opo:t490:sen-01@1794493649",
+  "status": "open"
+}

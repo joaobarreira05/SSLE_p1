@@ -1,0 +1,15 @@
+2026-11-14T09:32:22+00:00 ssle-ratelimit[ing-01]: RATELIMIT add rule=110100 origem 10.10.1.1 → 20 lig./s (burst 40) na porta 8000
+2026-11-14T09:33:26+00:00 ssle-ratelimit[ing-01]: rule=110100: origem 10.10.1.1 já limitada (abort)
+2026-11-14T09:35:21+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-14T09:35:51+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-14T09:38:27+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110100 origem 10.10.1.1
+2026-11-14T09:40:38+00:00 ssle-ratelimit[ing-01]: RATELIMIT add rule=110100 origem 10.10.1.1 → 20 lig./s (burst 40) na porta 8000
+2026-11-14T09:40:53+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110110 todas as origens (balde por origem)
+2026-11-14T09:41:41+00:00 ssle-ratelimit[ing-01]: rule=110100: origem 10.10.1.1 já limitada (abort)
+2026-11-14T09:43:37+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-14T09:46:41+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110100 origem 10.10.1.1
+2026-11-14T09:48:25+00:00 ssle-ratelimit[ing-01]: RATELIMIT add rule=110100 origem 10.10.1.1 → 20 lig./s (burst 40) na porta 8000
+2026-11-14T09:48:38+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110110 todas as origens (balde por origem)
+2026-11-14T09:49:29+00:00 ssle-ratelimit[ing-01]: rule=110100: origem 10.10.1.1 já limitada (abort)
+2026-11-14T09:51:51+00:00 ssle-ratelimit[ing-01]: rule=110110: todas as origens (balde por origem) já limitada (abort)
+2026-11-14T09:54:29+00:00 ssle-ratelimit[ing-01]: RATELIMIT del rule=110100 origem 10.10.1.1

@@ -1,0 +1,2974 @@
+[
+  {
+    "timestamp": "2026-11-12T13:47:59.035+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491279.9269606",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2081/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2081/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:48:25.022+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491305.10112688",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2079/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2079/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:49:43.844+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491383.12649173",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2079/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:49:43.845+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491383.12650151",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2079/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2079/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:49:44.120+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491384.12651129",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2081/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:49:44.126+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491384.12652107",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2081/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2081/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:51:42.541+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado (/etc/systemd/system/ssle-registry.service).",
+      "id": "110201",
+      "mitre": {
+        "id": [
+          "T1053.003",
+          "T1543.002"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron",
+          "Systemd Service"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "004",
+      "name": "avr-reg-01",
+      "ip": "10.10.1.20",
+      "labels": {
+        "host": "t490",
+        "instance": "reg-01",
+        "region": "pt",
+        "role": "registry",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491502.12653085",
+    "full_log": "File '/etc/systemd/system/ssle-registry.service' modified\nMode: realtime\nChanged attributes: mtime\nOld modification time was: '1794490980', now it is '1794491502'\n",
+    "syscheck": {
+      "path": "/etc/systemd/system/ssle-registry.service",
+      "mode": "realtime",
+      "size_after": "305",
+      "perm_after": "rw-r--r--",
+      "uid_after": "0",
+      "gid_after": "0",
+      "md5_after": "7361a23c8fe2ca8ebcf2688f2be77a37",
+      "sha1_after": "f7f880e2a2fe9ee48cc851c395d82995cfae5f0e",
+      "sha256_after": "4fbf7934f6996dc6fa1da1161781b16015060c55dfbc076ca450f5148ea82426",
+      "uname_after": "root",
+      "gname_after": "root",
+      "mtime_before": "2026-11-12T13:43:00",
+      "mtime_after": "2026-11-12T13:51:42",
+      "inode_after": 18282,
+      "diff": "No content changes were found for this file.",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "event": "modified"
+    },
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-12T13:51:43.955+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado (/etc/systemd/system/ssle-service.service).",
+      "id": "110201",
+      "mitre": {
+        "id": [
+          "T1053.003",
+          "T1543.002"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron",
+          "Systemd Service"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491503.12653910",
+    "full_log": "File '/etc/systemd/system/ssle-service.service' modified\nMode: realtime\nChanged attributes: mtime\nOld modification time was: '1794490981', now it is '1794491503'\n",
+    "syscheck": {
+      "path": "/etc/systemd/system/ssle-service.service",
+      "mode": "realtime",
+      "size_after": "344",
+      "perm_after": "rw-r--r--",
+      "uid_after": "0",
+      "gid_after": "0",
+      "md5_after": "07508471684271e058ab91de185d8dbd",
+      "sha1_after": "5cdb09af1758feadfe31a9b0dd4433079fc8ce56",
+      "sha256_after": "a73ac44b868a24d7e53e4028d4451c55ece02ff0027746487ef13cdbb63fff37",
+      "uname_after": "root",
+      "gname_after": "root",
+      "mtime_before": "2026-11-12T13:43:01",
+      "mtime_after": "2026-11-12T13:51:43",
+      "inode_after": 18279,
+      "diff": "No content changes were found for this file.",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "event": "modified"
+    },
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-12T13:51:44.944+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado (/etc/systemd/system/ssle-service.service).",
+      "id": "110201",
+      "mitre": {
+        "id": [
+          "T1053.003",
+          "T1543.002"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron",
+          "Systemd Service"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "007",
+      "name": "avr-ana-01",
+      "ip": "10.10.1.50",
+      "labels": {
+        "host": "t490",
+        "instance": "ana-01",
+        "region": "pt",
+        "role": "analytics",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491504.12654734",
+    "full_log": "File '/etc/systemd/system/ssle-service.service' modified\nMode: realtime\nChanged attributes: mtime\nOld modification time was: '1794490982', now it is '1794491504'\n",
+    "syscheck": {
+      "path": "/etc/systemd/system/ssle-service.service",
+      "mode": "realtime",
+      "size_after": "304",
+      "perm_after": "rw-r--r--",
+      "uid_after": "0",
+      "gid_after": "0",
+      "md5_after": "f5ef6fa72313ac700c268c7984448193",
+      "sha1_after": "5c2fe8a145ede9941a138152ebf49c988e06cc2f",
+      "sha256_after": "0842cce29985c991d4d7db1248eb159b93e71a8dafd34c61db3e78284f9cd160",
+      "uname_after": "root",
+      "gname_after": "root",
+      "mtime_before": "2026-11-12T13:43:02",
+      "mtime_after": "2026-11-12T13:51:44",
+      "inode_after": 18279,
+      "diff": "No content changes were found for this file.",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "event": "modified"
+    },
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-12T13:51:47.668+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado (/etc/systemd/system/ssle-service.service).",
+      "id": "110201",
+      "mitre": {
+        "id": [
+          "T1053.003",
+          "T1543.002"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron",
+          "Systemd Service"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491507.12655558",
+    "full_log": "File '/etc/systemd/system/ssle-service.service' modified\nMode: realtime\nChanged attributes: mtime\nOld modification time was: '1794490985', now it is '1794491507'\n",
+    "syscheck": {
+      "path": "/etc/systemd/system/ssle-service.service",
+      "mode": "realtime",
+      "size_after": "327",
+      "perm_after": "rw-r--r--",
+      "uid_after": "0",
+      "gid_after": "0",
+      "md5_after": "dda3b73b1fc3d9191312fc485d9045a7",
+      "sha1_after": "68dbb946fd3fcc228c42a5046a20d29058fdf8b4",
+      "sha256_after": "f506186c0e3e8313070a79f493e3f02b0f3a2f751111db4b7aa2c5417faaf764",
+      "uname_after": "root",
+      "gname_after": "root",
+      "mtime_before": "2026-11-12T13:43:05",
+      "mtime_after": "2026-11-12T13:51:47",
+      "inode_after": 18279,
+      "diff": "No content changes were found for this file.",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "event": "modified"
+    },
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-12T13:51:48.723+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado (/etc/systemd/system/ssle-service.service).",
+      "id": "110201",
+      "mitre": {
+        "id": [
+          "T1053.003",
+          "T1543.002"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron",
+          "Systemd Service"
+        ]
+      },
+      "firedtimes": 5,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491508.12656379",
+    "full_log": "File '/etc/systemd/system/ssle-service.service' modified\nMode: realtime\nChanged attributes: mtime\nOld modification time was: '1794490986', now it is '1794491508'\n",
+    "syscheck": {
+      "path": "/etc/systemd/system/ssle-service.service",
+      "mode": "realtime",
+      "size_after": "327",
+      "perm_after": "rw-r--r--",
+      "uid_after": "0",
+      "gid_after": "0",
+      "md5_after": "70dd051b6e1d0b532554e3e8e616c49c",
+      "sha1_after": "234cc6e9771f703948f899edc335c94b9793592b",
+      "sha256_after": "1fa5ff994736837322769ca75e167afac45d4e28a6b3493cb992208370a0378d",
+      "uname_after": "root",
+      "gname_after": "root",
+      "mtime_before": "2026-11-12T13:43:06",
+      "mtime_after": "2026-11-12T13:51:48",
+      "inode_after": 18279,
+      "diff": "No content changes were found for this file.",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "event": "modified"
+    },
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:19.664+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491539.12661224",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.0.10:68 0.0.0.0:* 166/systemd-network\ntcp        0      0 127.0.0.1:9101          0.0.0.0:*               LISTEN      -                   \ntcp 10.10.0.10:3000 0.0.0.0:* 4258/grafana\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 3772/prometheus\ntcp6 :::9093 :::* 3523/prometheus-ale\ntcp6 :::9094 :::* 3523/prometheus-ale\nudp6 :::9094 :::* 3523/prometheus-ale\ntcp 0.0.0.0:9095 0.0.0.0:* 3767/python3\ntcp6 :::9100 :::* 535/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.0.10:68 0.0.0.0:* 166/systemd-network\ntcp        0      0 127.0.0.1:9101          0.0.0.0:*               LISTEN      -                   \ntcp 10.10.0.10:3000 0.0.0.0:* 9606/grafana\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 9120/prometheus\ntcp6 :::9093 :::* 8870/prometheus-ale\ntcp6 :::9094 :::* 8870/prometheus-ale\nudp6 :::9094 :::* 8870/prometheus-ale\ntcp 0.0.0.0:9095 0.0.0.0:* 9115/python3\ntcp6 :::9100 :::* 535/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.0.10:68 0.0.0.0:* 166/systemd-network\ntcp        0      0 127.0.0.1:9101          0.0.0.0:*               LISTEN      -                   \ntcp 10.10.0.10:3000 0.0.0.0:* 4258/grafana\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 3772/prometheus\ntcp6 :::9093 :::* 3523/prometheus-ale\ntcp6 :::9094 :::* 3523/prometheus-ale\nudp6 :::9094 :::* 3523/prometheus-ale\ntcp 0.0.0.0:9095 0.0.0.0:* 3767/python3\ntcp6 :::9100 :::* 535/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:28.764+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "003",
+      "name": "avr-prom-01",
+      "ip": "10.10.1.10",
+      "labels": {
+        "host": "t490",
+        "instance": "prom-01",
+        "region": "pt",
+        "role": "prometheus",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491548.12668224",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 1750/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 6437/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 1750/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:28.815+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "009",
+      "name": "opo-reg-01",
+      "ip": "10.10.2.20",
+      "labels": {
+        "host": "t490",
+        "instance": "reg-01",
+        "region": "pt",
+        "role": "registry",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491548.12669586",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.20:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5050 0.0.0.0:* 2162/python3\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.20:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5050 0.0.0.0:* 6787/python3\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.20:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5050 0.0.0.0:* 2162/python3\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:29.156+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491549.12670956",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:29.564+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 5,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491549.12671934",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:29.841+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 6,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "008",
+      "name": "opo-prom-01",
+      "ip": "10.10.2.10",
+      "labels": {
+        "host": "t490",
+        "instance": "prom-01",
+        "region": "pt",
+        "role": "prometheus",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491549.12672912",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 1749/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 6443/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 1749/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:29.839+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 7,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491549.12674274",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:25 0.0.0.0:* 5149/master\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.70:68 0.0.0.0:* 163/systemd-network\ntcp 127.0.0.1:783 0.0.0.0:* 4683/perl\ntcp6 ::1:783 :::* 4683/perl\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 537/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:25 0.0.0.0:* 10298/master\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.70:68 0.0.0.0:* 163/systemd-network\ntcp 127.0.0.1:783 0.0.0.0:* 9832/perl\ntcp6 ::1:783 :::* 9832/perl\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 537/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:25 0.0.0.0:* 5149/master\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.70:68 0.0.0.0:* 163/systemd-network\ntcp 127.0.0.1:783 0.0.0.0:* 4683/perl\ntcp6 ::1:783 :::* 4683/perl\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 537/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:30.536+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 8,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491550.12675769",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.30:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2287/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.30:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7355/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.30:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2287/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:30.989+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 9,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "004",
+      "name": "avr-reg-01",
+      "ip": "10.10.1.20",
+      "labels": {
+        "host": "t490",
+        "instance": "reg-01",
+        "region": "pt",
+        "role": "registry",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491550.12677140",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.20:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5050 0.0.0.0:* 2192/python3\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.20:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5050 0.0.0.0:* 6819/python3\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.20:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5050 0.0.0.0:* 2192/python3\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:30.989+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 10,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "007",
+      "name": "avr-ana-01",
+      "ip": "10.10.1.50",
+      "labels": {
+        "host": "t490",
+        "instance": "ana-01",
+        "region": "pt",
+        "role": "analytics",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491550.12678510",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.50:68 0.0.0.0:* 161/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2080/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.50:68 0.0.0.0:* 161/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 6796/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.50:68 0.0.0.0:* 161/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2080/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:34.936+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 11,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "013",
+      "name": "lis-web-01",
+      "ip": "10.10.3.60",
+      "labels": {
+        "host": "t490",
+        "instance": "web-01",
+        "region": "pt",
+        "role": "web",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491554.12681049",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.60:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2070/python3\ntcp6 :::9100 :::* 537/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.60:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 6145/python3\ntcp6 :::9100 :::* 537/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.60:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 2070/python3\ntcp6 :::9100 :::* 537/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:52:37.173+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 12,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "012",
+      "name": "lis-prom-01",
+      "ip": "10.10.3.10",
+      "labels": {
+        "host": "t490",
+        "instance": "prom-01",
+        "region": "pt",
+        "role": "prometheus",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491557.12682414",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 1750/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 6234/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.3.10:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 1750/prometheus\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:53:29.120+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 13,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491609.12688871",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:54:31.455+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 14,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491671.12694172",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:54:38.310+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 15,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491678.12696321",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:54:38.312+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 16,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491678.12697299",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:55:39.740+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491739.12707182",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:55:39.788+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491739.12708160",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:55:39.856+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491739.12709138",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:56:39.694+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491799.12712050",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T13:57:57.480+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 5,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "005",
+      "name": "avr-sto-01",
+      "ip": "10.10.1.40",
+      "labels": {
+        "host": "t490",
+        "instance": "sto-01",
+        "region": "pt",
+        "role": "storage",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794491877.12715560",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.40:68 0.0.0.0:* 166/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 151/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 151/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 151/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 151/systemd-resolve\nudp 10.10.1.40:68 0.0.0.0:* 162/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 151/systemd-resolve\ntcp6 :::5355 :::* 151/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 151/systemd-resolve\nudp6 :::5355 :::* 151/systemd-resolve\ntcp6 :::9100 :::* 173/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.1.40:68 0.0.0.0:* 166/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:01:39.724+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492099.12722764",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:01:39.765+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492099.12723742",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:01:39.818+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492099.12724720",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:01:39.821+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492099.12725698",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:01:40.431+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 5,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492100.12726676",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.0.10:68 0.0.0.0:* 166/systemd-network\ntcp        0      0 127.0.0.1:9101          0.0.0.0:*               LISTEN      -                   \ntcp 10.10.0.10:3000 0.0.0.0:* 9606/grafana\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 9120/prometheus\ntcp6 :::9093 :::* 8870/prometheus-ale\ntcp6 :::9094 :::* 8870/prometheus-ale\nudp6 :::9094 :::* 8870/prometheus-ale\ntcp 0.0.0.0:9095 0.0.0.0:* 9115/python3\ntcp6 :::9100 :::* 535/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.0.10:68 0.0.0.0:* 166/systemd-network\ntcp        0      0 127.0.0.1:9101          0.0.0.0:*               LISTEN      -                   \ntcp 10.10.0.10:3000 0.0.0.0:* 9606/grafana\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 9120/prometheus\ntcp6 :::9093 :::* 12167/prometheus-al\ntcp6 :::9094 :::* 12167/prometheus-al\nudp6 :::9094 :::* 12167/prometheus-al\ntcp 0.0.0.0:9095 0.0.0.0:* 12165/python3\ntcp6 :::9100 :::* 535/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.0.10:68 0.0.0.0:* 166/systemd-network\ntcp        0      0 127.0.0.1:9101          0.0.0.0:*               LISTEN      -                   \ntcp 10.10.0.10:3000 0.0.0.0:* 9606/grafana\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp6 :::9090 :::* 9120/prometheus\ntcp6 :::9093 :::* 8870/prometheus-ale\ntcp6 :::9094 :::* 8870/prometheus-ale\nudp6 :::9094 :::* 8870/prometheus-ale\ntcp 0.0.0.0:9095 0.0.0.0:* 9115/python3\ntcp6 :::9100 :::* 535/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:07:39.856+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 6,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492459.12732480",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:07:39.896+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 7,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492459.12733458",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:07:39.906+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 8,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492459.12734436",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:07:39.909+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 9,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492459.12735414",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:13:39.930+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 10,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492819.12743195",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:13:39.970+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 11,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492819.12744173",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:13:39.970+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 12,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492819.12745151",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:13:39.973+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 13,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794492819.12746129",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:19:40.011+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 14,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493180.12750625",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:19:40.042+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 15,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493180.12751603",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:19:40.052+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 16,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493180.12752581",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:20:40.032+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 17,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493240.12755574",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:25:22.073+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: ficheiro de PERSISTÊNCIA criado/alterado (/etc/cron.d/ssle-marker).",
+      "id": "110201",
+      "mitre": {
+        "id": [
+          "T1053.003",
+          "T1543.002"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron",
+          "Systemd Service"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493522.12756552",
+    "full_log": "File '/etc/cron.d/ssle-marker' added\nMode: realtime\n",
+    "syscheck": {
+      "path": "/etc/cron.d/ssle-marker",
+      "mode": "realtime",
+      "size_after": "36",
+      "perm_after": "rw-r--r--",
+      "uid_after": "0",
+      "gid_after": "0",
+      "md5_after": "1e7238a7c130a8b48d5081efe0f251c3",
+      "sha1_after": "abeea3004cb3906b5c03b54fc525e4f29fabd3f2",
+      "sha256_after": "bddd0d7853584d1a41dce0af9bcd1968475e373a5d58ba05d30f46d2c9d0ccf5",
+      "uname_after": "root",
+      "gname_after": "root",
+      "mtime_after": "2026-11-12T14:25:22",
+      "inode_after": 20328,
+      "event": "added"
+    },
+    "decoder": {
+      "name": "syscheck_new_entry"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-12T14:25:40.076+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 18,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493540.12757185",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:25:40.100+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 19,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493540.12758163",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:25:40.102+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 20,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "011",
+      "name": "opo-sen-02",
+      "ip": "10.10.2.51",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-02",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493540.12759141",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.51:68 0.0.0.0:* 163/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7299/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:26:40.097+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T2: mudou o conjunto de portas à escuta num elemento (possível backdoor/C2).",
+      "id": "110202",
+      "mitre": {
+        "id": [
+          "T1571"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Non-Standard Port"
+        ]
+      },
+      "firedtimes": 21,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493600.12760119",
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp 0.0.0.0:5355\ntcp 0.0.0.0:8000\ntcp 127.0.0.53%lo:53\ntcp 127.0.0.54:53\ntcp [::]:5355\ntcp *:9100",
+    "decoder": {
+      "name": "ossec"
+    },
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\ntcp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.53:53 0.0.0.0:* 152/systemd-resolve\nudp 127.0.0.54:53 0.0.0.0:* 152/systemd-resolve\nudp 10.10.2.50:68 0.0.0.0:* 167/systemd-network\ntcp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\ntcp6 :::5355 :::* 152/systemd-resolve\nudp 0.0.0.0:5355 0.0.0.0:* 152/systemd-resolve\nudp6 :::5355 :::* 152/systemd-resolve\ntcp 0.0.0.0:8000 0.0.0.0:* 7329/python3\ntcp6 :::9100 :::* 536/prometheus-node",
+    "location": "netstat listening ports"
+  },
+  {
+    "timestamp": "2026-11-12T14:27:24.104+0000",
+    "rule": {
+      "level": 11,
+      "description": "SSLE T2: força bruta SSH a partir de 10.10.99.66 (vetor de infeção da botnet).",
+      "id": "110200",
+      "mitre": {
+        "id": [
+          "T1110"
+        ],
+        "tactic": [
+          "Credential Access"
+        ],
+        "technique": [
+          "Brute Force"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack",
+        "authentication_failures",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493644.12765478",
+    "full_log": "2026-11-12T14:27:23.278398+00:00 sen-01 sshd: Failed password for root from 10.10.99.66 port 2222 ssh2",
+    "predecoder": {
+      "program_name": "sshd",
+      "timestamp": "2026-11-12T14:27:23.278398+00:00"
+    },
+    "decoder": {
+      "parent": "sshd",
+      "name": "sshd"
+    },
+    "data": {
+      "srcip": "10.10.99.66",
+      "srcport": "2222",
+      "dstuser": "root"
+    },
+    "location": "/var/log/auth.log"
+  },
+  {
+    "timestamp": "2026-11-12T14:27:24.104+0000",
+    "rule": {
+      "level": 11,
+      "description": "SSLE T2: força bruta SSH a partir de 10.10.99.66 (vetor de infeção da botnet).",
+      "id": "110200",
+      "mitre": {
+        "id": [
+          "T1110"
+        ],
+        "tactic": [
+          "Credential Access"
+        ],
+        "technique": [
+          "Brute Force"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack",
+        "authentication_failures",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "010",
+      "name": "opo-sen-01",
+      "ip": "10.10.2.50",
+      "labels": {
+        "host": "t490",
+        "instance": "sen-01",
+        "region": "pt",
+        "role": "sensor",
+        "site": "opo"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493644.12765946",
+    "full_log": "Nov 12 14:27:23 sen-01 sshd[10621]: Failed password for root from 10.10.99.66 port 2222 ssh2",
+    "predecoder": {
+      "program_name": "sshd",
+      "timestamp": "Nov 12 14:27:23",
+      "hostname": "sen-01"
+    },
+    "decoder": {
+      "parent": "sshd",
+      "name": "sshd"
+    },
+    "data": {
+      "srcip": "10.10.99.66",
+      "srcport": "2222",
+      "dstuser": "root"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-12T14:27:30.594+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T2: sensor IoT sen-01 (10.10.2.50) com ligações de saída anómalas é a causa raiz — QUARENTENA.",
+      "id": "110210",
+      "mitre": {
+        "id": [
+          "T1071"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Application Layer Protocol"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "botnet",
+        "attack",
+        "ssle_botnet_host"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794493650.12769581",
+    "full_log": "{\"ts\":\"2026-11-12T14:27:29.807571+00:00\",\"origin\":\"prometheus\",\"site\":\"opo\",\"sites\":[\"opo\"],\"cross_site\":false,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:opo:t490:sen-01\",\"root_cause_instance\":\"sen-01\",\"root_cause_role\":\"sensor\",\"affected\":[\"ssle:pt:opo:t490:sen-01\"],\"alert_names\":[\"OutboundAnomaly\"],\"raw_alert_count\":1,\"incident_count\":1,\"noise_reduction\":1,\"root_cause_ip\":\"10.10.2.50\",\"srcip\":\"10.10.2.50\",\"incident_id\":\"ssle:pt:opo:t490:sen-01@1794493649\",\"status\":\"open\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.2.50",
+      "status": "open",
+      "ts": "2026-11-12T14:27:29.807571+00:00",
+      "origin": "prometheus",
+      "site": "opo",
+      "sites": [
+        "opo"
+      ],
+      "cross_site": "false",
+      "severity": "critical",
+      "root_cause": "ssle:pt:opo:t490:sen-01",
+      "root_cause_instance": "sen-01",
+      "root_cause_role": "sensor",
+      "affected": [
+        "ssle:pt:opo:t490:sen-01"
+      ],
+      "alert_names": [
+        "OutboundAnomaly"
+      ],
+      "raw_alert_count": "1",
+      "incident_count": "1",
+      "noise_reduction": "1",
+      "root_cause_ip": "10.10.2.50",
+      "incident_id": "ssle:pt:opo:t490:sen-01@1794493649"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  }
+]

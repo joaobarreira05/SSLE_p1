@@ -1,0 +1,1796 @@
+[
+  {
+    "timestamp": "2026-11-14T10:12:02.358+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.96964",
+    "full_log": "2026-11-14T10:12:00.509132+00:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.7,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57490,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:00.509132+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.362+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.97719",
+    "full_log": "2026-11-14T10:12:00.513293+00:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.6,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57494,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:00.513293+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.495+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.98474",
+    "full_log": "2026-11-14T10:12:00.764860+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x1@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x1@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "2026-11-14T10:12:00.764860+00:00"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.508+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.99128",
+    "full_log": "2026-11-14T10:12:00.798345+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x2@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x2@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "2026-11-14T10:12:00.798345+00:00"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.521+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.99782",
+    "full_log": "2026-11-14T10:12:00.817852+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x3@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x3@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "2026-11-14T10:12:00.817852+00:00"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.534+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.100436",
+    "full_log": "2026-11-14T10:12:00.841592+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x4@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x4@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "2026-11-14T10:12:00.841592+00:00"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.549+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.101091",
+    "full_log": "2026-11-14T10:12:00.858388+00:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.2,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57516,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:00.858388+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.551+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: 10.10.2.51 a tentar usar o MTA como relay (≥5 rejeições em 60 s).",
+      "id": "110302",
+      "mitre": {
+        "id": [
+          "T1496"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Resource Hijacking"
+        ]
+      },
+      "frequency": 5,
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.101847",
+    "full_log": "2026-11-14T10:12:00.859658+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x5@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x5@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "2026-11-14T10:12:00.859658+00:00"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.557+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.102391",
+    "full_log": "2026-11-14T10:12:00.892202+00:00 mail-01 spamd[2027]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.2,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57530,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:00.892202+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.582+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 5,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.103148",
+    "full_log": "2026-11-14T10:12:00.915516+00:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.3,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57510,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:00.915516+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.595+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 6,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.103904",
+    "full_log": "2026-11-14T10:12:00.933682+00:00 mail-01 spamd[2029]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.3,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57546,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:00.933682+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.681+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 7,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.104661",
+    "full_log": "2026-11-14T10:12:01.049145+00:00 mail-01 spamd[2027]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57564,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:01.049145+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.681+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 8,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.105418",
+    "full_log": "2026-11-14T10:12:01.010878+00:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57554,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:01.010878+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.681+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 9,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.106174",
+    "full_log": "2026-11-14T10:12:01.036644+00:00 mail-01 spamd[2028]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.4,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57534,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:01.036644+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.698+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: vaga de spam (≥10 mensagens marcadas em 2 min).",
+      "id": "110300",
+      "frequency": 10,
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.106931",
+    "previous_output": "2026-11-14T10:12:01.036644+00:00 mail-01 spamd[2028]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.4,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57534,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:01.010878+00:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57554,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:01.049145+00:00 mail-01 spamd[2027]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57564,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:00.933682+00:00 mail-01 spamd[2029]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.3,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57546,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:00.915516+00:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.3,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57510,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:00.892202+00:00 mail-01 spamd[2027]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.2,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57530,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:00.858388+00:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.2,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57516,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:00.513293+00:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.6,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57494,mid=(unknown),autolearn=no autolearn_force=no\n2026-11-14T10:12:00.509132+00:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.7,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57490,mid=(unknown),autolearn=no autolearn_force=no",
+    "full_log": "2026-11-14T10:12:01.078020+00:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=290,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57836,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:01.078020+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.732+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 10,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.110316",
+    "full_log": "2026-11-14T10:12:01.097189+00:00 mail-01 spamd[2029]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=290,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57846,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "2026-11-14T10:12:01.097189+00:00"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.836+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 11,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.111073",
+    "full_log": "Nov 14 10:12:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.6,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57494,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.836+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 12,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.111803",
+    "full_log": "Nov 14 10:12:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.7,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57490,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.974+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 5,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.112533",
+    "full_log": "Nov 14 10:12:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x1@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x1@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.974+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 6,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.113162",
+    "full_log": "Nov 14 10:12:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x2@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x2@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:02.992+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 7,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651122.113791",
+    "full_log": "Nov 14 10:12:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x3@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x3@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.011+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 8,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.114420",
+    "full_log": "Nov 14 10:12:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x4@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x4@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.026+0000",
+    "rule": {
+      "level": 6,
+      "description": "Postfix: Attempt to use mail server as relay (client host rejected).",
+      "id": "3301",
+      "mitre": {
+        "id": [
+          "T1114"
+        ],
+        "tactic": [
+          "Collection"
+        ],
+        "technique": [
+          "Email Collection"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "syslog",
+        "postfix",
+        "spam"
+      ],
+      "pci_dss": [
+        "10.6.1",
+        "11.4"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "nist_800_53": [
+        "AU.6",
+        "SI.4"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.1",
+        "CC6.8"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.115049",
+    "full_log": "Nov 14 10:12:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.51]: 554 5.7.1 <x5@external.example>: Relay access denied; from=<bot@sen-02.lab> to=<x5@external.example> proto=ESMTP helo=<sen-02>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.51",
+      "id": "554"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.026+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 13,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.115678",
+    "full_log": "Nov 14 10:12:00 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.2,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57516,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.026+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 14,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.116408",
+    "full_log": "Nov 14 10:12:00 mail-01 spamd[2027]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.2,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57530,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.045+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 15,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.117139",
+    "full_log": "Nov 14 10:12:00 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.3,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57510,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.062+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 16,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.117869",
+    "full_log": "Nov 14 10:12:00 mail-01 spamd[2029]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.3,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57546,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:00",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.137+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 17,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.118600",
+    "full_log": "Nov 14 10:12:01 mail-01 spamd[805]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57554,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:01",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.154+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 18,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.119330",
+    "full_log": "Nov 14 10:12:01 mail-01 spamd[2028]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.4,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57534,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:01",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.154+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 19,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.120061",
+    "full_log": "Nov 14 10:12:01 mail-01 spamd[2027]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=289,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57564,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:01",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.172+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.120792",
+    "full_log": "Nov 14 10:12:01 mail-01 spamd[804]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=290,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57836,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:01",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  },
+  {
+    "timestamp": "2026-11-14T10:12:03.192+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T3: spam de alta confiança (score 1002; testes ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID).",
+      "id": "110304",
+      "firedtimes": 20,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "spam",
+        "ssle_spam_msg"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651123.121522",
+    "full_log": "Nov 14 10:12:01 mail-01 spamd[2029]: spamd: result: Y 1002 - ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID scantime=0.1,size=290,user=debian-spamd,uid=102,required_score=5.0,rhost=localhost,raddr=::1,rport=57846,mid=(unknown),autolearn=no autolearn_force=no",
+    "predecoder": {
+      "program_name": "spamd",
+      "timestamp": "Nov 14 10:12:01",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "spamassassin",
+      "name": "spamassassin"
+    },
+    "data": {
+      "sa_flag": "Y",
+      "sa_score": "1002",
+      "sa_tests": "ALL_TRUSTED,GTUBE,MISSING_DATE,MISSING_FROM,MISSING_HEADERS,MISSING_MID",
+      "sa_required": "5.0"
+    },
+    "location": "journald"
+  }
+]

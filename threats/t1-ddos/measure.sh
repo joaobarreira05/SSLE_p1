@@ -27,7 +27,17 @@ T0=$(date +%s.%N)
 bash "$HERE/run.sh" "$ING_IP" "$DUR" "$CONC" | tee "$EV/run.log"
 T1=$(date +%s.%N)
 echo "[t1/run-$N] estímulo terminou; a aguardar ${SETTLE}s pela recuperação…"
-sleep "$SETTLE"
+# Capturar evidência de active-response (nft + log AR) enquanto a resposta está ativa
+sleep 10   # dar tempo ao Wazuh para entregar a AR
+incus exec ing-01 --project site-avr -- nft list table inet ssle_rl 2>&1 > "$EV/nft-ssle-rl.txt" || true
+incus exec ing-01 --project site-avr -- cat /var/ossec/logs/active-responses.log 2>/dev/null > "$EV/ar.log" || true
+echo "[t1/run-$N] evidência AR capturada → $EV/nft-ssle-rl.txt, $EV/ar.log"
+sleep $((SETTLE - 10))
 TE=$(date +%s.%N)
 printf 'N=%s\nT0=%s\nT1=%s\nTE=%s\nDUR=%s\nCONC=%s\n' "$N" "$T0" "$T1" "$TE" "$DUR" "$CONC" > "$EV/times.env"
-python3 -I "$HERE/analyze.py" "$HERE"/evidence/run-*
+# Só analisa os runs do T490 (≥4); os de staging (1-3) estão noutro Prometheus
+t490_runs=()
+for d in "$HERE"/evidence/run-*; do
+  r="${d##*run-}"; [ "$r" -ge 4 ] 2>/dev/null && t490_runs+=("$d")
+done
+python3 -I "$HERE/analyze.py" "${t490_runs[@]}"

@@ -1,0 +1,97 @@
+[
+  {
+    "timestamp": "2026-11-14T10:13:24.518+0000",
+    "rule": {
+      "level": 14,
+      "description": "SSLE meta: 10.10.2.50 é causa raiz comprometida E origem de um impacto — \"uma botnet, dois impactos\".",
+      "id": "110900",
+      "frequency": 2,
+      "firedtimes": 1,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "meta",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651204.136366",
+    "previous_output": "2026-11-14T10:13:22.554265+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x4@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x4@external.example> proto=ESMTP helo=<sen-01>\n2026-11-14T10:13:22.539476+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x3@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x3@external.example> proto=ESMTP helo=<sen-01>\n2026-11-14T10:13:22.524573+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x2@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x2@external.example> proto=ESMTP helo=<sen-01>\n2026-11-14T10:13:22.511681+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x1@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x1@external.example> proto=ESMTP helo=<sen-01>",
+    "full_log": "2026-11-14T10:13:22.575087+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x5@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x5@external.example> proto=ESMTP helo=<sen-01>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "2026-11-14T10:13:22.575087+00:00"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.50",
+      "id": "554"
+    },
+    "location": "/var/log/mail.log"
+  },
+  {
+    "timestamp": "2026-11-14T10:13:24.723+0000",
+    "rule": {
+      "level": 14,
+      "description": "SSLE meta: 10.10.2.50 é causa raiz comprometida E origem de um impacto — \"uma botnet, dois impactos\".",
+      "id": "110900",
+      "frequency": 2,
+      "firedtimes": 2,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "meta",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "014",
+      "name": "lis-mail-01",
+      "ip": "10.10.3.70",
+      "labels": {
+        "host": "t490",
+        "instance": "mail-01",
+        "region": "pt",
+        "role": "mail",
+        "site": "lis"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794651204.143367",
+    "previous_output": "Nov 14 10:13:22 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x3@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x3@external.example> proto=ESMTP helo=<sen-01>\nNov 14 10:13:22 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x2@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x2@external.example> proto=ESMTP helo=<sen-01>\nNov 14 10:13:22 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x1@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x1@external.example> proto=ESMTP helo=<sen-01>\n2026-11-14T10:13:22.589764+00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x6@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x6@external.example> proto=ESMTP helo=<sen-01>",
+    "full_log": "Nov 14 10:13:22 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.2.50]: 554 5.7.1 <x4@external.example>: Relay access denied; from=<bot@sen-01.lab> to=<x4@external.example> proto=ESMTP helo=<sen-01>",
+    "predecoder": {
+      "program_name": "postfix/smtpd",
+      "timestamp": "Nov 14 10:13:22",
+      "hostname": "mail-01"
+    },
+    "decoder": {
+      "parent": "postfix",
+      "name": "postfix-reject"
+    },
+    "data": {
+      "srcip": "10.10.2.50",
+      "id": "554"
+    },
+    "location": "journald"
+  }
+]

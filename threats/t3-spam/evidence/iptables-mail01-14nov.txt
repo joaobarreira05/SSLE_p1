@@ -1,0 +1,4 @@
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+DROP       all  --  10.10.2.50           0.0.0.0/0           
+DROP       all  --  10.10.2.51           0.0.0.0/0           

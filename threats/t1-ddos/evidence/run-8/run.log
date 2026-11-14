@@ -1,0 +1,2 @@
+[t1] carga a http://10.10.1.30:8000/work  dur=120s conc=20  (T0=09:40:32)
+[t1] fim do estímulo (T1=09:42:51)

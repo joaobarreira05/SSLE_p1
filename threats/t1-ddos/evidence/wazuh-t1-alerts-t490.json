@@ -1,0 +1,1056 @@
+[
+  {
+    "timestamp": "2026-11-14T09:32:22.832+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T1: ≥100 pedidos web em 10 s da mesma origem 10.10.1.1 (possível DoS).",
+      "id": "110100",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "frequency": 100,
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794648742.44708",
+    "full_log": "10.10.1.1 - - [14/Nov/2026:09:32:21 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.23.0\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "protocol": "GET",
+      "srcip": "10.10.1.1",
+      "id": "200",
+      "url": "/work"
+    },
+    "location": "/var/log/ssle/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T09:33:26.783+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T1: ≥100 pedidos web em 10 s da mesma origem 10.10.1.1 (possível DoS).",
+      "id": "110100",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "frequency": 100,
+      "firedtimes": 14,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794648806.45112",
+    "full_log": "10.10.1.1 - - [14/Nov/2026:09:33:24 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.23.0\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "protocol": "GET",
+      "srcip": "10.10.1.1",
+      "id": "200",
+      "url": "/work"
+    },
+    "location": "/var/log/ssle/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T09:34:25.220+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 1,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794648865.45516",
+    "full_log": "{\"ts\":\"2026-11-14T09:34:23.466484+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\",\"opo\"],\"cross_site\":true,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\",\"ssle:pt:opo:t490:sen-01\",\"ssle:pt:opo:t490:sen-02\"],\"alert_names\":[\"ClientLatencySLO\",\"ServiceLatencyHigh\",\"TrafficAnomaly\"],\"raw_alert_count\":4,\"incident_count\":1,\"noise_reduction\":4,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794648863\",\"status\":\"open\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "open",
+      "ts": "2026-11-14T09:34:23.466484+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr",
+        "opo"
+      ],
+      "cross_site": "true",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01",
+        "ssle:pt:opo:t490:sen-01",
+        "ssle:pt:opo:t490:sen-02"
+      ],
+      "alert_names": [
+        "ClientLatencySLO",
+        "ServiceLatencyHigh",
+        "TrafficAnomaly"
+      ],
+      "raw_alert_count": "4",
+      "incident_count": "1",
+      "noise_reduction": "4",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794648863"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:35:21.226+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 2,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794648921.46936",
+    "full_log": "{\"ts\":\"2026-11-14T09:35:21.124661+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\",\"opo\"],\"cross_site\":true,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\",\"ssle:pt:opo:t490:sen-02\"],\"alert_names\":[\"ClientLatencySLO\",\"ServiceLatencyHigh\"],\"raw_alert_count\":2,\"incident_count\":1,\"noise_reduction\":2,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794648863\",\"status\":\"updated\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "updated",
+      "ts": "2026-11-14T09:35:21.124661+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr",
+        "opo"
+      ],
+      "cross_site": "true",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01",
+        "ssle:pt:opo:t490:sen-02"
+      ],
+      "alert_names": [
+        "ClientLatencySLO",
+        "ServiceLatencyHigh"
+      ],
+      "raw_alert_count": "2",
+      "incident_count": "1",
+      "noise_reduction": "2",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794648863"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:35:51.229+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 3,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794648951.48271",
+    "full_log": "{\"ts\":\"2026-11-14T09:35:51.123057+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\"],\"cross_site\":false,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\"],\"alert_names\":[\"ServiceLatencyHigh\"],\"raw_alert_count\":1,\"incident_count\":1,\"noise_reduction\":1,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794648863\",\"status\":\"updated\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "updated",
+      "ts": "2026-11-14T09:35:51.123057+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr"
+      ],
+      "cross_site": "false",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01"
+      ],
+      "alert_names": [
+        "ServiceLatencyHigh"
+      ],
+      "raw_alert_count": "1",
+      "incident_count": "1",
+      "noise_reduction": "1",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794648863"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:35:51.271+0000",
+    "rule": {
+      "level": 4,
+      "description": "SSLE: incidente de monitorização RESOLVIDO (ssle:pt:avr:t490:ing-01).",
+      "id": "110002",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "prometheus"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794648951.49503",
+    "full_log": "{\"ts\":\"2026-11-14T09:35:51.126100+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"info\",\"status\":\"resolved\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794648863\",\"incident_count\":0,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "resolved",
+      "ts": "2026-11-14T09:35:51.126100+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "severity": "info",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794648863",
+      "incident_count": "0",
+      "root_cause_ip": "10.10.1.30"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:40:38.897+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T1: ≥100 pedidos web em 10 s da mesma origem 10.10.1.1 (possível DoS).",
+      "id": "110100",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "frequency": 100,
+      "firedtimes": 26,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649238.54240",
+    "full_log": "10.10.1.1 - - [14/Nov/2026:09:40:37 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.23.0\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "protocol": "GET",
+      "srcip": "10.10.1.1",
+      "id": "200",
+      "url": "/work"
+    },
+    "location": "/var/log/ssle/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T09:41:40.937+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T1: ≥100 pedidos web em 10 s da mesma origem 10.10.1.1 (possível DoS).",
+      "id": "110100",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "frequency": 100,
+      "firedtimes": 39,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649300.54644",
+    "full_log": "10.10.1.1 - - [14/Nov/2026:09:41:40 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.23.0\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "protocol": "GET",
+      "srcip": "10.10.1.1",
+      "id": "200",
+      "url": "/work"
+    },
+    "location": "/var/log/ssle/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T09:42:39.286+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 4,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649359.57970",
+    "full_log": "{\"ts\":\"2026-11-14T09:42:38.495970+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\",\"opo\"],\"cross_site\":true,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\",\"ssle:pt:opo:t490:sen-01\",\"ssle:pt:opo:t490:sen-02\"],\"alert_names\":[\"ClientLatencySLO\",\"ServiceLatencyHigh\",\"TrafficAnomaly\"],\"raw_alert_count\":4,\"incident_count\":1,\"noise_reduction\":4,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794649358\",\"status\":\"open\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "open",
+      "ts": "2026-11-14T09:42:38.495970+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr",
+        "opo"
+      ],
+      "cross_site": "true",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01",
+        "ssle:pt:opo:t490:sen-01",
+        "ssle:pt:opo:t490:sen-02"
+      ],
+      "alert_names": [
+        "ClientLatencySLO",
+        "ServiceLatencyHigh",
+        "TrafficAnomaly"
+      ],
+      "raw_alert_count": "4",
+      "incident_count": "1",
+      "noise_reduction": "4",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794649358"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:43:37.292+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 5,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649417.60364",
+    "full_log": "{\"ts\":\"2026-11-14T09:43:36.122075+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\",\"opo\"],\"cross_site\":true,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\",\"ssle:pt:opo:t490:sen-01\"],\"alert_names\":[\"ClientLatencySLO\",\"ServiceLatencyHigh\"],\"raw_alert_count\":2,\"incident_count\":1,\"noise_reduction\":2,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794649358\",\"status\":\"updated\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "updated",
+      "ts": "2026-11-14T09:43:36.122075+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr",
+        "opo"
+      ],
+      "cross_site": "true",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01",
+        "ssle:pt:opo:t490:sen-01"
+      ],
+      "alert_names": [
+        "ClientLatencySLO",
+        "ServiceLatencyHigh"
+      ],
+      "raw_alert_count": "2",
+      "incident_count": "1",
+      "noise_reduction": "2",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794649358"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:44:07.336+0000",
+    "rule": {
+      "level": 4,
+      "description": "SSLE: incidente de monitorização RESOLVIDO (ssle:pt:avr:t490:ing-01).",
+      "id": "110002",
+      "firedtimes": 2,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "prometheus"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649447.62941",
+    "full_log": "{\"ts\":\"2026-11-14T09:44:06.123340+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"info\",\"status\":\"resolved\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794649358\",\"incident_count\":0,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "resolved",
+      "ts": "2026-11-14T09:44:06.123340+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "severity": "info",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794649358",
+      "incident_count": "0",
+      "root_cause_ip": "10.10.1.30"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:44:07.336+0000",
+    "rule": {
+      "level": 4,
+      "description": "SSLE: incidente de monitorização RESOLVIDO (ssle:pt:opo:t490:sen-01).",
+      "id": "110002",
+      "firedtimes": 3,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "prometheus"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649447.63782",
+    "full_log": "{\"ts\":\"2026-11-14T09:44:06.126910+00:00\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"info\",\"status\":\"resolved\",\"root_cause\":\"ssle:pt:opo:t490:sen-01\",\"root_cause_instance\":\"sen-01\",\"incident_id\":\"ssle:pt:opo:t490:sen-01@1794649446\",\"incident_count\":0,\"root_cause_ip\":\"10.10.2.50\",\"srcip\":\"10.10.2.50\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.2.50",
+      "status": "resolved",
+      "ts": "2026-11-14T09:44:06.126910+00:00",
+      "origin": "prometheus",
+      "site": "opo",
+      "severity": "info",
+      "root_cause": "ssle:pt:opo:t490:sen-01",
+      "root_cause_instance": "sen-01",
+      "incident_id": "ssle:pt:opo:t490:sen-01@1794649446",
+      "incident_count": "0",
+      "root_cause_ip": "10.10.2.50"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:48:24.984+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T1: ≥100 pedidos web em 10 s da mesma origem 10.10.1.1 (possível DoS).",
+      "id": "110100",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "frequency": 100,
+      "firedtimes": 51,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649704.64623",
+    "full_log": "10.10.1.1 - - [14/Nov/2026:09:48:23 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.23.0\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "protocol": "GET",
+      "srcip": "10.10.1.1",
+      "id": "200",
+      "url": "/work"
+    },
+    "location": "/var/log/ssle/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T09:49:28.954+0000",
+    "rule": {
+      "level": 10,
+      "description": "SSLE T1: ≥100 pedidos web em 10 s da mesma origem 10.10.1.1 (possível DoS).",
+      "id": "110100",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "frequency": 100,
+      "firedtimes": 64,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack",
+        "ssle_impact"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "avr-ing-01",
+      "ip": "10.10.1.30",
+      "labels": {
+        "host": "t490",
+        "instance": "ing-01",
+        "region": "pt",
+        "role": "ingestion",
+        "site": "avr"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649768.68923",
+    "full_log": "10.10.1.1 - - [14/Nov/2026:09:49:27 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.23.0\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "protocol": "GET",
+      "srcip": "10.10.1.1",
+      "id": "200",
+      "url": "/work"
+    },
+    "location": "/var/log/ssle/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T09:50:25.331+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 6,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649825.69327",
+    "full_log": "{\"ts\":\"2026-11-14T09:50:23.523149+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\",\"opo\"],\"cross_site\":true,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\",\"ssle:pt:opo:t490:sen-01\",\"ssle:pt:opo:t490:sen-02\"],\"alert_names\":[\"ClientLatencySLO\",\"ServiceLatencyHigh\",\"TrafficAnomaly\"],\"raw_alert_count\":4,\"incident_count\":1,\"noise_reduction\":4,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794649823\",\"status\":\"open\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "open",
+      "ts": "2026-11-14T09:50:23.523149+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr",
+        "opo"
+      ],
+      "cross_site": "true",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01",
+        "ssle:pt:opo:t490:sen-01",
+        "ssle:pt:opo:t490:sen-02"
+      ],
+      "alert_names": [
+        "ClientLatencySLO",
+        "ServiceLatencyHigh",
+        "TrafficAnomaly"
+      ],
+      "raw_alert_count": "4",
+      "incident_count": "1",
+      "noise_reduction": "4",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794649823"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:51:51.339+0000",
+    "rule": {
+      "level": 12,
+      "description": "SSLE T1: causa raiz num serviço exposto (ing-01, ingestion) — limitar débito, NÃO isolar.",
+      "id": "110110",
+      "mitre": {
+        "id": [
+          "T1499.003"
+        ],
+        "tactic": [
+          "Impact"
+        ],
+        "technique": [
+          "Application Exhaustion Flood"
+        ]
+      },
+      "firedtimes": 7,
+      "mail": true,
+      "groups": [
+        "ssle",
+        "ddos",
+        "attack"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649911.70747",
+    "full_log": "{\"ts\":\"2026-11-14T09:51:51.122876+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"sites\":[\"avr\"],\"cross_site\":false,\"severity\":\"critical\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"root_cause_role\":\"ingestion\",\"affected\":[\"ssle:pt:avr:t490:ing-01\"],\"alert_names\":[\"ServiceLatencyHigh\"],\"raw_alert_count\":1,\"incident_count\":1,\"noise_reduction\":1,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794649823\",\"status\":\"updated\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "updated",
+      "ts": "2026-11-14T09:51:51.122876+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "sites": [
+        "avr"
+      ],
+      "cross_site": "false",
+      "severity": "critical",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "root_cause_role": "ingestion",
+      "affected": [
+        "ssle:pt:avr:t490:ing-01"
+      ],
+      "alert_names": [
+        "ServiceLatencyHigh"
+      ],
+      "raw_alert_count": "1",
+      "incident_count": "1",
+      "noise_reduction": "1",
+      "root_cause_ip": "10.10.1.30",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794649823"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  },
+  {
+    "timestamp": "2026-11-14T09:51:51.380+0000",
+    "rule": {
+      "level": 4,
+      "description": "SSLE: incidente de monitorização RESOLVIDO (ssle:pt:avr:t490:ing-01).",
+      "id": "110002",
+      "firedtimes": 4,
+      "mail": false,
+      "groups": [
+        "ssle",
+        "prometheus"
+      ]
+    },
+    "agent": {
+      "id": "001",
+      "name": "core-obs",
+      "ip": "10.10.0.10",
+      "labels": {
+        "host": "t490",
+        "instance": "obs",
+        "region": "pt",
+        "role": "observability",
+        "site": "core"
+      }
+    },
+    "manager": {
+      "name": "wazuh"
+    },
+    "id": "1794649911.71979",
+    "full_log": "{\"ts\":\"2026-11-14T09:51:51.126093+00:00\",\"origin\":\"prometheus\",\"site\":\"avr\",\"severity\":\"info\",\"status\":\"resolved\",\"root_cause\":\"ssle:pt:avr:t490:ing-01\",\"root_cause_instance\":\"ing-01\",\"incident_id\":\"ssle:pt:avr:t490:ing-01@1794649823\",\"incident_count\":0,\"root_cause_ip\":\"10.10.1.30\",\"srcip\":\"10.10.1.30\"}",
+    "decoder": {
+      "name": "json"
+    },
+    "data": {
+      "srcip": "10.10.1.30",
+      "status": "resolved",
+      "ts": "2026-11-14T09:51:51.126093+00:00",
+      "origin": "prometheus",
+      "site": "avr",
+      "severity": "info",
+      "root_cause": "ssle:pt:avr:t490:ing-01",
+      "root_cause_instance": "ing-01",
+      "incident_id": "ssle:pt:avr:t490:ing-01@1794649823",
+      "incident_count": "0",
+      "root_cause_ip": "10.10.1.30"
+    },
+    "location": "/var/log/ssle/incidents.json"
+  }
+]
