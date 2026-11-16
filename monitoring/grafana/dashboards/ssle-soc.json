@@ -105,8 +105,12 @@
           "mouseWheelZoom": true
         },
         "basemap": {
-          "type": "default",
-          "name": "Basemap"
+          "type": "xyz",
+          "name": "OpenStreetMap",
+          "config": {
+            "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "attribution": "© OpenStreetMap"
+          }
         },
         "tooltip": {
           "mode": "details"

@@ -161,11 +161,14 @@ Section~\ref{sec:conclusions} concludes.
 
 \subsection{Fault Management and Monitoring}
 
-The \textbf{FCAPS} (Fault, Configuration, Accounting, Performance, Security) model from
-ISO/IEC~7498-4~\cite{iso7498} remains the vocabulary of network management. Its fault
-component is a cycle: \textbf{detect}, \textbf{diagnose and isolate}, \textbf{correlate},
-\textbf{resolve/mitigate} and perform the \textbf{post-mortem}. This cycle is the skeleton
-of each threat analysis in Section~\ref{sec:threats}.
+\begin{sloppypar}
+The \textbf{FCAPS} (Fault, Configuration, Accounting, Performance,
+Security) model from ISO/IEC~7498-4~\cite{iso7498} remains the vocabulary of
+network management. Its fault component is a cycle: \textbf{detect},
+\textbf{diagnose and isolate}, \textbf{correlate}, \textbf{resolve/mitigate}
+and perform the \textbf{post-mortem}. This cycle is the skeleton of each threat
+analysis in Section~\ref{sec:threats}.
+\end{sloppypar}
 
 In monitoring tools, two collection models coexist. In the \emph{push} model (Zabbix with
 active agents, TICK stack) each element sends its metrics. In the \emph{pull} model of
@@ -298,7 +301,8 @@ and re-running the idempotent deploy.
   \includegraphics[width=\textwidth]{grafana-soc-live.png}
   \caption{SOC dashboard (live, T490): per-site availability, open incidents, settled
     alerts, federation cost per site, aggregated request rate and element-down history.
-    The geomap places each site using coordinates from the inventory.}
+    The geomap places each site using coordinates from the inventory; map tiles
+    require Internet, which the lab disables for realistic isolation (NAT~off).}
   \label{fig:soc-dashboard}
 \end{figure}
 
@@ -440,14 +444,15 @@ reversible (all with \texttt{timeout}):
   \centering
   \caption{Active-response mapping.}
   \label{tab:responses}
-  \begin{tabular}{@{}p{3.5cm}p{5cm}p{5cm}@{}}
+  \small
+  \begin{tabular}{@{}p{3.2cm}p{5cm}p{4.8cm}@{}}
     \toprule
     \textbf{Trigger} & \textbf{Response} & \textbf{Runs on} \\
     \midrule
-    110100/110101/110110 (T1) & \texttt{ssle-ratelimit}: per-origin connection limit (nft) &
+    110100/101/110 (T1) & \texttt{ssle-ratelimit}: per-origin limit (nft) &
       The attacked service \\
-    110210/110900 (T2, meta) & \texttt{ssle-quarantine}: \texttt{incus pause} of the sensor &
-      \texttt{responder}, with Incus cert restricted to \texttt{site-*} \\
+    110210/110900 (T2/meta) & \texttt{ssle-quarantine}: \texttt{incus pause} of the sensor &
+      \texttt{responder} (Incus cert restricted to \texttt{site-*}) \\
     110302/110900 (T3, meta) & \texttt{firewall-drop} of the origin &
       The attacked MTA (or service) \\
     \bottomrule
@@ -615,13 +620,13 @@ SPF/DKIM/DMARC remain as a planned countermeasure against spoofing.
   \caption{Threat mapping to CAPEC, ATT\&CK and project controls.}
   \label{tab:controls}
   \small
-  \begin{tabular}{@{}p{1cm}p{2.5cm}p{2.2cm}p{3.5cm}p{3cm}@{}}
+  \begin{tabular}{@{}p{0.8cm}p{2.2cm}p{2.2cm}p{3.8cm}p{3cm}@{}}
     \toprule
     & \textbf{CAPEC} & \textbf{ATT\&CK} & \textbf{Detection} & \textbf{Response} \\
     \midrule
-    T1 & 210 $\to$ \textbf{125} Flooding & T1499.003 &
-      \texttt{TrafficAnomaly} (robust z); \texttt{ClientLatencySLO}; Wazuh 110100/110101/110110 &
-      \texttt{ssle-ratelimit} (nft, per-origin, 300\,s timeout) \\
+    T1 & 210$\to$\textbf{125} Flooding & T1499.003 &
+      \texttt{TrafficAnomaly} (robust z); \texttt{ClientLatencySLO}; 110100/101/110 &
+      \texttt{ssle-ratelimit} (nft, 300\,s) \\
     T2 & 112 $\to$ \textbf{49} Password Brute Forcing & T1110, T1053.003, T1543.002, T1571 &
       Wazuh 110200/110201/110202; correlator $\to$ 110210 &
       \texttt{ssle-quarantine} (\texttt{incus pause}, 600\,s timeout) \\
@@ -631,6 +636,35 @@ SPF/DKIM/DMARC remain as a planned countermeasure against spoofing.
     Meta & --- & --- &
       110900 (\texttt{if\_group} + \texttt{if\_matched\_group} + \texttt{same\_source\_ip}) &
       Quarantine of the origin \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Table~\ref{tab:mitre-rules} maps each detection rule in
+\texttt{local\_rules.xml} to its MITRE ATT\&CK technique, as tagged in the XML
+source (\texttt{<mitre><id>...</id></mitre>}).
+
+\begin{table}[H]
+  \centering
+  \caption{MITRE ATT\&CK tags in Wazuh custom rules.}
+  \label{tab:mitre-rules}
+  \small
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    \textbf{Rule} & \textbf{Threat} & \textbf{ATT\&CK ID} & \textbf{Technique} \\
+    \midrule
+    110100 & T1 & T1499.003 & Application Exhaustion Flood \\
+    110101 & T1 & T1499.003 & Application Exhaustion Flood \\
+    110110 & T1 & T1499.003 & Application Exhaustion Flood \\
+    110200 & T2 & T1110    & Brute Force \\
+    110201 & T2 & T1053.003, T1543.002 & Scheduled Task / Systemd \\
+    110202 & T2 & T1571    & Non-Standard Port \\
+    110210 & T2 & T1071    & Application Layer Protocol \\
+    110300 & T3 & T1566    & Phishing \\
+    110301 & T3 & T1566    & Phishing \\
+    110302 & T3 & T1496    & Resource Hijacking \\
+    110304 & T3 & T1566    & Phishing \\
+    110900 & Meta & T1071, T1499 & App.\ Layer Protocol + DoS \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -758,6 +792,17 @@ reinforces the limiter ${\sim}2$\,min later.
   \label{fig:t1-live}
 \end{figure}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{grafana-t1-attack.png}
+  \caption{T1 dashboard during a live attack (T490, 16/11): request rate spikes from
+    baseline to ${\sim}20$\,req/s, robust z-score crosses the threshold~3,
+    client latency rises to ${\sim}1.5$\,s, and all four alert rules fire
+    (TrafficAnomaly, ServiceLatencyHigh, ClientLatencySLO). The attack resolves
+    after the \texttt{ssle-ratelimit} active response drops excess connections.}
+  \label{fig:t1-attack}
+\end{figure}
+
 \subsubsection{Post-mortem}
 
 \paragraph{What worked.} The robust z-score detected all runs without false positives and the
@@ -830,19 +875,20 @@ restore the snapshot).
 \begin{table}[H]
   \centering
   \caption{T2 detection signals.}
-  \begin{tabular}{@{}p{3cm}p{4.5cm}l@{}}
+  \small
+  \begin{tabular}{@{}p{2.8cm}p{4.8cm}p{4.8cm}@{}}
     \toprule
     \textbf{Signal} & \textbf{Source} & \textbf{Rule} \\
     \midrule
-    Auth failures per origin & \texttt{auth.log} (rsyslog) &
+    Auth failures/origin & \texttt{auth.log} (rsyslog) &
       5760/5710 $\to$ 5763/5712 $\to$ \textbf{110200} \\
-    New file in persistence dir & Real-time FIM (group \texttt{role-sensor}) &
+    New persistence file & Real-time FIM (\texttt{role-sensor}) &
       554/550 $\to$ \textbf{110201} \\
     Listening TCP ports & Remote command \texttt{ss} &
       533 $\to$ \textbf{110202} \\
-    Outbound TCP connections & \texttt{OutboundAnomaly} (robust z) $\to$ correlator &
-      Root cause with \texttt{OutboundAnomaly} $\to$ \textbf{110210} \\
-    Root cause \textbf{and} impact origin & Cross-agent correlation &
+    Outbound connections & \texttt{OutboundAnomaly} $\to$ correlator &
+      Root cause + OutboundAnomaly $\to$ \textbf{110210} \\
+    Root cause + impact & Cross-agent correlation &
       \textbf{110900} \\
     \bottomrule
   \end{tabular}
@@ -850,12 +896,14 @@ restore the snapshot).
 
 \subsubsection{Detection and Response}
 
-The response is the \textbf{quarantine} of the sensor (\texttt{incus pause}): it freezes the
-container and preserves memory and disk for forensics, without deleting anything. It is
-executed by \texttt{core/responder} with an Incus certificate \textbf{restricted} to
-\texttt{site-*} projects. The target is resolved from the fleet map, and the script refuses
-anything that is not a sensor in a site project. The quarantine lifts on its own after
-600\,s (\texttt{delete} from Wazuh) or earlier, manually.
+The response is the \textbf{quarantine} of the sensor
+(\texttt{incus~pause}): it freezes the container and preserves memory and disk
+for forensics, without deleting anything. It is executed by
+\texttt{core/\allowbreak responder} with an Incus certificate
+\textbf{restricted} to \texttt{site-*} projects. The target is resolved from
+the fleet map, and the script refuses anything outside a site project.
+The quarantine lifts after 600\,s (\texttt{delete} from Wazuh) or earlier,
+manually.
 
 \paragraph{Validation with real agents} (Docker, 09/11/2026):
 
@@ -910,6 +958,16 @@ state of composite rules is \textbf{per-agent}, so rule~110900 did not join the 
   \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{grafana-soc-t2.png}
+  \caption{SOC dashboard during the T2 PoC (live, T490, 16/11): \texttt{opo} drops
+    to 75\% (1 of 4 elements down), one open incident, and six active alerts
+    including \texttt{OutboundAnomaly} and \texttt{ElementDown} on
+    \texttt{sen-01}. The sensor is FROZEN (\texttt{incus pause}).}
+  \label{fig:soc-t2}
+\end{figure}
+
 \subsubsection{Post-mortem}
 
 \paragraph{What the validation caught.} Three of the five rules for this threat were valid
@@ -952,13 +1010,16 @@ meta-correlation closes the ``one botnet, two impacts'' story.
 
 \subsubsection{Exploitation / PoC}
 
-The MTA is configured with relay only for \texttt{mynetworks} with explicit
-\texttt{reject\_unauth\_destination} (the default \texttt{defer\_unauth\_destination}
-responds~450, and ruleset rule~3301 looks for~554); per-client \texttt{anvil}; and
-\textbf{no mail leaves the lab} (\texttt{default\_transport = error}). The ``bot'' is a
-plain-bash SMTP client that runs on a sensor without installing anything. It sends $N$
-messages with the \textbf{GTUBE} (SpamAssassin's standard test string) and $M$ relay
-attempts to \texttt{external.example}.
+\begin{sloppypar}
+The MTA is configured with relay only for \texttt{mynetworks} with
+explicit \texttt{reject\_unauth\_destination} (the default
+\texttt{defer\_unauth\_destination} responds~450, and ruleset
+rule~3301 looks for~554); per-client \texttt{anvil}; and \textbf{no mail
+leaves the lab} (\texttt{default\_transport = error}). The ``bot'' is a
+plain-bash SMTP client that runs on a sensor without installing anything.
+It sends $N$ messages with the \textbf{GTUBE} (SpamAssassin's standard
+test string) and $M$ relay attempts to \texttt{external.example}.
+\end{sloppypar}
 
 \subsubsection{Metrics}
 
