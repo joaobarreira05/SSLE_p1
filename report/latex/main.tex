@@ -280,6 +280,15 @@ and re-running the idempotent deploy.
   \label{fig:topology}
 \end{figure}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{grafana-soc-live.png}
+  \caption{SOC dashboard (live, T490): per-site availability, open incidents, settled
+    alerts, federation cost per site, aggregated request rate and element-down history.
+    The geomap places each site using coordinates from the inventory.}
+  \label{fig:soc-dashboard}
+\end{figure}
+
 \subsection{Identification and Registration}
 
 Each element has a \textbf{canonical identity}
@@ -724,6 +733,15 @@ reinforces the limiter ${\sim}2$\,min later.
     SLO, \texttt{TrafficAnomaly} state (pending $\to$ firing) and sensor readings. Replay
     from staging evidence of 06/11.}
   \label{fig:t1-dashboard}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{grafana-t1-live.png}
+  \caption{T1 dashboard (live, T490, baseline): request rate ${\sim}0.3$\,req/s from
+    two sensors, robust z-score $< 1$ (no anomaly), client latency well under the
+    100\,ms SLO, and zero errors. This is the steady state before an attack.}
+  \label{fig:t1-live}
 \end{figure}
 
 \subsubsection{Post-mortem}
