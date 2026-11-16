@@ -172,9 +172,9 @@ active agents, TICK stack) each element sends its metrics. In the \emph{pull} mo
 \textbf{Prometheus}~\cite{brazil2018} the server collects, over HTTP, a plain-text format.
 Pull has two advantages for this project: the health of each target (\texttt{up}) comes for
 free and target discovery rests with the monitor. Scale is achieved through
-\textbf{hierarchy}: one Prometheus per site and a global one that \textbf{federates only
-aggregates} (recording rules), rather than all time series, which saves bandwidth between
-sites. On top of the metrics sit two reading methods: \textbf{USE} (Utilisation, Saturation,
+\textbf{hierarchy}~\cite{prometheus2024}: one Prometheus per site and a global one that
+\textbf{federates only aggregates} (recording rules), rather than all time series, which
+saves bandwidth between sites. On top of the metrics sit two reading methods: \textbf{USE} (Utilisation, Saturation,
 Errors) for resources and \textbf{RED} (Rate, Errors, Duration) for services. Also
 \textbf{SLOs}~\cite{sre2016}, which measure quality from the user's perspective.
 Section~\ref{sec:t1} shows why: during T1, the server measured 23~ms while the client
@@ -191,6 +191,19 @@ contamination. A unit test of our rules shows the effect on the second of two co
 attacks: $z \approx 2.0$ with mean/std (no alarm) versus $z \approx 39.6$ with median/IQR.
 The live T1 runs confirm it: mean/std would have missed 2 of 3
 (Section~\ref{sec:t1}).
+
+\subsection{IoT Threats and Botnets}
+
+The convergence of large IoT fleets with limited patching cycles has made them prime targets
+for botnets. Kolias~et~al.~\cite{kolias2017} survey the DDoS-in-IoT landscape, with the
+Mirai botnet~\cite{antonakakis2017} as the defining case: compromised devices are recruited
+via default credentials, persist through cron or systemd, and launch volumetric floods.
+Bertino and Islam~\cite{bertino2017} frame the problem as an integrity-to-availability
+chain---an attacker compromises a device (integrity) and uses it to disrupt a service
+(availability)---which is precisely the T2$\to$T1/T3 progression this project
+emulates. Detection typically combines host indicators (file integrity, outbound anomalies)
+with network indicators (traffic volume, connection patterns), and response ranges from IP
+blocking to full device isolation~\cite{scarfone2007}.
 
 \subsection{Event Correlation and Root Cause}
 
@@ -217,11 +230,11 @@ correlator generalises this to the full dependency graph and measures noise redu
 
 \subsection{SIEM, XDR and Response}
 
-A \textbf{SIEM} collects, normalises and correlates logs from many sources and alerts on
-patterns (rules with frequency, sequence and matching fields). \textbf{Wazuh}~\cite{wazuh},
-heir to OSSEC, adds endpoint telemetry: file integrity monitoring (FIM), inventory and
-command execution. It also adds \textbf{active response}, a script executed on an agent when
-a rule fires. The \textbf{XDR} family extends this to more sources (network, cloud, identity)
+A \textbf{SIEM} collects, normalises and correlates logs from many
+sources~\cite{chuvakin2012,scarfone2007} and alerts on patterns (rules with frequency,
+sequence and matching fields). \textbf{Wazuh}~\cite{wazuh}, heir to OSSEC, adds endpoint
+telemetry: file integrity monitoring (FIM), inventory and command execution. It also adds
+\textbf{active response}, a script executed on an agent when a rule fires. The \textbf{XDR} family extends this to more sources (network, cloud, identity)
 with orchestrated response. Wazuh rules can correlate events from different sources
 (\texttt{if\_matched\_group} with \texttt{same\_source\_ip}, as in rule~40112 of the default
 ruleset), and this is the mechanism our meta-correlation rule~110900 uses. The classic
@@ -232,8 +245,8 @@ a denial of service. Hence the choice of proportional, reversible responses
 \subsection{Threat Modelling}
 
 The attack surface enumerates where the system is reachable. \textbf{MITRE CAPEC} classifies
-attack patterns by domain (CAPEC-3000) and mechanism (CAPEC-1000), and \textbf{MITRE ATT\&CK}
-catalogues techniques observed in real attacks. The \textbf{attack--defence trees}
+attack patterns by domain (CAPEC-3000) and mechanism (CAPEC-1000), and \textbf{MITRE
+ATT\&CK}~\cite{mitre2024} catalogues techniques observed in real attacks. The \textbf{attack--defence trees}
 (ADTrees) of Kordy et~al.~\cite{kordy2014} combine both perspectives in a single formalism.
 Attack nodes refine into OR/AND, and countermeasures attach to the opposing role, enabling
 reasoning about ``the defence pushes the attacker to what'' (Section~\ref{sec:risk}).
@@ -542,8 +555,9 @@ Likelihood and impact on a qualitative 1--3 scale, for the seven threats from th
 
 The chosen trio covers the CIA triad and three detection families: metrics and anomalies (T1),
 endpoint telemetry (T2) and application-content with reputation (T3). It also connects into a
-single story: botnets are the typical origin of DDoS and spam, and this link is what
-meta-correlation rule~110900 looks for.
+single story: botnets are the typical origin of DDoS and
+spam~\cite{kolias2017,antonakakis2017}, and this link is what meta-correlation rule~110900
+looks for.
 
 \subsection{Attack--Defence Trees}
 
@@ -1284,7 +1298,7 @@ this rule'' and with real agents.
 
 
 %% ============================================================================
-\begin{thebibliography}{8}
+\begin{thebibliography}{15}
 \bibitem{iso7498}
   ISO/IEC~7498-4:1989,
   \emph{Information processing systems---OSI Basic Reference Model---Part~4: Management
@@ -1324,6 +1338,43 @@ this rule'' and with real agents.
   B.~Kordy, S.~Mauw, S.~Radomirovi\'c, P.~Schweitzer,
   ``Attack--defence trees,''
   \emph{Journal of Logic and Computation}, 24(1):55--87, 2014.
+
+\bibitem{mitre2024}
+  MITRE Corporation,
+  \emph{MITRE ATT\&CK\textregistered\ Enterprise Matrix}, version~15,
+  2024.
+  \url{https://attack.mitre.org/}.
+
+\bibitem{kolias2017}
+  C.~Kolias, G.~Kambourakis, A.~Stavrou, J.~Voas,
+  ``DDoS in the IoT: Mirai and other botnets,''
+  \emph{Computer}, 50(7):80--84, IEEE, 2017.
+
+\bibitem{antonakakis2017}
+  M.~Antonakakis \emph{et~al.},
+  ``Understanding the Mirai botnet,''
+  in \emph{Proc.\ 26th USENIX Security Symp.}, pp.~1093--1110, 2017.
+
+\bibitem{bertino2017}
+  E.~Bertino, N.~Islam,
+  ``Botnets and Internet of Things security,''
+  \emph{Computer}, 50(2):76--79, IEEE, 2017.
+
+\bibitem{scarfone2007}
+  K.~Scarfone, P.~Mell,
+  ``Guide to Intrusion Detection and Prevention Systems (IDPS),''
+  NIST SP~800-94, 2007.
+
+\bibitem{prometheus2024}
+  Prometheus Authors,
+  \emph{Prometheus documentation: Federation},
+  2024.
+  \url{https://prometheus.io/docs/prometheus/latest/federation/}.
+
+\bibitem{chuvakin2012}
+  A.~Chuvakin, K.~Schmidt, C.~Phillips,
+  \emph{Logging and Log Management: The Authoritative Guide to Dealing with Syslog, Audit Logs, Events, Alerts and Other IT Noise},
+  Syngress, 2012.
 \end{thebibliography}
 
 \end{document}
