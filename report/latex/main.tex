@@ -314,11 +314,11 @@ identity labels and leaving them 9~s after dying (TTL of 10~s in the test).
   \item \textbf{Physical}---the \texttt{host} label identifies the machine running the
     container (\texttt{t490} in production, \texttt{mac-m2} in staging). The three sites are
     emulated on a single physical host, a limitation discussed in Section~\ref{sec:conclusions}.
-  \item \textbf{Logical}---each site is an \textbf{Incus project} and a dedicated
-    \textbf{bridge network} (\texttt{net-avr} \texttt{10.10.1.0/24}, etc.), with DNS domain
-    \texttt{<site>.ssle.lab}; the core uses \texttt{net-core} (\texttt{10.10.0.0/24}).
-    Quarantine does not use a dedicated network: it is an \texttt{incus pause}, which freezes
-    the container and preserves memory and disk for forensics.
+  \item \textbf{Logical}---each site is an \textbf{Incus project} with its own bridge
+    (\texttt{net-avr}/\allowbreak\texttt{10.10.1.0/24}, etc.)\ and DNS domain
+    \texttt{<site>.ssle.lab}; the core sits on \texttt{net-core}
+    (\texttt{10.10.0.0/24}). Quarantine is \texttt{incus~pause}: it freezes the
+    container, preserving memory and disk for forensics.
   \item \textbf{Geographic}---latitude and longitude of each site are in the inventory,
     published by the site registry as \texttt{site\_info} and aggregated into
     \texttt{site:info:last}, which feeds the SOC dashboard map.
@@ -388,9 +388,9 @@ and FIM on persistence directories for sensors, the access log of exposed servic
 \texttt{mail.log} of the MTA, the \texttt{incidents.json} of the correlator on \texttt{obs}
 and a remote command listing TCP listening ports.
 
-The project's rules occupy reserved ranges---\texttt{1100xx} correlator integration,
-\texttt{1101xx}~T1, \texttt{1102xx}~T2, \texttt{1103xx}~T3, \texttt{1109xx}
-meta-correlation---and are validated at two levels before deployment:
+The project's rules occupy reserved ranges---\texttt{1100xx}~correlator,
+\texttt{1101xx}~T1, \texttt{1102xx}~T2, \texttt{1103xx}~T3,
+\texttt{1109xx}~meta-correlation---and are validated at two levels before deployment:
 
 \begin{enumerate}
   \item \textbf{25 assertion-based cases} on the real \texttt{wazuh-analysisd}~4.14.10,
@@ -549,13 +549,13 @@ red ellipses for attacks, green rectangles for defences, an arc for conjunctive 
   \label{fig:adtree-t1}
 \end{figure}
 
-\textbf{T1.} The longest chain is the application branch: the per-origin rate-limit
-(110100~$\to$~\texttt{ssle-ratelimit}) pushes the attacker to distribute the load, and that
-distribution is an AND (control $N$ bots \textbf{and} coordinate them). The defence against
-the distributed variant limits \textbf{each} origin when the correlator points to the
-service itself as root cause (110110). The ``take down the dependency'' node shows the value
-of correlation: without it, the operator would look for the problem at \texttt{ing-01},
-which is only the symptom.
+\textbf{T1.} The longest chain is the application branch: the per-origin
+rate-limit (rule~110100 $\to$ \texttt{ssle-ratelimit}) pushes the attacker to distribute
+the load, an AND (control $N$~bots \textbf{and} coordinate them). The defence against the
+distributed variant limits \textbf{each} origin when the correlator points to the service
+itself as root cause (rule~110110). The ``take down the dependency'' node shows the value of
+correlation: without it, the operator would look for the problem at \texttt{ing-01}, which
+is only the symptom.
 
 \begin{figure}[H]
   \centering
@@ -657,17 +657,18 @@ metrics and the correlator's \texttt{incidents.json}), not from a stopwatch.
 \begin{table}[H]
   \centering
   \caption{T1 measurement signals.}
-  \begin{tabular}{@{}lll@{}}
+  \small
+  \begin{tabular}{@{}p{2.2cm}p{5.8cm}p{5.5cm}@{}}
     \toprule
     \textbf{Signal} & \textbf{Series} & \textbf{Use} \\
     \midrule
     Rate (R of RED) & \texttt{instance:http\_requests:rate1m} &
       Input to robust z-score (\texttt{TrafficAnomaly}) \\
-    Server latency (D) & \texttt{instance:http\_request\_duration\_seconds:p95\_1m} &
+    Server latency (D) & \texttt{instance:http\_request\_\allowbreak duration\_seconds:p95\_1m} &
       100\,ms SLO (\texttt{ServiceLatencyHigh}) \\
-    \textbf{Client} latency & \texttt{instance:ssle\_sensor\_upstream\_duration\_seconds:p95\_1m} &
+    \textbf{Client} latency & \texttt{instance:ssle\_sensor\_\allowbreak upstream\_duration\_seconds:\allowbreak p95\_1m} &
       Client-side SLO (\texttt{ClientLatencySLO}); defines \textbf{recovery} \\
-    Lost readings & \texttt{ssle\_sensor\_readings\_total\{result="error"\}} &
+    Lost readings & \texttt{ssle\_sensor\_readings\_total\allowbreak\{result="error"\}} &
       Damage to the legitimate fleet \\
     SOC arrival & \texttt{incidents.json} (timestamp, root cause) &
       End-to-end MTTD \\
@@ -684,20 +685,21 @@ metrics and the correlator's \texttt{incidents.json}), not from a stopwatch.
   \centering
   \caption{T1 results: staging control group vs.\ T490 with SIEM response.}
   \label{tab:t1-results}
-  \begin{tabular}{@{}lp{5cm}p{5cm}@{}}
+  \small
+  \begin{tabular}{@{}p{2.8cm}p{4.8cm}p{4.8cm}@{}}
     \toprule
     & \textbf{Control group} (staging, no response, 3~runs) &
       \textbf{T490 with SIEM response} (6~runs) \\
     \midrule
-    Detection \texttt{TrafficAnomaly} &
+    Detection \texttt{Traffic\-Anomaly} &
       MTTD $81.7 \pm 2.9$\,s (3/3) &
       MTTD $80.5 \pm 5.1$\,s (6/6) \\
-    \textbf{SIEM response} (rule 110100 $\to$ nft) &
+    \textbf{SIEM response} (110100 $\to$ nft) &
       --- & ${\sim}6$\,s (active in all runs) \\
     SOC incident (correlator) &
       MTTD $92.9 \pm 0.1$\,s (3/3, root cause \texttt{ing-01}) &
-      MTTD $120.2 \pm 7.4$\,s (6/6, root cause \texttt{ing-01}, cross-site) \\
-    Dropped packets (nft \texttt{ssle\_rl}) &
+      MTTD $120.2 \pm 7.4$\,s (6/6, root cause \texttt{ing-01}) \\
+    Dropped packets (nft) &
       --- & 597--1\,098 per run \\
     Lost readings &
       \textbf{0} & \textbf{0} \\
@@ -828,7 +830,8 @@ anything that is not a sensor in a site project. The quarantine lifts on its own
 \begin{table}[H]
   \centering
   \caption{T2 Docker validation results.}
-  \begin{tabular}{@{}lp{10cm}@{}}
+  \small
+  \begin{tabular}{@{}p{4cm}p{9cm}@{}}
     \toprule
     \textbf{Step} & \textbf{Result} \\
     \midrule
@@ -839,9 +842,9 @@ anything that is not a sensor in a site project. The quarantine lifts on its own
     Port 31337 open &
       \textbf{110202} (level~10), on first remote-command execution (60\,s) \\
     Correlator: root cause = \texttt{sen-01} &
-      \textbf{110210} on agent \texttt{obs} $\to$ \texttt{incus pause} on \texttt{responder} \\
-    \texttt{sen-02} is root cause \textbf{and} DoS origin on \texttt{ing-01} &
-      \textbf{110900} (level~14)---cross-agent correlation $\to$ quarantine \\
+      \textbf{110210} on \texttt{obs} $\to$ \texttt{incus pause} on \texttt{responder} \\
+    \texttt{sen-02} root cause \textbf{and} DoS origin &
+      \textbf{110900} (level~14)---cross-agent $\to$ quarantine \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -856,7 +859,8 @@ state of composite rules is \textbf{per-agent}, so rule~110900 did not join the 
 \begin{table}[H]
   \centering
   \caption{T2 T490 PoC results.}
-  \begin{tabular}{@{}lll@{}}
+  \small
+  \begin{tabular}{@{}p{4.5cm}lp{5.5cm}@{}}
     \toprule
     \textbf{Step} & \textbf{Time from T0} & \textbf{Result} \\
     \midrule
@@ -864,12 +868,12 @@ state of composite rules is \textbf{per-agent}, so rule~110900 did not join the 
       \textbf{110201}---real-time FIM \\
     8 simulated SSH failures & +123\,s &
       \textbf{110200} (level~11) \\
-    Beaconing (40$\times$3\,s to \texttt{ing-01}) & ${\sim}120$\,s duration &
-      \texttt{OutboundAnomaly} firing on \texttt{sen-01} \\
-    Correlator: root cause = \texttt{sen-01} & +140\,s &
-      \textbf{110210} $\to$ quarantine (\texttt{incus pause}, FROZEN) \\
-    Meta-correlation (T2+T3 same sensor) & within 15\,min &
-      \textbf{110900} (level~14) + \texttt{firewall-drop} \\
+    Beaconing (40$\times$3\,s) & ${\sim}120$\,s &
+      \texttt{OutboundAnomaly} on \texttt{sen-01} \\
+    Correlator: \texttt{sen-01} & +140\,s &
+      \textbf{110210} $\to$ quarantine (FROZEN) \\
+    Meta-correlation (T2+T3) & $<15$\,min &
+      \textbf{110900} + \texttt{firewall-drop} \\
     \bottomrule
   \end{tabular}
 \end{table}
