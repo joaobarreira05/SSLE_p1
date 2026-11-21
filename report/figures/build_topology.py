@@ -32,7 +32,7 @@ def main():
     pos, parts = {}, []
     rows = max(sum(1 for e in m["elements"] if e["site"] == c) for c in cols)
     W = PAD * 2 + COLW * len(cols)
-    H = TOP + rows * (BOXH + GAP) + 70
+    H = TOP + rows * (BOXH + GAP) + 90
     parts.append('<rect x="0" y="0" width="%d" height="%d" fill="#ffffff"/>' % (W, H))
     parts.append('<text x="%d" y="28" font-size="17" font-weight="700" fill="#111827">Name topology '
                  '— generated from inventory/sites.yaml (full profile, physical host t490)</text>' % PAD)
@@ -42,7 +42,7 @@ def main():
         title = "core (SOC)" if c == "core" else "site-%s · %s" % (c, n.get("city", ""))
         sub = "%s · net-%s · %s" % (n.get("subnet", ""), c, "soc" if c == "core" else n.get("team", ""))
         parts.append('<rect x="%d" y="44" width="%d" height="%d" rx="12" fill="#f9fafb" stroke="#d1d5db"/>'
-                     % (x0 + 6, COLW - 12, H - 60))
+                     % (x0 + 6, COLW - 12, H - 84))
         parts.append('<text x="%d" y="66" font-size="14" font-weight="700" fill="#111827">%s</text>'
                      % (x0 + 18, escape(title)))
         parts.append('<text x="%d" y="84" font-size="11" fill="#4b5563">%s</text>' % (x0 + 18, escape(sub)))

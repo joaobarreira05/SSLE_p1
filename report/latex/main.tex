@@ -296,7 +296,6 @@ and re-running the idempotent deploy.
   \label{fig:topology}
 \end{figure}
 
-\clearpage
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{grafana-soc-live.png}
@@ -582,11 +581,10 @@ red ellipses for attacks, green rectangles for defences, an arc for conjunctive 
 rate-limit (rule~110100 $\to$ \texttt{ssle-ratelimit}) pushes the attacker to distribute
 the load, an AND (control $N$~bots \textbf{and} coordinate them). The defence against the
 distributed variant limits \textbf{each} origin when the correlator points to the service
-itself as root cause (rule~110110). The ``take down the dependency'' node shows the value of
+itself as root cause (rule~110110). The ``take down the storage dependency'' node shows the value of
 correlation: without it, the operator would look for the problem at \texttt{ing-01}, which
 is only the symptom.
 
-\clearpage
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{adtree-t2.png}
@@ -602,7 +600,6 @@ with jitter, that evades the traffic anomaly. The project's response is not to d
 single signal: rule~110900 joins ``this sensor is a root cause'' with ``this sensor is the
 origin of an impact,'' even when each signal alone stays below the response threshold.
 
-\clearpage
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{adtree-t3.png}
@@ -786,7 +783,6 @@ reinforces the limiter ${\sim}2$\,min later.
   \label{fig:t1-dashboard}
 \end{figure}
 
-\clearpage
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{grafana-t1-live.png}
@@ -1364,31 +1360,30 @@ this rule'' and with real agents.
 
 \subsection{AI Usage Disclosure}
 
-This project used \textbf{Claude Opus~4.6} (Anthropic) as an assistive tool throughout its
-development. The model was used in the following capacities:
+This project made extensive use of generative AI. The large majority of the AI-assisted work
+was done with \textbf{Claude Opus~4.6} (Anthropic), used as a coding and writing assistant.
+It was used for:
 
 \begin{itemize}
-  \item \textbf{Infrastructure automation:} generating deployment scripts, Incus container
-    configuration and inventory-driven code generation (network setup, Prometheus targets,
-    Wazuh agent enrolment). The architecture decisions---hierarchical federation, dependency
-    graph for correlation, TTL-based registry, restricted responder certificate---were made by
-    the author and validated with the model acting as a sounding board.
-  \item \textbf{Monitoring and SIEM configuration:} Grafana dashboard definitions, Prometheus
-    recording rules, Wazuh rule authoring and the correlator logic. The model helped translate
-    design intent into working configuration and suggested edge-case tests (e.g.\ composite-rule
-    state being per-agent, the \texttt{ignore} semantics).
-  \item \textbf{Report writing:} the \LaTeX\ source was written with AI assistance for
-    structuring sections, phrasing technical descriptions and producing consistent formatting.
-    All technical content, measurements and conclusions are the author's own.
-  \item \textbf{Code quality:} translating the codebase to a single language (English),
-    reviewing Python code for consistency, and generating figure-building scripts from
-    inventory data.
+  \item \textbf{Automation:} writing the deployment and test automation---Incus container
+    provisioning, inventory-driven generation of networks, Prometheus targets, Wazuh agent
+    enrolment and configuration, and the scripts that run the PoCs and collect evidence.
+  \item \textbf{Architecture decisions:} discussing the design of the Incus lab and reaching
+    decisions with the model's help---one Incus project and network per site, hierarchical
+    Prometheus federation, the dependency graph for root-cause correlation, the TTL-based site
+    registry and the restricted certificate for the responder. The final choices and their
+    validation on the lab were the author's responsibility.
+  \item \textbf{Monitoring and SIEM configuration:} Grafana dashboards, Prometheus rules, Wazuh
+    rules and the correlator, including tests for edge cases such as per-agent composite-rule
+    state and the \texttt{ignore} semantics.
+  \item \textbf{Writing the report in \LaTeX:} structuring sections, phrasing technical
+    descriptions, tables and formatting, and keeping the repository documentation in a single
+    language (English).
 \end{itemize}
 
-No AI-generated content was used without review. Every script, rule, configuration file and
-measurement was tested on the real infrastructure (T490 with 15~Incus containers) or in the
-Docker-based integration environment before inclusion. The model did not have access to the
-running lab; all test results are from real executions.
+The author reviewed the AI-generated output and is responsible for it. The measurements and
+results reported here come from real executions on the lab (T490, 15~Incus containers) and
+in the Docker-based integration environment, not from the model.
 
 %% ============================================================================
 \begin{thebibliography}{15}

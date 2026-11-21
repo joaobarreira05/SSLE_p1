@@ -90,7 +90,7 @@ def main():
     p += arrow(620, BY, 620, 168, "log")
     p.append('<text x="626" y="%d" font-size="10.5" fill="%s">Wazuh agents (1514/1515)</text>' % (BY - 8, C["log"]))
     p += arrow(1030, 168, 1030, BY, "resp")
-    p.append('<text x="1036" y="%d" font-size="10.5" fill="%s">incus pause (Incus API)</text>' % (BY - 8, C["resp"]))
+    p.append('<text x="1042" y="%d" font-size="10.5" fill="%s">incus pause (Incus API)</text>' % (BY - 8, C["resp"]))
 
     # ── sites ──
     sites = [s for s in ("avr", "opo", "lis") if s in by_site]

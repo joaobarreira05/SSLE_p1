@@ -43,7 +43,7 @@ TREES = {
                cm=D("TrafficAnomaly: robust z-score (median+IQR), MTTD 82 s",
                     cm=A("Ramp up slowly and poison the baseline",
                          cm=D("Baseline window ≥ 20 min + absolute limits", state="○")))),
-             A("Take down the dependency (sto-01)",
+             A("Take down the storage dependency (sto-01)",
                cm=D("Correlator: root cause = sto-01, not ing-01 (N alerts → 1 incident)"))),
            ),
     "t2": ("T2 — IoT botnet (Integrity → Availability)",
