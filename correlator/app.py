@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Correlator (RCA) do Projeto 1 (SSLE) — camada HTTP.
+Correlator (RCA) for Project 1 (SSLE) — HTTP layer.
 
-Recebe os alertas do Alertmanager (webhook), entrega-os ao núcleo rca.py (causa raiz por
-cobertura gulosa do grafo de dependências, ATRAVÉS dos sites) e escreve UMA linha JSON por
-incidente aberto/atualizado/resolvido em /var/log/ssle/incidents.json (que o agente Wazuh do
-core/obs lê — siem/shared/core/agent.conf). Expõe métricas em /metrics para o Prometheus global.
+Receives alerts from Alertmanager (webhook), passes them to the rca.py core (root cause via
+greedy set cover on the dependency graph, ACROSS sites) and writes ONE JSON line per
+opened/updated/resolved incident to /var/log/ssle/incidents.json (read by the Wazuh agent on
+core/obs — siem/shared/core/agent.conf). Exposes metrics at /metrics for the global Prometheus.
 
-Um ticker chama o núcleo a cada TICK s: sem ele, um incidente à espera da janela de
-estabilização (CORRELATOR_SETTLE) só sairia no próximo webhook (o Alertmanager reenvia a cada
+A ticker calls the core every TICK s: without it, an incident waiting for the settle window
+(CORRELATOR_SETTLE) would only be emitted on the next webhook (Alertmanager resends every
 group_interval = 30 s).
 
-Depende só de Flask (stdlib + flask). Métricas em texto, sem prometheus_client.
+Depends only on Flask (stdlib + flask). Text metrics, no prometheus_client.
 """
 import json, os, sys, threading, time
 from flask import Flask, request, jsonify
@@ -59,19 +59,19 @@ def metrics():
     with _lock:
         m = dict(CORR.metrics)
     lines = [
-        "# HELP correlator_incidents_total Incidentes correlacionados (com causa raiz) abertos desde o arranque.",
+        "# HELP correlator_incidents_total Correlated incidents (with root cause) opened since start.",
         "# TYPE correlator_incidents_total counter",
         "correlator_incidents_total %d" % m["incidents_total"],
-        "# HELP correlator_active_alerts Alertas em bruto ativos no correlator.",
+        "# HELP correlator_active_alerts Raw alerts currently active in the correlator.",
         "# TYPE correlator_active_alerts gauge",
         "correlator_active_alerts %d" % m["active_alerts"],
-        "# HELP correlator_open_incidents Incidentes abertos (emitidos e ainda não resolvidos).",
+        "# HELP correlator_open_incidents Incidents open (emitted and not yet resolved).",
         "# TYPE correlator_open_incidents gauge",
         "correlator_open_incidents %d" % m["open_incidents"],
-        "# HELP correlator_pending_incidents Incidentes à espera da janela de estabilização.",
+        "# HELP correlator_pending_incidents Incidents waiting for the settle window.",
         "# TYPE correlator_pending_incidents gauge",
         "correlator_pending_incidents %d" % m["pending_incidents"],
-        "# HELP correlator_last_noise_reduction Alertas em bruto por incidente (último emitido).",
+        "# HELP correlator_last_noise_reduction Raw alerts per incident (last emitted).",
         "# TYPE correlator_last_noise_reduction gauge",
         "correlator_last_noise_reduction %s" % m["last_noise_reduction"],
     ]

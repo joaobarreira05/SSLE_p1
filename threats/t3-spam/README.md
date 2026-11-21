@@ -1,37 +1,37 @@
-# Ameaça 3 — Junk e-mail (spam) + reputação
+# Threat 3 — Junk e-mail (spam) + reputation
 
-> Reaproveita a aula 8 (Postfix + SpamAssassin) no `lis/mail-01`, que **não** entra no perfil `staging`
-> (poupa RAM). Tudo como código aqui; corre no T490 (`SSLE_PROFILE=full`) e é **provado sem o lab** pelo
-> `siem/tests/it-agents.sh` (MTA e agente Wazuh reais em Docker).
+> Reuses lecture 8 (Postfix + SpamAssassin) on `lis/mail-01`, which does **not** enter the `staging` profile
+> (saves RAM). Everything as code here; runs on the T490 (`SSLE_PROFILE=full`) and is **proved without the lab**
+> via `siem/tests/it-agents.sh` (real MTA and Wazuh agent in Docker).
 
-| Ficheiro | O que faz |
+| File | What it does |
 |---|---|
-| [`mail-setup.sh`](mail-setup.sh) | monta o MTA dentro do contentor (o deploy chama-o no papel `mail`): relay só para `mynetworks` (`reject_unauth_destination` → **554**), *content filter* `spamc`/`spamd` (utilizador `debian-spamd`), `anvil` (60 mensagens/ligações por minuto por cliente), **saída para fora desligada** (`default_transport = error`), fila do Postfix para o Prometheus (*textfile collector*, `postfix_queue_messages`) |
-| [`smtp-poc.sh`](smtp-poc.sh) | cliente SMTP em **bash puro** (`/dev/tcp`), corre num sensor sem instalar nada: N mensagens com a **GTUBE** (cadeia de teste do SpamAssassin, inofensiva) + M tentativas de relay para `external.example` |
-| [`run.sh`](run.sh) | a PoC no lab: `bash threats/t3-spam/run.sh sen-01 site-opo 10.10.3.70 11 5` |
+| [`mail-setup.sh`](mail-setup.sh) | sets up the MTA inside the container (deploy calls it for the `mail` role): relay only for `mynetworks` (`reject_unauth_destination` → **554**), *content filter* `spamc`/`spamd` (user `debian-spamd`), `anvil` (60 messages/connections per minute per client), **outbound disabled** (`default_transport = error`), Postfix queue for Prometheus (*textfile collector*, `postfix_queue_messages`) |
+| [`smtp-poc.sh`](smtp-poc.sh) | SMTP client in **pure bash** (`/dev/tcp`), runs on a sensor without installing anything: N messages with the **GTUBE** (SpamAssassin standard test string, harmless) + M relay attempts to `external.example` |
+| [`run.sh`](run.sh) | the lab PoC: `bash threats/t3-spam/run.sh sen-01 site-opo 10.10.3.70 11 5` |
 
-## Deteção (Wazuh, validada no `wazuh-analysisd` real e com agente real)
+## Detection (Wazuh, validated on real `wazuh-analysisd` and with real agent)
 
-| Sinal no `mail.log` | Regra |
+| Signal in `mail.log` | Rule |
 |---|---|
-| `spamd: result: Y 1000 - GTUBE,…` | 3501 → **110301** (spam) → **110304** (alta confiança, score ≥ 15) |
-| ≥ 10 mensagens marcadas em 2 min | **110300** (vaga; conta pelo grupo `ssle_spam_msg`, porque a GTUBE acaba na 110304) |
-| `NOQUEUE: reject: RCPT … 554 5.7.1 … Relay access denied` × 5 da mesma origem | 3301 → **110302** → `firewall-drop` (600 s) |
-| rejeição a uma origem da lista `ssle-reputation` | **110310** (CDB) |
-| a origem do relay é um sensor que o correlador apontou como causa raiz | **110900** (meta, entre agentes) → quarentena |
+| `spamd: result: Y 1000 - GTUBE,…` | 3501 → **110301** (spam) → **110304** (high confidence, score ≥ 15) |
+| ≥ 10 marked messages in 2 min | **110300** (wave; counts by group `ssle_spam_msg`, because GTUBE ends at 110304) |
+| `NOQUEUE: reject: RCPT … 554 5.7.1 … Relay access denied` × 5 from same origin | 3301 → **110302** → `firewall-drop` (600 s) |
+| rejection from an origin in the `ssle-reputation` list | **110310** (CDB) |
+| relay origin is a sensor the correlator flagged as root cause | **110900** (meta, cross-agent) → quarantine |
 
-🧠 **Porquê o `reject_unauth_destination` explícito:** o Postfix vem com `defer_unauth_destination`, que
-responde **450** (tenta mais tarde). Isso casa com a 3303 do *ruleset* e não com a 3301 em que a 110302 se
-apoia: o relay seria recusado e o SIEM nunca o saberia.
+**Why the explicit `reject_unauth_destination`:** Postfix ships with `defer_unauth_destination`, which
+responds **450** (try again later). That matches ruleset rule 3303, not the 3301 that 110302 depends on:
+the relay would be refused and the SIEM would never know.
 
-## Resposta e prevenção
+## Response and prevention
 
-`firewall-drop` com *timeout* no `mail-01` (bloqueio temporário da origem), lista de reputação (CDB + RBL) e
-*rate-limit* no MTA (`anvil`). Planeado: SPF/DKIM/DMARC contra o *spoofing*.
+`firewall-drop` with *timeout* on `mail-01` (temporary origin block), reputation list (CDB + RBL) and
+MTA *rate-limit* (`anvil`). Planned: SPF/DKIM/DMARC against spoofing.
 
-## Limites (post-mortem antecipado)
+## Limitations (anticipated post-mortem)
 
-- **Caminho local:** a GTUBE prova a cadeia, não a qualidade do filtro. Spam real com Bayes por treinar tem
-  falsos negativos, e baixar o `required_score` troca-os por falsos positivos (ham → spam).
-- **Atacante que roda de IP:** o `firewall-drop` é por origem; contra isso, a reputação e o `anvil`.
-- **After-queue:** o MTA aceita primeiro e filtra depois, por isso o spam já está na fila quando é detetado.
+- **Local path:** the GTUBE proves the chain, not the filter quality. Real spam with untrained Bayes has
+  false negatives, and lowering `required_score` trades them for false positives (ham → spam).
+- **IP-rotating attacker:** `firewall-drop` is per-origin; against that, reputation and `anvil`.
+- **After-queue:** the MTA accepts first and filters afterwards, so spam is already in the queue when detected.

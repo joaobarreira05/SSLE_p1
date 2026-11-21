@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Testes do registry de site (só stdlib):   python3 -m unittest -v registry/test_core.py
-A configuração é a do INVENTÁRIO REAL (site opo, perfil full, host t490).
+Site registry tests (stdlib only):   python3 -m unittest -v registry/test_core.py
+Configuration is from the REAL INVENTORY (site opo, full profile, host t490).
 """
 import importlib.util, os, sys, unittest
 
@@ -55,7 +55,7 @@ class Write(unittest.TestCase):
         self.assertEqual(r.snapshot()["rejections"], {"auth": 2})
 
     def test_no_token_configured_means_read_only(self):
-        """Falha fechada: sem token configurado ninguém escreve (nem com token vazio)."""
+        """Fail-closed: with no token configured nobody writes (not even with an empty token)."""
         r, _ = make(token="")
         self.assertRejects(403, "auth", lambda: r.register(NEW, ""))
 
@@ -71,10 +71,10 @@ class Write(unittest.TestCase):
         self.assertRejects(403, "subnet", lambda: r.register(dict(NEW, ip="10.10.1.57"), TOKEN))
 
     def test_cannot_claim_a_known_identity_with_another_ip(self):
-        """Um contentor não se pode fazer passar pelo sen-01 do inventário."""
+        """A container cannot impersonate sen-01 from the inventory."""
         r, _ = make()
         self.assertRejects(409, "identity", lambda: r.register(dict(NEW, name="sen-01", ip="10.10.2.99"), TOKEN))
-        r.register(dict(NEW, name="sen-01", ip="10.10.2.50"), TOKEN)      # com o IP certo, pode renovar
+        r.register(dict(NEW, name="sen-01", ip="10.10.2.50"), TOKEN)
 
     def test_ip_already_leased_to_another_name(self):
         r, _ = make()
@@ -86,7 +86,7 @@ class Read(unittest.TestCase):
     def test_http_sd_only_dynamic_and_with_full_labels(self):
         r, _ = make()
         r.register(NEW, TOKEN)
-        r.register(dict(NEW, name="sen-01", ip="10.10.2.50"), TOKEN)       # estático: já está no file_sd
+        r.register(dict(NEW, name="sen-01", ip="10.10.2.50"), TOKEN)
         node = r.http_sd("node")
         self.assertEqual([t["targets"] for t in node], [["10.10.2.57:9100"]])
         self.assertEqual(node[0]["labels"]["instance_name"], "sen-07")

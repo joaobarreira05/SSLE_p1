@@ -1,23 +1,23 @@
-# Matriz de rastreabilidade (requisito → evidência)
+# Traceability matrix (requirement → evidence)
 
-> Estado: ✅ provado ao vivo (staging e/ou T490) · 🧩 código pronto (não testado ao vivo).
+> Status: ✅ proved live (staging and/or T490) · 🧩 code ready (not tested live).
 
-| # | Requisito (slide) | Onde está | Estado |
+| # | Requirement (slide) | Where | Status |
 |---|---|---|---|
-| R1 | Arquitetura de serviços que escala | `inventory/sites.yaml`, `infra/deploy.sh` (frota por sites) | ✅ |
-| R2 | Identificação/registo escalável (name construction) | convenção `ssle:region:site:host:inst` + labels; **registry de site** (`registry/`: leases com TTL, escrita autenticada, delegação por site/sub-rede, HTTP SD) — integração provada com Prometheus 2.53.5 real (`registry/it-local.sh`); no lab T490: `reg-01` em avr/opo a correr | ✅ |
-| R3 | Físico vs lógico | labels `host` (t490/mac-m2), `instance_name`, `project`, `role` | ✅ |
-| R4 | Localização geográfica + delegação | projetos/redes Incus por site; grupos/`agent.conf` Wazuh; rotas Alertmanager por `team`; Grafana Geomap com coordenadas do inventário | ✅ |
-| R5 | (Bónus) monitorizar por localização poupando banda | Prometheus hierárquico; **federation só de agregados** (`site:up:ratio` visível no global); Grafana SOC com **Geomap** (`site:info:last`) e o custo da federation por site; drill-down vai ao `prom-01` do site (`monitoring/grafana/README.md`) | ✅ · banda **medida**: 99,3–99,7 % menos bytes que sem hierarquia (N = 10/25/50; `evaluation/federation-bytes.md`) |
-| R6 | Localizar rapidamente a origem | labels em todos os alertas + **causa raiz** no `incidents.json` | ✅ |
-| R7 | Prometheus (anomalias) + correlação p/ causa raiz | regras site (`TrafficAnomaly` z robusto + `ServiceLatencyHigh`, `monitoring/tests/anomaly_test.yml`; T2: `OutboundAnomaly` sobre as ligações de saída dos sensores, `monitoring/tests/outbound_test.yml`); Alertmanager (inibição); **correlator** (RCA por grafo); T1 ao vivo: 3/3 detetados, 0 FP, causa raiz `ing-01` 3/3 (`threats/t1-ddos/evidence/results.md`) | ✅ |
-| R8 | FCAPS detetar→diagnosticar→correlacionar→resolver→post-mortem | detetar/correlacionar ✅; resolver: respostas no T490 (nft ~6 s, quarentena ~140 s, firewall-drop <10 s); post-mortem T1/T2/T3 no relatório §5.1–5.3 | ✅ |
-| R9 | SIEM: 3 tipos de incidente + action-response | `siem/rules` (1100–1109xx): **25/25 casos** no `wazuh-analysisd` real + integração com agentes reais (Docker + T490 14 agentes); respostas validadas ao vivo nos 3 tipos | ✅ |
-| R10 | SIEM: log management | `siem/shared/*/agent.conf` por grupo (site/papel): auth.log, log de acesso *combined*, mail.log, `incidents.json`, FIM, comando de portas; labels de identidade em cada alerta; 14 agentes no T490 | ✅ |
-| R11 | Por ameaça: descrição…post-mortem | T1–T3 com os 6 subtítulos do slide 12 no relatório §5.1–5.3; PoCs validadas no T490 (14/11) com evidência versionada | ✅ |
-| R12 | Conclusões (porque não é perfeita, futuro) | relatório §7: limitações (8 pontos) + trabalho futuro (4 pontos) | ✅ |
-| R13 | Relatório estilo artigo/tese | `report/latex/main.tex` → `main.pdf` (25 páginas, xelatex, inglês, 8 referências) | ✅ |
-| R14 | Demo + repositórios | este repo + `infra/demo.sh` | ✅ |
+| R1 | Scalable service architecture | `inventory/sites.yaml`, `infra/deploy.sh` (fleet per site) | ✅ |
+| R2 | Scalable identification/registration (name construction) | convention `ssle:region:site:host:inst` + labels; **site registry** (`registry/`: TTL leases, authenticated writes, per-site/subnet delegation, HTTP SD) — integration proved with real Prometheus 2.53.5 (`registry/it-local.sh`); on T490 lab: `reg-01` running in avr/opo | ✅ |
+| R3 | Physical vs logical | labels `host` (t490/mac-m2), `instance_name`, `project`, `role` | ✅ |
+| R4 | Geographic location + delegation | Incus projects/networks per site; Wazuh groups/`agent.conf`; Alertmanager routes by `team`; Grafana Geomap with inventory coordinates | ✅ |
+| R5 | (Bonus) monitor by location saving bandwidth | Hierarchical Prometheus; **federation of aggregates only** (`site:up:ratio` visible on global); Grafana SOC with **Geomap** (`site:info:last`) and federation cost per site; drill-down goes to the site's `prom-01` (`monitoring/grafana/README.md`) | ✅ · bandwidth **measured**: 99.3–99.7% fewer bytes than without hierarchy (N = 10/25/50; `evaluation/federation-bytes.md`) |
+| R6 | Quickly locate the origin | labels on all alerts + **root cause** in `incidents.json` | ✅ |
+| R7 | Prometheus (anomalies) + correlation for root cause | site rules (`TrafficAnomaly` robust z + `ServiceLatencyHigh`, `monitoring/tests/anomaly_test.yml`; T2: `OutboundAnomaly` on sensor outbound connections, `monitoring/tests/outbound_test.yml`); Alertmanager (inhibition); **correlator** (RCA via graph); T1 live: 3/3 detected, 0 FP, root cause `ing-01` 3/3 (`threats/t1-ddos/evidence/results.md`) | ✅ |
+| R8 | FCAPS detect→diagnose→correlate→resolve→post-mortem | detect/correlate ✅; resolve: responses on T490 (nft ~6 s, quarantine ~140 s, firewall-drop <10 s); post-mortem T1/T2/T3 in report §5.1–5.3 | ✅ |
+| R9 | SIEM: 3 incident types + active response | `siem/rules` (1100–1109xx): **25/25 cases** on real `wazuh-analysisd` + integration with real agents (Docker + T490 14 agents); responses validated live on all 3 types | ✅ |
+| R10 | SIEM: log management | `siem/shared/*/agent.conf` per group (site/role): auth.log, *combined* access log, mail.log, `incidents.json`, FIM, listening-ports command; identity labels on every alert; 14 agents on T490 | ✅ |
+| R11 | Per threat: description…post-mortem | T1–T3 with the 6 subtitles from slide 12 in report §5.1–5.3; PoCs validated on T490 (14/11) with versioned evidence | ✅ |
+| R12 | Conclusions (why it is not perfect, future work) | report §7: limitations (8 points) + future work (4 points) | ✅ |
+| R13 | Report in article/thesis style | `report/latex/main.tex` → `main.pdf` (25 pages, xelatex, English, 15 references) | ✅ |
+| R14 | Demo + repositories | this repo + `infra/demo.sh` | ✅ |
 
-**Nota staging:** o SIEM (Wazuh, 4–6 GiB) e os sites `lis`/`opo`-extra não entram no perfil `staging`
-para poupar RAM na VM arm64. Correm no T490 com `SSLE_PROFILE=full`.
+**Staging note:** the SIEM (Wazuh, 4–6 GiB) and the `lis`/`opo`-extra sites are excluded from the `staging` profile
+to save RAM on the arm64 VM. They run on the T490 with `SSLE_PROFILE=full`.

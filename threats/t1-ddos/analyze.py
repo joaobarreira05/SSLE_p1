@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Ameaça 1 (DoS) — análise de execuções medidas (só stdlib; corre no host).
+Threat 1 (DoS) — analysis of measured runs (stdlib only; runs on the host).
 
     python3 threats/t1-ddos/analyze.py threats/t1-ddos/evidence/run-*
-    python3 threats/t1-ddos/analyze.py --offline threats/t1-ddos/evidence/run-*   # só a evidência guardada
+    python3 threats/t1-ddos/analyze.py --offline threats/t1-ddos/evidence/run-*   # saved evidence only
 
-Para cada diretório run-N lê times.env (T0, T1, TE em epoch), volta a pedir as
-séries ao Prometheus (são a fonte; reanalisar dá o mesmo resultado enquanto
-houver retenção), grava o JSON bruto e um summary.json, e no fim escreve
-evidence/results.csv e evidence/results.md (tabela com média ± desvio-padrão).
+For each run-N directory reads times.env (T0, T1, TE in epoch), re-queries
+Prometheus (the source of truth; reanalysis gives the same result while
+retention holds), saves raw JSON and a summary.json, and at the end writes
+evidence/results.csv and evidence/results.md (table with mean +/- std dev).
 
-Definições (iguais às do post-mortem):
-  MTTD regra   = 1.º instante com ALERTS{alertstate="firing"} − T0
-  1.º sinal    = 1.º instante com ALERTS{alertstate="pending"} − T0
-  impacto      = p95 da latência vista pelo SENSOR (cliente legítimo) > SLO
-  recuperação  = último instante com impacto − T1 (fim do estímulo)
-  MTTD SOC     = ts do 1.º incidente do correlator − T0
-  ClientLatencySLO retro = 1.º instante em que o p95 do SENSOR fica > SLO durante 60 s (simula o
-                 for: 1m da regra sobre a série guardada) − T0; serve para execuções anteriores à regra.
+Definitions (same as in the post-mortem):
+  MTTD rule    = 1st instant with ALERTS{alertstate="firing"} - T0
+  1st signal   = 1st instant with ALERTS{alertstate="pending"} - T0
+  impact       = p95 latency as seen by the SENSOR (legitimate client) > SLO
+  recovery     = last instant with impact - T1 (end of stimulus)
+  MTTD SOC     = ts of the 1st correlator incident - T0
+  ClientLatencySLO retro = 1st instant where the SENSOR p95 stays > SLO for 60 s (simulates the
+                 for: 1m of the rule on the stored series) - T0; for runs prior to the rule.
 
---offline: não fala com o Prometheus nem com o Incus; relê os JSON já guardados em run-N/ (as
-consultas que não existiam na altura ficam vazias) e o bloco "soc" do summary.json anterior.
+--offline: does not talk to Prometheus or Incus; re-reads saved JSONs in run-N/ (queries that
+did not exist at the time remain empty) and the "soc" block from the previous summary.json.
 """
 import json, os, statistics, subprocess, sys, urllib.parse, urllib.request
 from datetime import datetime, timezone
@@ -30,7 +30,7 @@ PROM_AVR = os.environ.get("PROM_AVR", "http://10.10.1.10:9090")
 PROM_OPO = os.environ.get("PROM_OPO", "http://10.10.2.10:9090")
 TARGET = os.environ.get("TARGET", "ing-01")
 SLO = 0.1          # s — o mesmo do ServiceLatencyHigh
-STEP = 5           # s — resolução das consultas
+STEP = 5
 SEL = 'instance_name="%s"' % TARGET
 RATE = 'instance:http_requests:rate1m{%s}' % SEL
 

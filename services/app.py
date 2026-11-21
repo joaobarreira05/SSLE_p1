@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Serviço genérico do lab (reaproveita o padrão Flask da aula 2), parametrizado
-por variáveis de ambiente. Expõe o padrão RED em /metrics (Rate, Errors,
-Duration) e a saúde das suas dependências (ssle_dependency_up), que é o sinal
-do alerta ServiceDegraded.
+Generic lab service, parameterised by environment variables. Exposes the RED
+pattern at /metrics (Rate, Errors, Duration) and the health of its dependencies
+(ssle_dependency_up), which is the signal for the ServiceDegraded alert.
 
   SSLE_ROLE      ingestion | sensor | web | analytics
-  SSLE_INSTANCE  ex.: ing-01
-  SSLE_SITE      ex.: avr
+  SSLE_INSTANCE  e.g. ing-01
+  SSLE_SITE      e.g. avr
   SSLE_DEPS      "sto-01=10.10.1.40:9100,reg-01=..."  (TCP check)
-  SSLE_UPSTREAM  só sensores: URL de ingestão, ex.: http://10.10.1.30:8000/ingest
-  SSLE_INTERVAL  só sensores: período médio entre leituras, em s (default 5; ±20 % de jitter)
-  SSLE_REGISTRY  só elementos DINÂMICOS (fora do inventário): URL do reg-01 do site, ex.:
-                 http://10.10.2.20:5050 — regista-se e renova o lease a cada 10 s (registry/)
-  SSLE_REGISTRY_TOKEN_FILE  token de escrita do site (default /etc/ssle/registry.token)
-  SSLE_IP        o IP com que se regista (o registry confirma que é da sub-rede do site)
-  SSLE_ACCESS_LOG  opcional: log de acesso no formato "combined" do Apache (o que o decoder web-accesslog
-                 do Wazuh reconhece; o do werkzeug não), rodado a 10 MiB × 2 — o agente Wazuh lê-o (T1)
+  SSLE_UPSTREAM  sensors only: ingestion URL, e.g. http://10.10.1.30:8000/ingest
+  SSLE_INTERVAL  sensors only: mean reading interval in s (default 5; ±20 % jitter)
+  SSLE_REGISTRY  DYNAMIC elements only (outside inventory): site reg-01 URL, e.g.
+                 http://10.10.2.20:5050 — registers and renews the lease every 10 s (registry/)
+  SSLE_REGISTRY_TOKEN_FILE  site write token (default /etc/ssle/registry.token)
+  SSLE_IP        IP used for registration (the registry verifies it belongs to the site subnet)
+  SSLE_ACCESS_LOG  optional: access log in Apache "combined" format (what the Wazuh web-accesslog
+                 decoder recognises; werkzeug's format is not), rotated at 10 MiB × 2 — the Wazuh
+                 agent reads it (T1)
   PORT           8000
 
-Porquê o modo sensor: é o tráfego LEGÍTIMO da frota IoT (aula 2). Dá à deteção
-de anomalias uma linha de base real (sem ele, o ing-01 está a zero e o primeiro
-pico só "se compara consigo próprio") e mede o impacto de um ataque do ponto de
-vista do cliente (latência/erros das leituras), que é o que conta para o MTTR.
+Why sensor mode: it is the LEGITIMATE IoT fleet traffic. It gives anomaly detection a real
+baseline (without it, ing-01 sits at zero and the first spike only "compares with itself") and
+measures the impact of an attack from the client's perspective (reading latency/errors), which is
+what matters for MTTR.
 """
 import bisect, json, logging, logging.handlers, math, os, random, socket, threading, time
 import urllib.request
@@ -41,14 +41,12 @@ REGISTRY_TOKEN_FILE = os.environ.get("SSLE_REGISTRY_TOKEN_FILE", "/etc/ssle/regi
 MY_IP = os.environ.get("SSLE_IP", "")
 ACCESS_LOG = os.environ.get("SSLE_ACCESS_LOG", "")
 
-# Fronteiras dos histogramas (s). Iguais no servidor e no sensor para comparar.
 BUCKETS = (0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0)
-# Pedidos que NÃO contam como carga do serviço (auto-observação).
 UNCOUNTED = {"/metrics", "/healthz"}
 
 app = Flask(__name__)
 _access = None
-if ACCESS_LOG:   # retenção limitada: sob DoS perde-se log antigo, nunca se enche o disco
+if ACCESS_LOG:
     _access = logging.getLogger("ssle.access")
     _access.propagate = False
     _access.setLevel(logging.INFO)
@@ -56,16 +54,14 @@ if ACCESS_LOG:   # retenção limitada: sob DoS perde-se log antigo, nunca se en
     _h.setFormatter(logging.Formatter("%(message)s"))
     _access.addHandler(_h)
 _lock = threading.Lock()
-# Contadores pré-inicializados a 0: a série existe desde o arranque, por isso a
-# linha de base começa a acumular antes do primeiro pedido (boa prática Prometheus).
-_req = defaultdict(int, {"200": 0})   # code -> contagem
-_dep_up = {}                          # dep -> 0/1
-_ingested = 0                         # leituras aceites (só ingestion)
-_sent = defaultdict(int, {"ok": 0, "error": 0})   # só sensor
+_req = defaultdict(int, {"200": 0})
+_dep_up = {}
+_ingested = 0
+_sent = defaultdict(int, {"ok": 0, "error": 0})
 
 
 class Histogram:
-    """Histograma cumulativo mínimo no formato de exposição do Prometheus."""
+    """Minimal cumulative histogram in Prometheus exposition format."""
 
     def __init__(self):
         self.counts = [0] * (len(BUCKETS) + 1)   # último = +Inf
@@ -89,11 +85,11 @@ class Histogram:
         return out
 
 
-_dur = Histogram()        # latência servida (D de RED)
-_up_dur = Histogram()     # latência vista pelo sensor ao enviar (impacto no cliente)
+_dur = Histogram()
+_up_dur = Histogram()
 
 
-# ── RED: medir todos os pedidos num só sítio ─────────────────────────────────
+# ── RED ──────────────────────────────────────────────────────────────────────
 @app.before_request
 def _t0():
     g.t0 = time.perf_counter()
@@ -114,7 +110,7 @@ def _count(resp):
     return resp
 
 
-# ── dependências (TCP) ───────────────────────────────────────────────────────
+# ── dependencies (TCP) ───────────────────────────────────────────────────────
 def _parse_deps():
     out = []
     for d in DEPS:
@@ -141,14 +137,13 @@ def _probe_loop():
         time.sleep(5)
 
 
-# ── modo sensor: telemetria legítima para a ingestão ─────────────────────────
+# ── sensor mode: legitimate telemetry to ingestion ───────────────────────────
 def _sensor_loop():
     seq = 0
     while True:
         seq += 1
         reading = {
             "sensor": INSTANCE, "site": SITE, "seq": seq, "ts": time.time(),
-            # temperatura plausível: ciclo lento + ruído
             "temp_c": round(20 + 4 * math.sin(seq / 60.0) + random.uniform(-0.4, 0.4), 2),
         }
         t0 = time.perf_counter()
@@ -167,7 +162,7 @@ def _sensor_loop():
         time.sleep(INTERVAL * random.uniform(0.8, 1.2))
 
 
-# ── registo dinâmico no reg-01 do site (lease com TTL; heartbeat a cada 10 s) ──
+# ── dynamic registration on the site reg-01 (TTL lease; heartbeat every 10 s) ──
 def _registry_loop():
     try:
         with open(REGISTRY_TOKEN_FILE) as fh:
@@ -183,11 +178,11 @@ def _registry_loop():
             with urllib.request.urlopen(req, timeout=3) as r:
                 r.read()
         except Exception:
-            pass        # registry em baixo: tenta outra vez; o lease expira sozinho se nunca voltar
+            pass
         time.sleep(10)
 
 
-# ── rotas ────────────────────────────────────────────────────────────────────
+# ── routes ───────────────────────────────────────────────────────────────────
 @app.route("/")
 def root():
     return "ok %s@%s\n" % (INSTANCE, SITE)
@@ -198,7 +193,7 @@ def ingest():
     global _ingested
     data = request.get_json(silent=True) or {}
     if "temp_c" not in data:
-        return "leitura inválida\n", 400
+        return "invalid reading\n", 400
     with _lock:
         _ingested += 1
     return "stored\n", 201
@@ -206,7 +201,6 @@ def ingest():
 
 @app.route("/work")
 def work():
-    # endpoint deliberadamente caro (para a PoC de DoS, aula 7)
     t0 = time.time()
     x = 0
     for i in range(200000):
@@ -218,36 +212,36 @@ def work():
 def metrics():
     with _lock:
         lines = [
-            "# HELP http_requests_total Pedidos HTTP servidos, por código (sem /metrics e /healthz).",
+            "# HELP http_requests_total HTTP requests served, by code (excluding /metrics and /healthz).",
             "# TYPE http_requests_total counter",
         ]
         for code, n in sorted(_req.items()):
             lines.append('http_requests_total{code="%s"} %d' % (code, n))
         lines += [
-            "# HELP http_request_duration_seconds Latência servida (D de RED).",
+            "# HELP http_request_duration_seconds Served latency (D of RED).",
             "# TYPE http_request_duration_seconds histogram",
         ] + _dur.lines("http_request_duration_seconds")
         lines += [
-            "# HELP ssle_dependency_up Dependência alcançável (1) ou não (0).",
+            "# HELP ssle_dependency_up Dependency reachable (1) or not (0).",
             "# TYPE ssle_dependency_up gauge",
         ]
         for dep, up in sorted(_dep_up.items()):
             lines.append('ssle_dependency_up{dep="%s"} %d' % (dep, up))
         if ROLE == "ingestion":
             lines += [
-                "# HELP ssle_ingest_readings_total Leituras de sensores aceites.",
+                "# HELP ssle_ingest_readings_total Sensor readings accepted.",
                 "# TYPE ssle_ingest_readings_total counter",
                 "ssle_ingest_readings_total %d" % _ingested,
             ]
         if UPSTREAM:
             lines += [
-                "# HELP ssle_sensor_readings_total Leituras enviadas pelo sensor, por resultado.",
+                "# HELP ssle_sensor_readings_total Readings sent by the sensor, by result.",
                 "# TYPE ssle_sensor_readings_total counter",
             ]
             for res, n in sorted(_sent.items()):
                 lines.append('ssle_sensor_readings_total{result="%s"} %d' % (res, n))
             lines += [
-                "# HELP ssle_sensor_upstream_duration_seconds Latência do envio vista pelo sensor.",
+                "# HELP ssle_sensor_upstream_duration_seconds Upstream send latency as seen by the sensor.",
                 "# TYPE ssle_sensor_upstream_duration_seconds histogram",
             ] + _up_dur.lines("ssle_sensor_upstream_duration_seconds")
     return Response("\n".join(lines) + "\n", mimetype="text/plain")
@@ -266,5 +260,4 @@ if REGISTRY and MY_IP:
     threading.Thread(target=_registry_loop, daemon=True).start()
 
 if __name__ == "__main__":
-    # no lab escuta na rede do site; nos testes locais BIND=127.0.0.1 (não expor por omissão)
     app.run(host=os.environ.get("BIND", "0.0.0.0"), port=int(os.environ.get("PORT", "8000")), threaded=True)

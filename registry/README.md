@@ -1,75 +1,75 @@
-# Registry de site (R2) — registo dinâmico + HTTP SD
+# Site registry (R2) — dynamic registration + HTTP SD
 
-> **Requisito R2:** *identificação e registo escaláveis* dos elementos. Na aula 2 o registry era um dicionário
-> em memória com *health-check* ativo e *round-robin*. Aqui é o **`reg-01` de cada site**, que acrescenta o que
-> falta para larga escala e para segurança. A identidade é a mesma em todo o lado:
+> **Requirement R2:** *scalable identification and registration* of elements. In lecture 2 the registry was an
+> in-memory dictionary with active *health-check* and *round-robin*. Here it is the **`reg-01` of each site**,
+> which adds what is missing for large scale and security. The identity is the same everywhere:
 > `ssle:<region>:<site>:<host>:<name>`.
 
-## Como encaixa
+## How it fits
 
 ```
- elemento novo (fora do inventário)                 reg-01 do site (registry/app.py :5050)
-  services/app.py  ── POST /register (token) ──►   valida nome/papel/site/sub-rede/identidade
-  (heartbeat 10 s)                                   lease com TTL 30 s  ──►  GET /sd/node, /sd/services
+ new element (outside inventory)                 site reg-01 (registry/app.py :5050)
+  services/app.py  ── POST /register (token) ──►   validates name/role/site/subnet/identity
+  (heartbeat 10 s)                                   TTL 30 s lease  ──►  GET /sd/node, /sd/services
                                                                                      │ HTTP SD (15 s)
- elementos do INVENTÁRIO ── file_sd (estático) ──►  prom-01 do site  ◄──────────────┘
-                                                     (relabel → job="node"/"services": as MESMAS regras)
+ INVENTORY elements ── file_sd (static) ──►  site prom-01  ◄──────────────┘
+                                              (relabel → job="node"/"services": the SAME rules)
 ```
 
-| Aula 2 | Aqui | Porquê |
+| Lecture 2 | Here | Why |
 |---|---|---|
-| registo sem autenticação | escrita só com **token do site** (`hmac.compare_digest`), gerado no deploy (`build/secrets/`, fora do Git; `0600` no contentor) | toda a escrita exige autenticação; sem token configurado o registry é **só de leitura** (falha fechada) |
-| qualquer nome/URL | nome `^[a-z]{3}-\d{2}$`, papel numa lista, **site = o do registry**, IP **na sub-rede do site** | delegação (R4): um site não regista elementos de outro; entrada inválida → recusa |
-| — | reclamar a identidade de um elemento do inventário com **outro IP** → `409` | um contentor comprometido não se faz passar pelo `sen-01` |
-| *health-check* ativo a cada 5 s | **lease com TTL** renovado pelo próprio elemento | escala: o registry não faz N pedidos por ciclo; um elemento que morre desaparece sozinho |
-| round-robin para clientes | mantém-se (`/services/<papel>`) **+ HTTP SD** para o Prometheus | o mesmo registo serve a descoberta de serviços **e** a monitorização |
-| — | `/metrics`: `site_info{city,lat,lon}`, instâncias estáticas/dinâmicas, rejeições por motivo | Geomap no Grafana; rejeições `auth` são um sinal de segurança |
+| unauthenticated registration | writes require **site token** (`hmac.compare_digest`), generated at deploy (`build/secrets/`, outside Git; `0600` in the container) | every write requires authentication; with no token configured the registry is **read-only** (fail-closed) |
+| any name/URL | name `^[a-z]{3}-\d{2}$`, role from a whitelist, **site = the registry's own**, IP **in the site subnet** | delegation (R4): a site cannot register elements from another; invalid input → reject |
+| — | claiming the identity of an inventory element with a **different IP** → `409` | a compromised container cannot impersonate `sen-01` |
+| active *health-check* every 5 s | **TTL lease** renewed by the element itself | scale: the registry does not make N requests per cycle; an element that dies disappears on its own |
+| round-robin for clients | kept (`/services/<role>`) **+ HTTP SD** for Prometheus | the same registration serves both service discovery **and** monitoring |
+| — | `/metrics`: `site_info{city,lat,lon}`, static/dynamic instances, rejections by reason | Geomap in Grafana; `auth` rejections are a security signal |
 
-🧠 **Falha segura:** os elementos do inventário são lidos por `file_sd` e o HTTP SD devolve **só** os
-registados dinamicamente. Se o `reg-01` cair, a frota de base continua monitorizada e o Prometheus mantém os
-últimos alvos do SD — perde-se, no máximo, a descoberta de elementos **novos**.
+**Fail-safe:** inventory elements are read by `file_sd` and HTTP SD returns **only** dynamically registered
+ones. If `reg-01` goes down, the base fleet remains monitored and Prometheus keeps the last SD targets —
+at most, discovery of **new** elements is lost.
 
-## Prova (teste de integração, sem lab) — `bash registry/it-local.sh`
+## Proof (integration test, no lab) — `bash registry/it-local.sh`
 
-Registry real + `services/app.py` real (sensor dinâmico `sen-07`) + **Prometheus 2.53.5** real com o
-`prometheus.yml` do site `opo` renderizado pelo inventário (`infra/inventory.py siteprom`), tudo em
-`127.0.0.1`. Output real (08/11/2026):
+Real registry + real `services/app.py` (dynamic sensor `sen-07`) + **real Prometheus 2.53.5** with the
+`prometheus.yml` of site `opo` rendered by the inventory (`infra/inventory.py siteprom`), all on
+`127.0.0.1`. Real output (08/11/2026):
 
 ```text
-[it] registry do site opo em 127.0.0.1:15050 (TTL 10 s)
-[it] (1) escrita sem token:
+[it] site opo registry on 127.0.0.1:15050 (TTL 10 s)
+[it] (1) write without token:
       HTTP 403
-[it] Prometheus 2.53.5 em 127.0.0.1:19090 com o prometheus.yml do site opo (SD a cada 3 s)
-[it] (2) arranca o sen-07 (services/app.py) — NÃO está no inventário
+[it] Prometheus 2.53.5 on 127.0.0.1:19090 with the opo site prometheus.yml (SD every 3 s)
+[it] (2) start sen-07 (services/app.py) — NOT in the inventory
       node sen-07 opo sensor http://10.10.2.57:9100/metrics
       services sen-07 opo sensor http://10.10.2.57:8000/metrics
       site_info{region="pt",site="opo",city="Porto",lat="41.15",lon="-8.61"} 1
       ssle_registry_instances{region="pt",site="opo",kind="static"} 4
       ssle_registry_instances{region="pt",site="opo",kind="dynamic"} 1
       ssle_registry_rejections_total{region="pt",site="opo",reason="auth"} 1
-[it] (3) o sen-07 morre → o lease expira (10 s) e sai dos alvos
-      saiu dos alvos 9 s depois de morrer
-RESULTADO: R2 — registo dinâmico → descoberta pelo Prometheus → expiração ✅
+[it] (3) sen-07 dies → the lease expires (10 s) and leaves the targets
+      left the targets 9 s after dying
+RESULT: R2 — dynamic registration → Prometheus discovery → expiration ✅
 ```
 
-(Os alvos aparecem `down` neste teste porque `10.10.2.57` só existe no lab; o que se prova aqui é a
-**descoberta** e as labels. No T490 o `sen-07` é um contentor e o scrape funciona.)
+(The targets show `down` in this test because `10.10.2.57` only exists in the lab; what is proven here is
+the **discovery** and labels. On the T490 `sen-07` is a container and scraping works.)
 
-Testes unitários (12): `python3 -m unittest -v registry/test_core.py` — token, validação, delegação,
-identidade, IP em uso, TTL, heartbeat, round-robin, HTTP SD só com dinâmicos.
+Unit tests (12): `python3 -m unittest -v registry/test_core.py` — token, validation, delegation,
+identity, IP in use, TTL, heartbeat, round-robin, HTTP SD with dynamic only.
 
-## Limites (de propósito)
+## Limitations (by design)
 
-- O token é **partilhado por site**, não por elemento: quem o tiver regista qualquer nome livre do site.
-  Próximo passo seria um token por elemento (ou mTLS com o certificado do Incus).
-- O registry confia no IP **declarado** (valida a sub-rede, não a origem do pedido): atrás do NAT do Incus a
-  origem seria o gateway. Com o NAT desligado nas PoCs pode passar a exigir `IP declarado == IP de origem`.
-- Estado só em memória (como na aula 2): reiniciar o `reg-01` esquece os dinâmicos até ao próximo heartbeat
-  (≤ 10 s) — aceitável porque os elementos se voltam a registar sozinhos.
+- The token is **shared per site**, not per element: whoever has it can register any free name on the site.
+  Next step would be a per-element token (or mTLS with the Incus certificate).
+- The registry trusts the **declared** IP (validates the subnet, not the request origin): behind Incus NAT
+  the origin would be the gateway. With NAT off during PoCs, it could require `declared IP == origin IP`.
+- State is in-memory only (as in lecture 2): restarting `reg-01` forgets dynamic entries until the next
+  heartbeat (≤ 10 s) — acceptable because elements re-register on their own.
 
-## O que levar contigo
+## Takeaways
 
-- **Registo dinâmico ≠ inventário:** o inventário é a fonte da verdade da frota de base; o registry é o que
-  deixa a frota **crescer** sem editar ficheiros (escala) — e por isso tem de **autenticar e validar**.
-- **Lease + heartbeat** escala melhor que *health-check* ativo e dá limpeza automática.
-- **HTTP SD + relabel do `job`**: os elementos novos herdam as mesmas regras de liveness/anomalia.
+- **Dynamic registration ≠ inventory:** the inventory is the source of truth for the base fleet; the registry
+  is what lets the fleet **grow** without editing files (scale) — and therefore must **authenticate and validate**.
+- **Lease + heartbeat** scales better than active health-check and provides automatic cleanup.
+- **HTTP SD + `job` relabel**: new elements inherit the same liveness/anomaly rules.

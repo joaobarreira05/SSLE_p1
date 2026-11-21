@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Funde o fragmento RENDERIZADO (infra/inventory.py wazuh-manager) no ossec.conf do manager, idempotente:
+Merges the RENDERED fragment (infra/inventory.py wazuh-manager) into the manager's ossec.conf, idempotent:
 
-    python3 siem/manager/apply.py <ossec.conf> <ossec-ssle.renderizado.conf> > ossec.conf.novo
+    python3 siem/manager/apply.py <ossec.conf> <ossec-ssle.rendered.conf> > ossec.conf.new
 
-Porquê fundir e não só acrescentar outro <ossec_config> no fim: provado no manager 4.14.10 real
-(siem/tests/run-logtest.sh), um 2.º bloco <ruleset> SUBSTITUI as listas por omissão
-(etc/lists/amazon/aws-eventnames, …) e o analysisd passa a ignorar as regras que as usam, sem erro
-fatal — um SIEM com buracos silenciosos. Por isso:
-  · <white_list> → DENTRO do 1.º <global> existente;
-  · <list>       → DENTRO do 1.º <ruleset> existente;
-  · <command>/<active-response> (secções aditivas) → num <ossec_config> próprio no fim.
-Cada inserção fica entre <!-- SSLE:BEGIN --> e <!-- SSLE:END -->: correr outra vez tira a versão anterior
-antes de pôr a nova (o resultado de aplicar 2× é igual ao de aplicar 1×).
-Falha fechada: sem <global> ou <ruleset> no ossec.conf, sai ≠ 0 e não escreve nada.
+Why merge instead of just appending another <ossec_config> at the end: proven on the real manager
+4.14.10 (siem/tests/run-logtest.sh), a 2nd <ruleset> block REPLACES the default lists
+(etc/lists/amazon/aws-eventnames, ...) and analysisd silently ignores the rules that use them, with
+no fatal error — a SIEM with silent holes. Therefore:
+  - <white_list> → INSIDE the 1st existing <global>;
+  - <list>       → INSIDE the 1st existing <ruleset>;
+  - <command>/<active-response> (additive sections) → in their own <ossec_config> at the end.
+Each insertion sits between <!-- SSLE:BEGIN --> and <!-- SSLE:END -->: running again removes the
+previous version before adding the new one (applying 2x equals applying 1x).
+Fail-closed: without <global> or <ruleset> in ossec.conf, exits != 0 and writes nothing.
 """
 import re, sys
 

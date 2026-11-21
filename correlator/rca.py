@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Núcleo da correlação para causa raiz (RCA) do Projeto 1 (SSLE) — só stdlib, testável sem Flask
-(testes em correlator/test_rca.py).
+Root-cause correlation (RCA) core for Project 1 (SSLE) — stdlib only, testable without Flask
+(tests in correlator/test_rca.py).
 
-Modelo: o grafo de dependências do inventário (build/graph.json). Um alerta é um SINTOMA num nó
-(identidade ssle:<region>:<site>:<host>:<inst>). Um candidato C "explica" o sintoma em M se M depende
-de C, direta ou transitivamente (ou se C == M). Além das arestas do inventário, cada nó depende
-implicitamente do seu SITE — o pseudo-nó ssle:<region>:<site>:-:<site>, que é a identidade do alerta
-SiteUnreachable (o site inteiro deixou de responder ao core).
+Model: the dependency graph from the inventory (build/graph.json). An alert is a SYMPTOM on a node
+(identity ssle:<region>:<site>:<host>:<inst>). A candidate C "explains" the symptom on M if M depends
+on C, directly or transitively (or if C == M). Besides inventory edges, each node implicitly depends
+on its SITE — the pseudo-node ssle:<region>:<site>:-:<site>, which is the identity of the
+SiteUnreachable alert (the entire site stopped responding to core).
 
-Escolha das causas raiz = COBERTURA GULOSA (greedy set cover) dos sintomas ativos: escolhe o candidato
-que explica mais sintomas ainda por explicar (desempate: tem um alerta "down" > alerta mais antigo),
-retira esses sintomas e repete até não sobrar nenhum. Consequências:
-  - a correlação ATRAVESSA SITES (sen-01@opo depende de ing-01@avr): o grafo não tem fronteiras;
-  - duas falhas independentes dão DOIS incidentes (nenhum sintoma fica de fora de um incidente);
-  - cada sintoma pertence a exatamente um incidente.
+Root cause selection = GREEDY SET COVER of active symptoms: picks the candidate that explains the most
+unexplained symptoms (tiebreak: has a "down" alert > oldest alert), removes those symptoms and repeats
+until none remain. Consequences:
+  - correlation CROSSES SITES (sen-01@opo depends on ing-01@avr): the graph has no boundaries;
+  - two independent failures yield TWO incidents (no symptom is left out of an incident);
+  - each symptom belongs to exactly one incident.
 
-Estabilização (settle): uma causa raiz NOVA só é emitida quando o sintoma mais antigo do seu
-incidente já está ativo há CORRELATOR_SETTLE segundos. Sem isto, se o sintoma do cliente (sensor em
-opo) chegasse uns segundos antes do alerta do servidor (ing-01 em avr), sairia um incidente com causa
-raiz no SENSOR — e a regra Wazuh 110210 trata "sensor é causa raiz" como candidato a quarentena.
-Custo: o MTTD no SOC sobe até SETTLE segundos. É uma troca escolhida (precisão > rapidez).
+Settle: a NEW root cause is only emitted when the oldest symptom in its incident has been active for
+CORRELATOR_SETTLE seconds. Without this, if the client symptom (sensor in opo) arrived a few seconds
+before the server alert (ing-01 in avr), an incident with root cause on the SENSOR would be emitted —
+and Wazuh rule 110210 treats "sensor is root cause" as a quarantine candidate.
+Cost: SOC MTTD rises by up to SETTLE seconds. This is a chosen trade-off (precision > speed).
 """
 import json, time
 from datetime import datetime, timezone
@@ -35,7 +35,7 @@ def site_identity(region, site):
 
 
 def _parts(identity):
-    """ssle:<region>:<site>:<host>:<inst> -> dict (tolerante a identidades estranhas)."""
+    """ssle:<region>:<site>:<host>:<inst> -> dict (tolerant of unknown identities)."""
     p = identity.split(":")
     if len(p) == 5 and p[0] == "ssle":
         return {"region": p[1], "site": p[2], "host": p[3], "instance": p[4]}
@@ -45,10 +45,10 @@ def _parts(identity):
 class Graph:
     def __init__(self, doc):
         self.nodes = {n["identity"]: n for n in doc.get("nodes", [])}
-        self.adj = {}                                  # dependente -> {dependências}
+        self.adj = {}
         for e in doc.get("edges", []):
             self.adj.setdefault(e["from"], set()).add(e["to"])
-        for ident in self.nodes:                       # dependência implícita do próprio site
+        for ident in self.nodes:
             p = _parts(ident)
             self.adj.setdefault(ident, set()).add(site_identity(p["region"], p["site"]))
 
@@ -61,7 +61,7 @@ class Graph:
             return cls({})
 
     def depends_on(self, start):
-        """Identidades de que 'start' depende (transitivamente), start incluído."""
+        """Identities that 'start' depends on (transitively), start included."""
         seen, stack = set(), [start]
         while stack:
             cur = stack.pop()
@@ -72,11 +72,11 @@ class Graph:
         return seen
 
     def ip(self, identity):
-        """IP do nó no inventário (None para pseudo-nós de site ou identidades desconhecidas)."""
+        """Node IP from the inventory (None for site pseudo-nodes or unknown identities)."""
         return (self.nodes.get(identity) or {}).get("ip")
 
     def describe(self, identity):
-        """(instância, papel) do nó; pseudo-nó de site -> (site, 'site')."""
+        """(instance, role) of the node; site pseudo-node -> (site, 'site')."""
         n = self.nodes.get(identity)
         if n:
             return n.get("instance_name"), n.get("role")
@@ -93,13 +93,12 @@ def alert_identity(a):
         return ann["identity"]
     inst = lbl.get("instance_name")
     if not inst:
-        # alerta de nível de site (ex.: SiteUnreachable): identidade do site
         return site_identity(lbl.get("region", "pt"), lbl.get("site", "?"))
     return "ssle:%s:%s:%s:%s" % (lbl.get("region", "pt"), lbl.get("site", "?"), lbl.get("host", "?"), inst)
 
 
 def root_causes(alerts, graph):
-    """Cobertura gulosa: [(causa_raiz, {identidades explicadas}, [alertas])], por ordem de escolha."""
+    """Greedy set cover: [(root_cause, {explained identities}, [alerts])], in selection order."""
     by_id = {}
     for a in alerts:
         by_id.setdefault(alert_identity(a), []).append(a)
@@ -108,7 +107,7 @@ def root_causes(alerts, graph):
     out = []
     while remaining:
         best = None
-        for cand in by_id:                              # só nós COM alerta são candidatos
+        for cand in by_id:
             explained = {m for m in remaining if cand in deps[m]}
             if not explained:
                 continue
@@ -128,13 +127,13 @@ def _now_iso(ts):
 
 
 class Correlator:
-    """Estado: alertas ativos (do webhook do Alertmanager) -> incidentes emitidos (1 linha JSON cada)."""
+    """State: active alerts (from Alertmanager webhook) -> emitted incidents (1 JSON line each)."""
 
     def __init__(self, graph, emit, settle_s=30, clock=time.time):
         self.graph, self.emit, self.settle, self.clock = graph, emit, settle_s, clock
-        self.active = {}        # fingerprint -> alerta
-        self.arrived = {}       # fingerprint -> 1.º instante em que o vimos ativo
-        self.open = {}          # causa raiz -> {"sig":…, "id":…}
+        self.active = {}
+        self.arrived = {}
+        self.open = {}
         self.metrics = {"incidents_total": 0, "active_alerts": 0, "open_incidents": 0,
                         "pending_incidents": 0, "last_noise_reduction": 0.0}
 
@@ -161,7 +160,7 @@ class Correlator:
         for root, explained, alerts in groups:
             oldest = min(self.arrived.get(self._fp(a), now) for a in alerts)
             if root not in self.open and now - oldest < self.settle:
-                pending += 1                            # à espera de sintomas relacionados
+                pending += 1
                 continue
             current.add(root)
             inc = self._incident(root, explained, alerts, now)
@@ -184,8 +183,6 @@ class Correlator:
                             pending_incidents=pending)
 
     def _ip_fields(self, root):
-        # srcip é o nome do campo ESTÁTICO do Wazuh: com ele, a meta-correlação 110900 junta este incidente
-        # aos impactos (DoS, relay, força bruta) cuja ORIGEM é o mesmo elemento (<same_source_ip/>).
         ip = self.graph.ip(root)
         return {"root_cause_ip": ip, "srcip": ip} if ip else {}
 
@@ -197,7 +194,7 @@ class Correlator:
         return dict({
             "ts": _now_iso(now),
             "origin": "prometheus",
-            "site": _parts(root)["site"],               # site da CAUSA RAIZ (é onde se responde)
+            "site": _parts(root)["site"],
             "sites": sites,
             "cross_site": len(sites) > 1,
             "severity": sev,

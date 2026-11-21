@@ -1,153 +1,156 @@
-# Post-mortem — Ameaça 1 (DoS de aplicação ao `avr/ing-01`) · staging arm64 · 2026-11-06
+# Post-mortem — Threat 1 (application DoS on `avr/ing-01`) · staging arm64 · 2026-11-06
 
-> *Blameless*, no molde do plano §4.7. Execuções medidas por [`measure.sh`](measure.sh); evidência bruta em
-> [`evidence/`](evidence/) (um diretório por execução + [`results.csv`](evidence/results.csv)).
-> **Ambiente:** perfil `staging` (VM Debian arm64, 6 contentores), **sem Wazuh** (só no perfil `full`, T490) —
-> por isso aqui não há resposta automática: estas execuções são o **grupo de controlo** (deteção + impacto sem
-> mitigação) contra o qual se mede a resposta no T490.
+> *Blameless*, following the plan §4.7 template. Runs measured by [`measure.sh`](measure.sh); raw evidence in
+> [`evidence/`](evidence/) (one directory per run + [`results.csv`](evidence/results.csv)).
+> **Environment:** `staging` profile (Debian arm64 VM, 6 containers), **no Wazuh** (only in `full` profile, T490) —
+> so there is no automatic response here: these runs are the **control group** (detection + impact without
+> mitigation) against which the T490 response is measured.
 
-## Descrição
-DoS **de aplicação** (aula 7): muitos pedidos concorrentes ao endpoint mais caro do serviço de ingestão
-(`/work`, ~6 ms de CPU por pedido em repouso). Classificação nos 3 eixos da aula 7: camada **aplicação (L7)** ·
-origem **única** (o host do lab; a variante distribuída fica para o T490 com `kali-01` + clientes em 2–3 sites) ·
-padrão **constante** durante uma janela fixa.
+## Description
+**Application-layer** DoS (lecture 7): many concurrent requests to the most expensive endpoint of the ingestion
+service (`/work`, ~6 ms CPU per request at rest). Classification on the 3 axes from lecture 7: **application (L7)**
+layer · **single** origin (the lab host; the distributed variant is for the T490 with `kali-01` + clients on 2–3
+sites) · **constant** pattern during a fixed window.
 
-## Relevância
-O `ing-01` é a **porta de entrada de todos os sensores** (ponto único de falha da disponibilidade — CIA: **A**).
-Se a ingestão abranda, a telemetria dos sites (aqui, `opo/sen-01`) atrasa ou perde-se, sem que nenhum sensor
-esteja avariado — é exatamente o cenário em que um operador sem correlação procuraria o problema no sítio errado.
+## Relevance
+`ing-01` is the **entry point for all sensors** (single point of failure for availability — CIA: **A**).
+If ingestion slows down, telemetry from other sites (here, `opo/sen-01`) is delayed or lost, with no sensor
+actually faulty — exactly the scenario where an operator without correlation would look in the wrong place.
 
-## Exploração / PoC
-Estímulo **limitado e com duração fixa** ([`run.sh`](run.sh)): `CONC` ciclos `curl` em paralelo contra
-`http://ing-01:8000/work` durante `DUR` segundos, só em bridges internas do lab. **Sem aumentar a carga do guião.**
+## Exploitation / PoC
+**Limited, fixed-duration** stimulus ([`run.sh`](run.sh)): `CONC` concurrent `curl` cycles against
+`http://ing-01:8000/work` for `DUR` seconds, only on the lab's internal bridges. **No escalation.**
 
-## Métricas
-| Sinal | Série | Porquê |
+## Metrics
+| Signal | Series | Why |
 |---|---|---|
-| Taxa (R de RED) | `instance:http_requests:rate1m` | entrada do z-score robusto (`TrafficAnomaly`) |
-| Latência (D de RED) | `instance:http_request_duration_seconds:p95_1m` | o SLO de 100 ms (`ServiceLatencyHigh`) |
-| Impacto no cliente legítimo | p95 de `ssle_sensor_upstream_duration_seconds` (sensor de `opo`) | o que a frota sente; define a **recuperação** |
-| Erros vistos pelo cliente | `ssle_sensor_readings_total{result="error"}` | leituras perdidas (timeout 5 s) |
-| Chegada ao SOC | `incidents.json` do correlator (`ts`, `root_cause`) | MTTD ponta-a-ponta |
+| Rate (R of RED) | `instance:http_requests:rate1m` | input to robust z-score (`TrafficAnomaly`) |
+| Latency (D of RED) | `instance:http_request_duration_seconds:p95_1m` | the 100 ms SLO (`ServiceLatencyHigh`) |
+| Legitimate client impact | p95 of `ssle_sensor_upstream_duration_seconds` (`opo` sensor) | what the fleet feels; defines **recovery** |
+| Client-side errors | `ssle_sensor_readings_total{result="error"}` | lost readings (5 s timeout) |
+| SOC arrival | `incidents.json` from correlator (`ts`, `root_cause`) | end-to-end MTTD |
 
-**Definições.** **MTTD** = 1.º instante em que a regra está `firing` − T0 (início do estímulo).
-**Recuperação** = último instante com p95 do sensor > SLO − T1 (fim do estímulo). Sem resposta automática, o
-"MTTR" de staging é **o tempo que o sistema leva a recuperar sozinho depois de o ataque parar** — a linha de base
-que a resposta automática (T490) tem de bater.
+**Definitions.** **MTTD** = first instant when the rule is `firing` − T0 (stimulus start).
+**Recovery** = last instant with sensor p95 > SLO − T1 (stimulus end). Without automatic response,
+staging "MTTR" is **the time the system takes to recover on its own after the attack stops** — the baseline
+that the T490 automatic response must beat.
 
-## Respostas / mitigação
-**Staging:** nenhuma automática (grupo de controlo). **T490 (`full`):** por ordem de proporcionalidade —
-(1) *rate-limit* por origem; (2) `firewall-drop` com `timeout`; (3) degradação graciosa (503 rápido em `/work`);
-(4) 2.ª réplica atrás do registry. **Bloqueio encontrado nesta PoC (ver "O que correu mal"): as respostas
-por origem não são seguras enquanto houver NAT entre sites.**
+## Responses / mitigation
+**Staging:** none automatic (control group). **T490 (`full`):** in order of proportionality —
+(1) per-origin *rate-limit*; (2) `firewall-drop` with `timeout`; (3) graceful degradation (fast 503 on `/work`);
+(4) 2nd replica behind the registry. **Blocker found in this PoC (see "What went wrong"): per-origin responses
+are unsafe while NAT exists between sites.**
 
-## Post-mortem da PoC
+## PoC post-mortem
 
-### Resumo
-3 execuções iguais (120 s × 20 ciclos `curl`, ~160 pedidos/s contra uma linha de base de 0,2/s). O
-`TrafficAnomaly` (z-score robusto) detetou **3/3** com **MTTD = 81,7 ± 2,9 s** e **0 falsos positivos** em 56 min
-de observação; o correlator abriu **1 incidente por execução** com a **causa raiz certa** (`ing-01`) aos
-**92,9 ± 0,1 s**. A camada absoluta (`ServiceLatencyHigh`) **falhou 3/3** — e a razão é a lição principal desta PoC.
+### Summary
+3 identical runs (120 s × 20 `curl` cycles, ~160 req/s against a baseline of 0.2/s).
+`TrafficAnomaly` (robust z-score) detected **3/3** with **MTTD = 81.7 ± 2.9 s** and **0 false positives** over
+56 min of observation; the correlator opened **1 incident per run** with the **correct root cause** (`ing-01`)
+at **92.9 ± 0.1 s**. The absolute layer (`ServiceLatencyHigh`) **failed 3/3** — and the reason is this PoC's
+main lesson.
 
-### Linha temporal (execução 1; as outras diferem ≤ 5 s)
-| Instante | Evento | Fonte |
+### Timeline (run 1; the others differ by ≤ 5 s)
+| Instant | Event | Source |
 |---|---|---|
-| **T0** 15:24:10 | início do estímulo | `run.log` |
-| T0 + 20 s | **impacto**: p95 visto pelo sensor passa o SLO (100 ms) | `p95-sensor.json` |
-| T0 + 25 s | **1.º sinal**: `TrafficAnomaly` em *pending* (z ≈ 320) | `alerts-TrafficAnomaly-pending.json` |
-| T0 + 85 s | **deteção**: `TrafficAnomaly` *firing* (`for: 1m`) → **MTTD** | `alerts-TrafficAnomaly-firing.json` |
-| T0 + 93 s | **incidente no SOC**: correlator, causa raiz `ssle:pt:avr:mac-m2:ing-01` | `incidents.json` (correlator) |
-| T2 | alerta no Wazuh | — (sem Wazuh em staging) |
-| T3 | resposta aplicada | — (grupo de controlo) |
-| **T1** = T0 + 120 s | fim do estímulo | `run.log` |
-| T1 + 45 s | **recuperação**: p95 do sensor volta abaixo do SLO | `p95-sensor.json` |
-| T1 + 65 s | alerta resolvido | série `ALERTS` |
+| **T0** 15:24:10 | stimulus start | `run.log` |
+| T0 + 20 s | **impact**: sensor p95 crosses SLO (100 ms) | `p95-sensor.json` |
+| T0 + 25 s | **1st signal**: `TrafficAnomaly` *pending* (z ≈ 320) | `alerts-TrafficAnomaly-pending.json` |
+| T0 + 85 s | **detection**: `TrafficAnomaly` *firing* (`for: 1m`) → **MTTD** | `alerts-TrafficAnomaly-firing.json` |
+| T0 + 93 s | **SOC incident**: correlator, root cause `ssle:pt:avr:mac-m2:ing-01` | `incidents.json` (correlator) |
+| T2 | Wazuh alert | — (no Wazuh in staging) |
+| T3 | response applied | — (control group) |
+| **T1** = T0 + 120 s | stimulus end | `run.log` |
+| T1 + 45 s | **recovery**: sensor p95 returns below SLO | `p95-sensor.json` |
+| T1 + 65 s | alert resolved | `ALERTS` series |
 
-### Resultados das 3 execuções
-| execução | T0 | taxa pico (pedidos/s) | 1.º sinal (s) | **MTTD regra (s)** | **MTTD SOC (s)** | z robusto máx. | z média/desvio máx. | média/desvio dispararia? | p95 servidor máx. (ms) | `ServiceLatencyHigh` | **p95 sensor máx. (ms)** | recuperação após estímulo (s) | leituras perdidas | causa raiz (SOC) |
+### Results for all 3 runs
+| run | T0 | peak rate (req/s) | 1st signal (s) | **MTTD rule (s)** | **MTTD SOC (s)** | robust z max | mean/std z max | mean/std would fire? | server p95 max (ms) | `ServiceLatencyHigh` | **sensor p95 max (ms)** | recovery after stimulus (s) | lost readings | root cause (SOC) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 15:24:10 | 160,2 | 25 | 85 | 93,0 | 320,0 | 7,6 | **sim** | 23,0 | não | 242,5 | 45 | 0 | `ing-01` |
-| 2 | 15:43:15 | 162,2 | 20 | 80 | 92,9 | 323,9 | 3,3 | **não** | 23,2 | não | 242,5 | 45 | 0 | `ing-01` |
-| 3 | 15:53:15 | 157,9 | 20 | 80 | 92,9 | 315,4 | 2,8 | **não** | 23,3 | não | 242,5 | 45 | 0 | `ing-01` |
-| **média ± σ** | | 160,1 ± 2,2 | 21,7 ± 2,9 | **81,7 ± 2,9** | **92,9 ± 0,1** | 319,8 ± 4,3 | 4,6 ± 2,6 | 1/3 | 23,2 ± 0,2 | 0/3 | 242,5 | 45,0 | 0 | 3/3 |
+| 1 | 15:24:10 | 160.2 | 25 | 85 | 93.0 | 320.0 | 7.6 | **yes** | 23.0 | no | 242.5 | 45 | 0 | `ing-01` |
+| 2 | 15:43:15 | 162.2 | 20 | 80 | 92.9 | 323.9 | 3.3 | **no** | 23.2 | no | 242.5 | 45 | 0 | `ing-01` |
+| 3 | 15:53:15 | 157.9 | 20 | 80 | 92.9 | 315.4 | 2.8 | **no** | 23.3 | no | 242.5 | 45 | 0 | `ing-01` |
+| **mean ± σ** | | 160.1 ± 2.2 | 21.7 ± 2.9 | **81.7 ± 2.9** | **92.9 ± 0.1** | 319.8 ± 4.3 | 4.6 ± 2.6 | 1/3 | 23.2 ± 0.2 | 0/3 | 242.5 | 45.0 | 0 | 3/3 |
 
-Gerada por [`analyze.py`](analyze.py) → [`evidence/results.md`](evidence/results.md). **Eficácia do `TrafficAnomaly`:
-TP = 3 · FP = 0 · FN = 0** (todos os intervalos *firing* entre 15:10 e 16:06 caem dentro de uma execução —
-[`evidence/alerts-1510-1606.json`](evidence/alerts-1510-1606.json)). **Precisão das medidas:** T0/T1 ao segundo,
-consultas a 5 s, avaliação das regras a 15 s → ±15 s no MTTD. O MTTD é dominado pelo `for: 1m` (o 1.º sinal chega
-aos ~22 s): é o preço, escolhido, de não alertar por um pico de um minuto.
+Generated by [`analyze.py`](analyze.py) → [`evidence/results.md`](evidence/results.md). **`TrafficAnomaly`
+effectiveness: TP = 3 · FP = 0 · FN = 0** (all *firing* intervals between 15:10 and 16:06 fall within a run —
+[`evidence/alerts-1510-1606.json`](evidence/alerts-1510-1606.json)). **Measurement precision:** T0/T1 to the
+second, queries at 5 s, rule evaluation at 15 s → ±15 s on MTTD. MTTD is dominated by the `for: 1m` (the
+1st signal arrives at ~22 s): that is the chosen cost of not alerting on a one-minute spike.
 
-### Deteção — o que disparou, o que não disparou e porquê
-1. **`TrafficAnomaly` (relativa) — 3/3.** z ≈ 320 ≫ 3: com uma linha de base de 0,2 pedidos/s e o mínimo de
-   dispersão de 0,5, este estímulo não é subtil. ✅
-2. **Contraprova ao vivo — a versão média/desvio-padrão só teria detetado a 1.ª execução.** Na 2.ª (19 min depois)
-   e na 3.ª (29 min depois) o ataque anterior ainda estava dentro da janela de 1 h e tinha inflacionado o σ:
-   z máx. 3,3 e 2,8, nunca acima de 3 durante 1 min → **2 falsos negativos evitados** pela mediana + IQR. É o
-   que o teste [`anomaly_test.yml`](../../monitoring/tests/anomaly_test.yml) prova em laboratório (z 39,6 vs ≈2,0);
-   aqui confirma-se com tráfego real. *(Um atacante que repete o ataque ganharia invisibilidade com a versão antiga.)*
-3. **`ServiceLatencyHigh` (absoluta) — 0/3. Ponto cego.** O p95 **medido dentro da app** nunca passou de 23 ms,
-   mas o sensor viu **242,5 ms** (≈ 27× a média em repouso, 8,8 ms). O histograma do servidor começa a contar
-   quando o Flask já está a tratar o pedido; a espera **antes** disso (aceitar a ligação, criar a *thread*,
-   disputar o GIL com 20 pedidos caros) fica de fora — e é precisamente essa fila que o cliente sente.
-   🎓 **Lição:** um SLO de latência tem de ser medido **do lado do cliente** (sondas *blackbox* ou a telemetria do
-   próprio cliente), não só pela instrumentação do servidor.
+### Detection — what fired, what did not fire, and why
+1. **`TrafficAnomaly` (relative) — 3/3.** z ≈ 320 ≫ 3: with a baseline of 0.2 req/s and the minimum
+   dispersion of 0.5, this stimulus is not subtle. ✅
+2. **Live counterproof — the mean/std version would have detected only run 1.** In run 2 (19 min later)
+   and run 3 (29 min later) the previous attack was still inside the 1 h window and had inflated σ:
+   z max 3.3 and 2.8, never above 3 for 1 min → **2 false negatives avoided** by median + IQR. This is what
+   the [`anomaly_test.yml`](../../monitoring/tests/anomaly_test.yml) test proves in the lab (z 39.6 vs ≈2.0);
+   here it is confirmed with real traffic. *(An attacker repeating the attack would gain invisibility with the old version.)*
+3. **`ServiceLatencyHigh` (absolute) — 0/3. Blind spot.** The p95 **measured inside the app** never exceeded
+   23 ms, but the sensor saw **242.5 ms** (≈ 27× the resting average of 8.8 ms). The server histogram starts
+   counting when Flask is already handling the request; the wait **before** that (accepting the connection,
+   spawning a thread, contending the GIL with 20 expensive requests) is excluded — and that queue is precisely
+   what the client feels.
+   **Lesson:** a latency SLO must be measured **on the client side** (blackbox probes or the client's own
+   telemetry), not just by server instrumentation.
 
-### Impacto
-Degradação, não indisponibilidade: o p95 dos sensores subiu de ~10–46 ms para **242,5 ms** desde T0 + 20 s e
-**nenhuma leitura se perdeu** (o *timeout* do sensor é 5 s). Recuperação **45 s depois do fim do estímulo** (as
-janelas de 1 min das taxas). ⚠️ O valor 242,5 ms é igual nas 3 execuções porque o `histogram_quantile` interpola
-dentro do *bucket* 100–250 ms: a resolução do p95 está limitada pelos *buckets*.
+### Impact
+Degradation, not outage: the sensor p95 rose from ~10–46 ms to **242.5 ms** from T0 + 20 s and **no readings
+were lost** (sensor timeout is 5 s). Recovery **45 s after the stimulus ends** (the 1 min rate windows).
+The 242.5 ms value is the same in all 3 runs because `histogram_quantile` interpolates within the
+100–250 ms bucket: p95 resolution is limited by the bucket boundaries.
 
-### Resposta
-Nenhuma automática (grupo de controlo). **O que a resposta no T490 tem de bater:** recuperação = fim do ataque
-+ 45 s; dano colateral = 0 leituras perdidas.
+### Response
+None automatic (control group). **What the T490 response must beat:** recovery = end of attack + 45 s;
+collateral damage = 0 lost readings.
 
-### Causa raiz — a calculada e a verdadeira
-O correlator apontou `ssle:pt:avr:mac-m2:ing-01` nas 3 execuções: **certo quanto ao elemento afetado**. A causa
-verdadeira é a **carga externa** que chega ao `ing-01`, e essa origem o sistema **não consegue atribuir** (ver 1.
-abaixo): o correlator responde "*onde* dói", não "*quem* bate".
+### Root cause — computed vs actual
+The correlator identified `ssle:pt:avr:mac-m2:ing-01` in all 3 runs: **correct regarding the affected element**.
+The true cause is the **external load** arriving at `ing-01`, and that origin the system **cannot attribute**
+(see 1. below): the correlator answers "*where* it hurts", not "*who* is hitting".
 
-### O que correu mal ou é frágil
-1. **NAT entre sites esconde a origem.** O tráfego entre bridges passa pelo *masquerade* do Incus
-   (`ipv4.nat=true`): o `ing-01` vê o sensor de `opo` **e** o atacante como `10.10.1.1`. Uma resposta por origem
-   (`firewall-drop`, *rate-limit*) **cortaria também a frota legítima**, e o Wazuh não conseguiria atribuir o ataque.
-   ➜ Tirar o NAT do tráfego **interno** 10.10.0.0/16 (mantê-lo só para a Internet). Mexe na firewall do host →
-   decidir com o João antes.
-2. **Ponto cego do SLO do lado do servidor** (acima, Deteção 3).
-3. **Antes desta PoC havia um falso negativo total:** o `ing-01` não tinha tráfego e o contador só nascia no 1.º
-   pedido, por isso a 1.ª amostra do ataque era também a baseline (z ≈ 0). Corrigido com a telemetria dos
-   sensores e o contador pré-inicializado (commit `be88daa`).
-4. **Correlação só dentro do site.** Se o sensor de `opo` alertasse (o sintoma do cliente), o correlator abriria
-   um 2.º incidente em `opo` com causa raiz errada (`sen-01`), porque não segue a aresta `sen-01 → ing-01@avr`
-   entre sites.
-5. **Flash crowd vs ataque.** Com a dispersão mínima de 0,5 pedidos/s, um aumento legítimo da frota (p. ex., +10
-   sensores) também dispararia. O plano (§4.2) previa exigir **3 sinais** (z + p95 + 5xx), mas o servidor de
-   desenvolvimento do Flask **não devolve 5xx sob carga** (faz fila): não há o 3.º sinal.
-6. **Lab num só host.** O atacante (o host) e o alvo partilham CPU; e a VM esteve em pausa entre 15:37 e 15:41
-   (buraco nas séries) — **fora** das janelas medidas, mas é um lembrete de que o staging não é a produção.
+### What went wrong or is fragile
+1. **NAT between sites hides the origin.** Inter-bridge traffic passes through Incus *masquerade*
+   (`ipv4.nat=true`): `ing-01` sees the `opo` sensor **and** the attacker as `10.10.1.1`. A per-origin response
+   (`firewall-drop`, *rate-limit*) **would cut legitimate traffic too**, and Wazuh could not attribute the attack.
+   → Disable NAT for **internal** 10.10.0.0/16 traffic (keep it only for Internet). Affects host firewall →
+   confirm before changing.
+2. **Server-side SLO blind spot** (above, Detection 3).
+3. **Before this PoC there was a total false negative:** `ing-01` had no traffic and the counter only appeared on
+   the 1st request, so the attack's first sample was also the baseline (z ≈ 0). Fixed with sensor telemetry
+   and a pre-initialised counter (commit `be88daa`).
+4. **Correlation within site only.** If the `opo` sensor alerted (the client symptom), the correlator would open
+   a 2nd incident on `opo` with the wrong root cause (`sen-01`), because it did not follow the `sen-01 → ing-01@avr`
+   edge across sites.
+5. **Flash crowd vs attack.** With the minimum dispersion of 0.5 req/s, a legitimate fleet expansion (e.g., +10
+   sensors) would also trigger. The plan (§4.2) called for requiring **3 signals** (z + p95 + 5xx), but the Flask
+   dev server **does not return 5xx under load** (it queues): there is no 3rd signal.
+6. **Lab on a single host.** The attacker (the host) and the target share CPU; and the VM was paused between
+   15:37 and 15:41 (gap in the series) — **outside** the measured windows, but a reminder that staging is not
+   production.
 
-### Ações futuras
-- [x] **SLO do lado do cliente** (08/11, T490): regra `ClientLatencySLO` (p95 do sensor > 100 ms durante 1 min) e
-      `ClientUpstreamErrors` (> 50 % das leituras falham) em
-      [`anomalies.yml`](../../monitoring/site/rules/anomalies.yml), testadas do histograma em bruto até ao alerta
-      ([`client_slo_test.yml`](../../monitoring/tests/client_slo_test.yml): reproduz os 242,5 ms). **Análise
-      retroativa** sobre a evidência guardada (`analyze.py --offline`): teria disparado em **T0 + 80 s nas 3/3**
-      execuções (contra 0/3 do `ServiceLatencyHigh`); em repouso o p95 do sensor nunca passou de 38,7 ms.
-      ⚠️ É uma simulação do `for: 1m` sobre a série a 5 s, **não** uma medição ao vivo — mede-se no T490.
-- [x] **Correlação entre sites** (08/11): o núcleo do correlator ([`rca.py`](../../correlator/rca.py)) deixou de
-      agrupar por `site` e passou a fazer **cobertura gulosa do grafo** (que atravessa sites): o sintoma do sensor
-      de `opo` junta-se ao incidente do `ing-01` de `avr` → **1 incidente, causa `ing-01`, `cross_site=true`**.
-      Bónus: duas falhas independentes passam a dar dois incidentes (antes, o que o melhor candidato não explicava
-      ficava de fora). Testes em [`test_rca.py`](../../correlator/test_rca.py).
-- [x] **Risco novo encontrado ao fazer o ponto anterior** (08/11): se o alerta do sensor chegar ao SOC antes do
-      alerta do servidor, o correlator emitia "causa raiz = sensor" — e a regra Wazuh 110210 trata isso como
-      candidato a **quarentena** (um sensor legítimo isolado por causa de um DoS ao servidor). Corrigido com uma
-      **janela de estabilização** (`CORRELATOR_SETTLE=30` s): uma causa raiz nova só sai quando o sintoma mais
-      antigo tem 30 s. Custo: +≤ 30 s no MTTD do SOC (troca escolhida: precisão > rapidez). O teste
-      `test_without_settle_the_sensor_would_be_blamed` prova o problema e `test_client_first_never_blames_the_sensor`
-      prova a correção.
-- [ ] **NAT só para a Internet** (preserva o IP de origem dentro do lab) — com confirmação.
-- [ ] **T490 (`full`):** Wazuh 110100/110101 + resposta proporcional (*rate-limit* → `firewall-drop` com
-      `timeout`) e comparar a recuperação com estes 45 s; variante **distribuída** a partir do `kali-01` e de
-      clientes em 2–3 sites; `limits.cpu=1` no `ing-01`, como na aula 7.
-- [ ] Servir com `gunicorn` (respostas 503 sob saturação) para ter o 3.º sinal e distinguir *flash crowd*.
+### Future actions
+- [x] **Client-side SLO** (08/11, T490): rule `ClientLatencySLO` (sensor p95 > 100 ms for 1 min) and
+      `ClientUpstreamErrors` (> 50% of readings fail) in
+      [`anomalies.yml`](../../monitoring/site/rules/anomalies.yml), tested from raw histogram to alert
+      ([`client_slo_test.yml`](../../monitoring/tests/client_slo_test.yml): reproduces the 242.5 ms). **Retroactive
+      analysis** on saved evidence (`analyze.py --offline`): would have fired at **T0 + 80 s in all 3/3**
+      runs (vs 0/3 for `ServiceLatencyHigh`); at rest the sensor p95 never exceeded 38.7 ms.
+      Note: this is a simulation of `for: 1m` over the 5 s series, **not** a live measurement — measured on the T490.
+- [x] **Cross-site correlation** (08/11): the correlator core ([`rca.py`](../../correlator/rca.py)) no longer
+      groups by `site` and now performs **greedy set-cover on the graph** (which crosses sites): the `opo` sensor
+      symptom joins the `ing-01` incident from `avr` → **1 incident, cause `ing-01`, `cross_site=true`**.
+      Bonus: two independent faults now produce two incidents (before, what the best candidate did not explain
+      was left out). Tests in [`test_rca.py`](../../correlator/test_rca.py).
+- [x] **New risk found while implementing the previous item** (08/11): if the sensor alert arrived at the SOC
+      before the server alert, the correlator would emit "root cause = sensor" — and Wazuh rule 110210 treats
+      that as a **quarantine** candidate (a legitimate sensor isolated because of a DoS on the server). Fixed with
+      a **settle window** (`CORRELATOR_SETTLE=30` s): a new root cause is only emitted when the oldest symptom
+      is 30 s old. Cost: +≤ 30 s on SOC MTTD (chosen trade-off: accuracy > speed). The test
+      `test_without_settle_the_sensor_would_be_blamed` proves the problem and `test_client_first_never_blames_the_sensor`
+      proves the fix.
+- [ ] **NAT only for Internet** (preserves origin IP within the lab) — with confirmation.
+- [ ] **T490 (`full`):** Wazuh 110100/110101 + proportional response (*rate-limit* → `firewall-drop` with
+      `timeout`) and compare recovery against these 45 s; **distributed** variant from `kali-01` and
+      clients on 2–3 sites; `limits.cpu=1` on `ing-01`, as in lecture 7.
+- [ ] Serve with `gunicorn` (503 responses under saturation) for the 3rd signal to distinguish flash crowd.

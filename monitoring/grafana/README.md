@@ -1,72 +1,73 @@
-# Grafana como código
+# Grafana as code
 
-> **Para quê:** os dashboards do SOC (R5/R6/R7) e a figura obrigatória do relatório *"Grafana durante uma
-> PoC"*. Tudo nasce do Git: as datasources do **inventário**, os dashboards de um **gerador em Python**.
+> **Purpose:** the SOC dashboards (R5/R6/R7) and the mandatory report figure *"Grafana during a
+> PoC"*. Everything comes from Git: datasources from the **inventory**, dashboards from a **Python generator**.
 
-| Ficheiro | O que é |
+| File | What it is |
 |---|---|
-| [`build_dashboards.py`](build_dashboards.py) | **fonte** dos dashboards (escreve `dashboards/*.json`) |
-| `dashboards/ssle-soc.json` | SOC: Geomap dos sites (`site:info:last` + `site:up:ratio`), disponibilidade, incidentes do correlator (abertos, à espera do *settle*, redução de ruído), alertas a disparar em **todos** os sites (`site:alerts:firing`), custo da federation (R5), elementos dinâmicos (R2) |
-| `dashboards/ssle-t1.json` | T1 no `ing-01`: taxa (R), z robusto, **latência servidor vs cliente** com o SLO, estado das regras, leituras dos sensores |
-| [`providers/ssle.yml`](providers/ssle.yml) | *provider*: sem ele o Grafana ignora os JSON (faltava antes de 08/11) |
-| `infra/inventory.py grafana` | datasources geradas do inventário: `prom-global`, `prom-<site>` (drill-down por instância, que o global não tem), `alertmanager` |
-| [`it-local.sh`](it-local.sh) | valida o provisioning com um **Grafana 11.6.1 real** em 127.0.0.1 |
-| [`replay-t1.sh`](replay-t1.sh) | reproduz a evidência da T1 no dashboard e tira as figuras para `report/figures/` |
+| [`build_dashboards.py`](build_dashboards.py) | **source** for the dashboards (writes `dashboards/*.json`) |
+| `dashboards/ssle-soc.json` | SOC: Geomap of sites (`site:info:last` + `site:up:ratio`), availability, correlator incidents (open, settling, noise reduction), firing alerts across **all** sites (`site:alerts:firing`), federation cost (R5), dynamic elements (R2) |
+| `dashboards/ssle-t1.json` | T1 on `ing-01`: rate (R), robust z-score, **server vs client latency** with SLO, rule state, sensor readings |
+| [`providers/ssle.yml`](providers/ssle.yml) | *provider*: without it Grafana ignores the JSONs (was missing before 08/11) |
+| `infra/inventory.py grafana` | datasources generated from the inventory: `prom-global`, `prom-<site>` (per-instance drill-down, which the global lacks), `alertmanager` |
+| [`it-local.sh`](it-local.sh) | validates provisioning with a **real Grafana 11.6.1** on 127.0.0.1 |
+| [`replay-t1.sh`](replay-t1.sh) | replays T1 evidence on the dashboard and captures figures for `report/figures/` |
 
-No lab, o `infra/deploy.sh` (perfil `full`) instala o Grafana 11.6.1 no `core/obs` a partir do repositório apt
-oficial (chave assinada, versão fixada), escuta **só** no IP do `obs` na `net-core` (chega-se por túnel SSH),
-sem acesso anónimo, com a password de admin **gerada** em `build/secrets/grafana-admin.pass` (fora do Git).
+In the lab, `infra/deploy.sh` (profile `full`) installs Grafana 11.6.1 on `core/obs` from the official apt
+repository (signed key, pinned version), listening **only** on the `obs` IP on `net-core` (accessible via SSH
+tunnel), with no anonymous access and the admin password **generated** in `build/secrets/grafana-admin.pass`
+(outside Git).
 
-🧠 **Porquê datasources por site:** o Prometheus global só recebe agregados (`site.*:.*`, `up` e os alertas
-ativos) — é isso que poupa banda (R5). O detalhe por instância (a taxa do `ing-01`, o p95 de cada sensor) fica
-no `prom-01` de cada site, e o Grafana vai lá buscá-lo só quando alguém abre o drill-down.
+**Why per-site datasources:** the global Prometheus only receives aggregates (`site.*:.*`, `up` and active
+alerts) — that is what saves bandwidth (R5). Per-instance detail (the rate of `ing-01`, each sensor's p95)
+remains on each site's `prom-01`, and Grafana fetches it only when someone opens the drill-down.
 
-## Validação (08/11/2026, output real)
+## Validation (08/11/2026, real output)
 
 ```text
 (t490$) bash monitoring/grafana/it-local.sh
-[grafana] versão 11.6.1 · db ok
+[grafana] version 11.6.1 · db ok
   datasources: alertmanager, prom-avr, prom-global, prom-lis, prom-opo
   dashboards: SSLE/ssle-soc, SSLE/ssle-t1
-  ssle-soc: 11 painéis (geomap, stat, table, timeseries)
-  ssle-t1: 6 painéis (timeseries)
-RESULTADO: provisioning do Grafana sem erros ✅
+  ssle-soc: 11 panels (geomap, stat, table, timeseries)
+  ssle-t1: 6 panels (timeseries)
+RESULT: Grafana provisioning error-free ✅
 ```
 
-Na CI (`bash tools/test-all.sh`): as **21 expressões PromQL** dos dashboards passam pelo `promtool` (embrulhadas
-em recording rules) e verifica-se que os JSON são exatamente o que o gerador produz (ninguém os editou à mão).
+In CI (`bash tools/test-all.sh`): the **21 PromQL expressions** from the dashboards pass through `promtool`
+(wrapped in recording rules) and the JSONs are verified to be exactly what the generator produces (no manual edits).
 
-## Figura da T1 — *replay* da evidência de staging (06/11, execução 1)
+## T1 figure — *replay* of staging evidence (06/11, run 1)
 
 `bash monitoring/grafana/replay-t1.sh 1` → `report/figures/t1-replay-run1-{dashboard,latencia,regras}.png`
 
 ![T1 — dashboard (replay)](../../report/figures/t1-replay-run1-dashboard.png)
 
-Como é feito: os JSON guardados em `threats/t1-ddos/evidence/run-*/` (respostas do Prometheus a 5 s) são
-convertidos em OpenMetrics, importados num TSDB local com `promtool tsdb create-blocks-from openmetrics`,
-servidos por um Prometheus 2.53.5 em 127.0.0.1 e vistos com **o mesmo dashboard** do lab.
+How it works: the JSONs saved in `threats/t1-ddos/evidence/run-*/` (Prometheus responses at 5 s) are
+converted to OpenMetrics, imported into a local TSDB with `promtool tsdb create-blocks-from openmetrics`,
+served by a Prometheus 2.53.5 on 127.0.0.1 and viewed with **the same dashboard** as the lab.
 
-⚠️ **É um replay, não uma medição nova** — e a legenda no relatório tem de o dizer:
-- o p95 do sensor e as leituras eram resultados de expressões; aqui recebem as labels do `sen-01` (o único
-  sensor do staging) para caberem nas consultas do dashboard;
-- o z robusto é recalculado sobre a janela guardada (há < 1 h de linha de base);
-- o `ClientLatencySLO` ainda não existia a 06/11, por isso não aparece no estado das regras;
-- o painel "Latência servida — distribuição" fica vazio (os *buckets* em bruto não foram guardados);
-- o Prometheus do replay usa `--query.lookback-delta=15s` (o backfill não traz *staleness markers*): o fim do
-  *firing* aparece até 15 s mais tarde do que foi.
+**This is a replay, not a new measurement** — and the report caption must say so:
+- the sensor p95 and readings were expression results; here they receive `sen-01` labels (the only
+  staging sensor) to match the dashboard queries;
+- the robust z-score is recalculated over the saved window (< 1 h of baseline);
+- `ClientLatencySLO` did not exist on 06/11, so it does not appear in the rule state;
+- the "Served latency — distribution" panel is empty (raw buckets were not saved);
+- the replay Prometheus uses `--query.lookback-delta=15s` (backfill brings no staleness markers): the end of
+  *firing* appears up to 15 s later than it was.
 
-A figura definitiva (com o `ClientLatencySLO` e a resposta automática) sai das execuções no T490.
+The definitive figure (with `ClientLatencySLO` and the automatic response) comes from the T490 runs.
 
-## Erros encontrados pelo caminho (e porque contam para o relatório)
+## Errors found along the way (and why they matter for the report)
 
-- **State-timeline mente quando a série acaba:** prolonga o último estado até ao fim do gráfico, por isso um
-  alerta resolvido às 15:27 aparecia *firing* até às 15:31. Trocado por uma série em degraus.
-- **Duas séries com a mesma cor** no painel da latência — exatamente o painel que conta a lição da T1. Cores
-  fixas por *query* (servidor azul, cliente laranja).
+- **State-timeline lies when the series ends:** it extends the last state to the end of the graph, so a
+  resolved alert at 15:27 appeared *firing* until 15:31. Replaced with a step series.
+- **Two series with the same colour** on the latency panel — exactly the panel that illustrates the T1 lesson.
+  Fixed colours per query (server blue, client orange).
 
-## O que levar contigo
+## Takeaways
 
-- **Dashboards são código:** gerador + JSON versionados + provider + datasources do inventário = o Grafana
-  reconstrói-se sem cliques.
-- **O global vê agregados; o drill-down vai ao site.** É a mesma escolha de arquitetura do R5, no Grafana.
-- **Uma figura de um replay vale como ilustração, não como medição** — e diz-se isso na legenda.
+- **Dashboards are code:** generator + versioned JSONs + provider + inventory datasources = Grafana
+  rebuilds itself with no clicks.
+- **The global sees aggregates; drill-down goes to the site.** The same R5 architecture choice, in Grafana.
+- **A replay figure is an illustration, not a measurement** — and the caption must say so.

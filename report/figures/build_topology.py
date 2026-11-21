@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Figura "topologia de nomes" GERADA do inventário (fonte única) — sem Graphviz, SVG escrito à mão:
+Name-topology figure GENERATED from the inventory (single source of truth) — hand-written SVG, no Graphviz:
 
-    python3 report/figures/build_topology.py        # → report/figures/topologia.svg (+ .png com chromium)
+    python3 report/figures/build_topology.py        # → report/figures/topologia.svg (+ .png via chromium)
 
-Uma coluna por projeto/rede Incus (core e cada site: cidade, sub-rede, equipa), uma caixa por elemento com
-a identidade canónica ssle:<region>:<site>:<host>:<inst>, e as dependências do inventário como setas
-(a aresta ENTRE sites — o sensor de opo depende da ingestão de avr — a laranja: é a que o correlator segue).
+One column per Incus project/network (core and each site: city, subnet, team), one box per element with
+its canonical identity ssle:<region>:<site>:<host>:<inst>, and inventory dependencies as arrows
+(the cross-site edge — opo sensor depends on avr ingestion — in orange: the one the correlator follows).
 """
 import importlib.util, os, shutil, subprocess, tempfile
 from xml.sax.saxutils import escape
@@ -34,8 +34,8 @@ def main():
     W = PAD * 2 + COLW * len(cols)
     H = TOP + rows * (BOXH + GAP) + 70
     parts.append('<rect x="0" y="0" width="%d" height="%d" fill="#ffffff"/>' % (W, H))
-    parts.append('<text x="%d" y="28" font-size="17" font-weight="700" fill="#111827">Topologia de nomes '
-                 '— gerada de inventory/sites.yaml (perfil full, host físico t490)</text>' % PAD)
+    parts.append('<text x="%d" y="28" font-size="17" font-weight="700" fill="#111827">Name topology '
+                 '— generated from inventory/sites.yaml (full profile, physical host t490)</text>' % PAD)
     for ci, c in enumerate(cols):
         x0 = PAD + ci * COLW
         n = nets.get(c, {})
@@ -71,10 +71,10 @@ def main():
             color, dash = "#374151", ""
         parts.append('<path d="%s" fill="none" stroke="%s" stroke-width="2"%s marker-end="url(#a-%s)"/>'
                      % (d, color, dash, "x" if cross else "n"))
-    parts.append('<text x="%d" y="%d" font-size="11" fill="#4b5563">Seta = "depende de" (inventário). '
-                 'Laranja tracejado = dependência ENTRE sites, seguida pelo correlator (causa raiz). '
-                 'Físico: todos os contentores correm no host t490 (label host); lógico: projeto + rede Incus '
-                 'por site.</text>' % (PAD, H - 14))
+    parts.append('<text x="%d" y="%d" font-size="11" fill="#4b5563">Arrow = "depends on" (inventory). '
+                 'Dashed orange = cross-site dependency, followed by the correlator (root cause). '
+                 'Physical: all containers run on host t490 (host label); logical: Incus project + network '
+                 'per site.</text>' % (PAD, H - 14))
     defs = ''.join('<marker id="a-%s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" '
                    'orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="%s"/></marker>' % (k, c)
                    for k, c in (("n", "#374151"), ("x", "#ea580c")))

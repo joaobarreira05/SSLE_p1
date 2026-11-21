@@ -1,58 +1,57 @@
-# SSLE — Projeto 1: deteção, monitorização e prevenção de ameaças
+# SSLE — Project 1: Threat Detection, Monitoring and Prevention
 
-Infraestrutura de larga escala **como código**: frota multi-site em contentores Incus, monitorização
-com Prometheus **hierárquico** (por site + global que só federa agregados), correlação para **causa raiz**
-e SIEM (Wazuh) com *action-response*. Tudo nasce de uma fonte única: [`inventory/sites.yaml`](inventory/sites.yaml).
+Large-scale infrastructure **as code**: multi-site fleet in Incus containers, monitoring
+with **hierarchical** Prometheus (per site + global that federates only aggregates), **root-cause**
+correlation and a SIEM (Wazuh) with active response. Everything originates from a single source of truth:
+[`inventory/sites.yaml`](inventory/sites.yaml).
 
-## Arquitetura numa página
+## Architecture at a glance
 
 ```
-            core/obs ─ Prometheus global (federa só agregados) ─ Alertmanager ─ correlator (RCA) ─► incidents.json ─► Wazuh
-               ▲ /federate 30s (poupa banda)                         ▲ inibição topológica        │ causa raiz
-     ┌─────────┴─────────┐                                           │                            ▼ action-response (core/responder)
+            core/obs ─ Prometheus global (federates only aggregates) ─ Alertmanager ─ correlator (RCA) ─► incidents.json ─► Wazuh
+               ▲ /federate 30s (saves bandwidth)                         ▲ topological inhibition       │ root cause
+     ┌─────────┴─────────┐                                               │                              ▼ active response (core/responder)
    site-avr            site-opo            site-lis
    prom-01             prom-01             prom-01
    ing-01→sto-01       sen-01..N           web-01, mail-01
-   (scrape 15s, agregados, regras de anomalia/liveness)
+   (scrape 15s, aggregates, anomaly/liveness rules)
 ```
 
-Identidade única em Prometheus e Wazuh: `ssle:<region>:<site>:<host>:<instância>` (ex.: `ssle:pt:avr:t490:sto-01`).
+Unique identity across Prometheus and Wazuh: `ssle:<region>:<site>:<host>:<instance>` (e.g. `ssle:pt:avr:t490:sto-01`).
 
-## Reproduzir em 3 comandos
+## Reproduce in 3 commands
 
 ```bash
-# 1) perfil reduzido (pouca RAM): 2 sites + core, 6 contentores
+# 1) reduced profile (low RAM): 2 sites + core, 6 containers
 SSLE_PROFILE=staging bash infra/deploy.sh
-# 2) ver a frota
+# 2) inspect the fleet
 incus list --all-projects
-# 3) correr a demo de deteção → correlação → causa raiz
+# 3) run the detection → correlation → root-cause demo
 bash infra/demo.sh
 ```
 
-No T490 (24 GB): `SSLE_PROFILE=full bash infra/deploy.sh` acrescenta os restantes sites e o Wazuh.
+On the T490 (24 GB): `SSLE_PROFILE=full bash infra/deploy.sh` adds the remaining sites and Wazuh.
 
-## O que a demo prova (já validado em staging, arm64)
+## What the demo proves (validated in staging, arm64)
 
-- **Federation que poupa banda (R5):** o global vê `site:up:ratio` de cada site sem federar as séries em bruto.
-- **Causa raiz (R6/R7):** parar `sto-01` gera `ElementDown` (sto-01) **e** `ServiceDegraded` (ing-01, que
-  depende dele). O Alertmanager inibe sintomas da mesma máquina; o **correlator** junta os 2 alertas num **único
-  incidente** com causa raiz `sto-01` (`noise_reduction=2.0`) e escreve-o em `incidents.json` (ponte para o Wazuh).
+- **Bandwidth-saving federation (R5):** the global sees `site:up:ratio` from each site without federating raw series.
+- **Root cause (R6/R7):** stopping `sto-01` generates `ElementDown` (sto-01) **and** `ServiceDegraded` (ing-01, which
+  depends on it). The Alertmanager inhibits same-host symptoms; the **correlator** merges the 2 alerts into a **single
+  incident** with root cause `sto-01` (`noise_reduction=2.0`) and writes it to `incidents.json` (bridge to Wazuh).
 
-## Mapa do repositório
+## Repository map
 
-| Pasta | Conteúdo |
+| Folder | Contents |
 |---|---|
-| `inventory/` | `sites.yaml` — fonte única |
-| `infra/` | `inventory.py` (leitor portável), `deploy.sh`, `destroy.sh`, `demo.sh` |
-| `monitoring/` | `site/` (prometheus+regras), `global/` (federation, alertmanager, compose), `tests/` (promtool), `grafana/` |
-| `correlator/` | webhook → RCA por grafo → `incidents.json` + `/metrics` |
-| `services/` | serviço Flask do lab (RED + saúde de dependências) |
-| `siem/` | regras 1100xx–1109xx, decoders, listas CDB, `agent.conf` por grupo, active-response, testes logtest |
-| `threats/` | t1-ddos, t2-botnet, t3-spam (PoCs limitadas + post-mortem) |
-| `evaluation/`, `docs/`, `report/` | medição, rastreabilidade/ADR/horas, relatório |
+| `inventory/` | `sites.yaml` — single source of truth |
+| `infra/` | `inventory.py` (portable reader), `deploy.sh`, `destroy.sh`, `demo.sh` |
+| `monitoring/` | `site/` (prometheus+rules), `global/` (federation, alertmanager, compose), `tests/` (promtool), `grafana/` |
+| `correlator/` | webhook → RCA via dependency graph → `incidents.json` + `/metrics` |
+| `services/` | Flask lab service (RED + dependency health) |
+| `siem/` | rules 1100xx–1109xx, decoders, CDB lists, `agent.conf` per group, active response, logtest tests |
+| `threats/` | t1-ddos, t2-botnet, t3-spam (limited PoCs + post-mortem) |
+| `evaluation/`, `docs/`, `report/` | measurements, traceability/ADR, report |
 
-## Segurança do lab
-Estímulos **limitados e com duração fixa**, só em bridges internas; a botnet é **emulação benigna** de indicadores.
-Sem alvos externos, sem floods reais. Respostas proporcionais, reversíveis e registadas (IPs do SOC em allow-list).
-
-> Por confirmar com o docente: as 3 ameaças, o "banco de 168 h" e 3 sites emulados num só host.
+## Lab safety
+Stimuli are **limited and fixed-duration**, only on internal bridges; the botnet is a **benign emulation** of indicators.
+No external targets, no real floods. Responses are proportional, reversible and logged (SOC IPs on the allow-list).

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-As 3 ADTrees (Attack-Defense Trees, Kordy et al.; notação da aula 5) GERADAS de código — SVG escrito à mão:
+The 3 ADTrees (Attack-Defense Trees, Kordy et al.) GENERATED from code — hand-written SVG:
 
-    python3 report/figures/build_adtrees.py      # → report/figures/adtree-t{1,2,3}.svg (+ .png com rsvg-convert)
+    python3 report/figures/build_adtrees.py      # → report/figures/adtree-t{1,2,3}.svg (+ .png via rsvg-convert)
 
-Notação: ataque = elipse vermelha · defesa = retângulo verde · refinamento OR = arestas simples ·
-AND = arco a atravessar as arestas dos filhos · contramedida = aresta TRACEJADA para o papel oposto.
-Cada defesa diz onde vive no repositório e o seu estado — ✓ testada (logtest/integração/medição) ou
-○ planeada —, para a figura não prometer mais do que o lab mostra.
+Notation: attack = red ellipse · defence = green rectangle · OR refinement = plain edges ·
+AND = arc across child edges · countermeasure = DASHED edge to the opposing role.
+Each defence states its repo location and status — ✓ tested (logtest/integration/measurement) or
+○ planned — so the figure does not promise more than the lab shows.
 """
 import os, shutil, subprocess
 from xml.sax.saxutils import escape
@@ -18,68 +18,68 @@ NODE_W, LINE_H, VGAP, HGAP, PAD = 170, 14, 46, 14, 20
 
 
 def A(label, *kids, op="OR", cm=None):
-    """Nó de ataque. kids = refinamento (op OR/AND); cm = contramedida (um nó D)."""
+    """Attack node. kids = refinement (op OR/AND); cm = countermeasure (a D node)."""
     return {"t": "A", "label": label, "kids": list(kids), "op": op, "cm": cm}
 
 
 def D(label, state="✓", cm=None):
-    """Nó de defesa (state ✓ testada / ○ planeada); cm = contra-ataque que a contorna (um nó A)."""
+    """Defence node (state ✓ tested / ○ planned); cm = counter-attack that bypasses it (an A node)."""
     return {"t": "D", "label": "%s %s" % (state, label), "kids": [], "op": "OR", "cm": cm}
 
 
 TREES = {
-    "t1": ("T1 — DoS/DDoS contra a ingestão (Disponibilidade)",
-           A("Indisponibilizar a ingestão (ing-01@avr)",
-             A("Esgotar o serviço (camada aplicação)",
-               A("Inundar /work de uma só origem",
-                 cm=D("Rate-limit por origem: 110100 → ssle-ratelimit (nft)",
-                      cm=A("Distribuir por muitas origens (DDoS)",
-                           A("Controlar N bots", cm=D("Ver T2 (quarentena dos bots)")),
-                           A("Coordenar o envio"), op="AND",
-                           cm=D("Limite a TODAS as origens: 110110 (causa raiz) + 110101")))),
-               A("Degradar sem derrubar (latência)",
-                 cm=D("SLO do cliente: ClientLatencySLO (o servidor mede 23 ms, o cliente 242 ms)"))),
-             A("Volume anómalo sustentado",
-               cm=D("TrafficAnomaly: z-score robusto (mediana+IQR), MTTD 82 s",
-                    cm=A("Subir devagar e envenenar a baseline",
-                         cm=D("Janela de baseline ≥ 20 min + limites absolutos", state="○")))),
-             A("Derrubar a dependência (sto-01)",
-               cm=D("Correlator: causa raiz = sto-01, não o ing-01 (N alertas → 1 incidente)"))),
+    "t1": ("T1 — DoS/DDoS against ingestion (Availability)",
+           A("Disrupt ingestion service (ing-01@avr)",
+             A("Exhaust the service (application layer)",
+               A("Flood /work from a single origin",
+                 cm=D("Per-origin rate-limit: 110100 → ssle-ratelimit (nft)",
+                      cm=A("Distribute across many origins (DDoS)",
+                           A("Control N bots", cm=D("See T2 (bot quarantine)")),
+                           A("Coordinate the flood"), op="AND",
+                           cm=D("Limit ALL origins: 110110 (root cause) + 110101")))),
+               A("Degrade without crashing (latency)",
+                 cm=D("Client SLO: ClientLatencySLO (server sees 23 ms, client 242 ms)"))),
+             A("Sustained anomalous volume",
+               cm=D("TrafficAnomaly: robust z-score (median+IQR), MTTD 82 s",
+                    cm=A("Ramp up slowly and poison the baseline",
+                         cm=D("Baseline window ≥ 20 min + absolute limits", state="○")))),
+             A("Take down the dependency (sto-01)",
+               cm=D("Correlator: root cause = sto-01, not ing-01 (N alerts → 1 incident)"))),
            ),
-    "t2": ("T2 — Botnet sobre a frota IoT (Integridade → Disponibilidade)",
-           A("Controlar sensores IoT (sen-0x@opo)",
-             A("Acesso inicial",
-               A("Força bruta SSH (credenciais fracas)",
-                 cm=D("110200 (filha das 5712/5720/5763), 8 falhas → alerta")),
-               A("Explorar serviço exposto",
-                 cm=D("Superfície mínima: só :8000 e :9100", state="○"))),
-             A("Persistência",
-               A("cron.d / unidade systemd"),
-               A("Chave em /root/.ssh"),
-               cm=D("FIM em tempo real (role-sensor) → 110201")),
-             A("Comando e controlo",
-               A("Beaconing periódico",
-                 cm=D("OutboundAnomaly (z robusto) → correlator → 110210 → quarentena (incus pause)",
-                      cm=A("C2 lento, em 443, com jitter",
-                           cm=D("Meta 110900: causa raiz E origem de impacto", state="✓")))),
-               A("Porta nova à escuta (backdoor)",
+    "t2": ("T2 — IoT botnet (Integrity → Availability)",
+           A("Control IoT sensors (sen-0x@opo)",
+             A("Initial access",
+               A("SSH brute force (weak credentials)",
+                 cm=D("110200 (child of 5712/5720/5763), 8 failures → alert")),
+               A("Exploit exposed service",
+                 cm=D("Minimal surface: only :8000 and :9100", state="○"))),
+             A("Persistence",
+               A("cron.d / systemd unit"),
+               A("Key in /root/.ssh"),
+               cm=D("Real-time FIM (role-sensor) → 110201")),
+             A("Command and control",
+               A("Periodic beaconing",
+                 cm=D("OutboundAnomaly (robust z) → correlator → 110210 → quarantine (incus pause)",
+                      cm=A("Slow C2, on 443, with jitter",
+                           cm=D("Meta 110900: root cause AND impact origin", state="✓")))),
+               A("New listening port (backdoor)",
                  cm=D("533 'netstat listening ports' → 110202"))),
              op="AND"),
            ),
-    "t3": ("T3 — Junk e-mail a partir da infraestrutura (Disponibilidade / Confidencialidade)",
-           A("Usar a infraestrutura para spam (mail-01@lis)",
-             A("Usar o MTA como relay aberto",
-               cm=D("Relay só para mynetworks → 3301 → 110302 → firewall-drop",
-                    cm=A("Rodar de IP de origem",
-                         cm=D("Reputação: CDB ssle-reputation → 110310 (+ RBL)")))),
-             A("Inundar caixas internas",
-               A("Conteúdo de spam"),
+    "t3": ("T3 — Junk e-mail from the infrastructure (Availability / Confidentiality)",
+           A("Use the infrastructure for spam (mail-01@lis)",
+             A("Use the MTA as an open relay",
+               cm=D("Relay only for mynetworks → 3301 → 110302 → firewall-drop",
+                    cm=A("Rotate source IP",
+                         cm=D("Reputation: CDB ssle-reputation → 110310 (+ RBL)")))),
+             A("Flood internal mailboxes",
+               A("Spam content"),
                A("Volume"),
                op="AND",
-               cm=D("SpamAssassin: 110301 / 110304 + vaga 110300",
-                    cm=A("Evadir o filtro (Bayes poisoning)",
-                         cm=D("Bayes treinado + regras locais", state="○")))),
-             A("Falsificar o remetente (spoofing)",
+               cm=D("SpamAssassin: 110301 / 110304 + wave 110300",
+                    cm=A("Evade the filter (Bayes poisoning)",
+                         cm=D("Trained Bayes + local rules", state="○")))),
+             A("Spoof the sender (spoofing)",
                cm=D("SPF / DKIM / DMARC", state="○"))),
            ),
 }
@@ -100,7 +100,7 @@ def height(n):
 
 
 def layout(n):
-    """Largura da subárvore (filhos + contramedida ao lado deles)."""
+    """Subtree width (children + countermeasure beside them)."""
     kids = n["kids"] + ([n["cm"]] if n["cm"] else [])
     for k in kids:
         layout(k)
@@ -144,7 +144,7 @@ def edges_svg(n):
     for k in n["kids"]:
         out.append('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke="#334155" stroke-width="1.3"/>' % (
             n["x"], y0, k["x"], k["y"]))
-    if n["op"] == "AND" and len(n["kids"]) > 1:   # arco a atravessar as arestas dos filhos
+    if n["op"] == "AND" and len(n["kids"]) > 1:
         r = VGAP * 0.55
         a, b = n["kids"][0], n["kids"][-1]
         def at(k):
@@ -164,11 +164,11 @@ def edges_svg(n):
 
 
 def legend(x, y):
-    items = [('<ellipse cx="%d" cy="%d" rx="16" ry="8" fill="#fee2e2" stroke="#b91c1c"/>', "ataque"),
-             ('<rect x="%d" y="%d" width="30" height="14" fill="#dcfce7" stroke="#15803d"/>', "defesa ✓ testada"),
-             ('<rect x="%d" y="%d" width="30" height="14" fill="#f0fdf4" stroke="#15803d" stroke-dasharray="5 3"/>', "defesa ○ planeada"),
-             ('<line x1="%d" y1="%d" x2="%d" y2="%d" stroke="#15803d" stroke-dasharray="4 3" stroke-width="1.4"/>', "contramedida"),
-             (None, "arco = AND · sem arco = OR")]
+    items = [('<ellipse cx="%d" cy="%d" rx="16" ry="8" fill="#fee2e2" stroke="#b91c1c"/>', "attack"),
+             ('<rect x="%d" y="%d" width="30" height="14" fill="#dcfce7" stroke="#15803d"/>', "defence ✓ tested"),
+             ('<rect x="%d" y="%d" width="30" height="14" fill="#f0fdf4" stroke="#15803d" stroke-dasharray="5 3"/>', "defence ○ planned"),
+             ('<line x1="%d" y1="%d" x2="%d" y2="%d" stroke="#15803d" stroke-dasharray="4 3" stroke-width="1.4"/>', "countermeasure"),
+             (None, "arc = AND · no arc = OR")]
     out, cx = [], x
     for shape, label in items:
         if shape is None:

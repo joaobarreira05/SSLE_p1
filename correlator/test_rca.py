@@ -114,7 +114,7 @@ class Settle(unittest.TestCase):
         c, out, clk = make(settle=0)
         c.ingest({"alerts": [alert("ClientLatencySLO", "opo", "sen-01", "critical")]})
         self.assertEqual(out[0]["root_cause_role"], "sensor")
-        self.assertEqual(out[0]["srcip"], "10.10.2.50")  # sen-01: é este IP que a meta-correlação 110900 procura
+        self.assertEqual(out[0]["srcip"], "10.10.2.50")
 
     def test_beaconing_sensor_is_root_cause_with_wazuh_fields(self):
         """T2: OutboundAnomaly só no sen-01 → incidente com os campos que a Wazuh 110210 exige para a quarentena."""

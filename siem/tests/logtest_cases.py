@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Corre os casos de siem/tests/cases.json contra o wazuh-analysisd REAL (socket do logtest) e
-compara regra/nível/decoder/campos com o esperado. Corre DENTRO do manager (o run-logtest.sh trata
-disso), com o Python que vem com o Wazuh:
+Runs siem/tests/cases.json against the REAL wazuh-analysisd (logtest socket) and compares
+rule/level/decoder/fields with the expected values. Runs INSIDE the manager (run-logtest.sh handles
+that), with the Python bundled with Wazuh:
 
     /var/ossec/framework/python/bin/python3 logtest_cases.py cases.json
 
-Cada caso é uma SESSÃO do logtest (um token): os eventos são enviados por ordem e o estado
-(frequency/timeframe/if_matched_sid) acumula-se, como no manager a sério. Formato de um caso:
+Each case is a logtest SESSION (one token): events are sent in order and state
+(frequency/timeframe/if_matched_sid) accumulates, as in the real manager. Case format:
   {"name": "...", "log_format": "syslog|json", "location": "...",
-   "events": ["linha", ...]           # ou {"line": "...", "repeat": N}  ou lista dos dois
-                                      # (um dict pode trocar "log_format"/"location" só para esse evento:
-                                      #  a meta-correlação mistura o JSON do correlator com syslog)
-   "expect": {"rule": "110001", "level": 10, "decoder": "json", "fields": {"campo": "valor"}},
-   "fires_within": 130}              # opcional: a regra tem de aparecer em ALGUM dos primeiros N eventos
-Sem "fires_within", o "expect" aplica-se ao ÚLTIMO evento. "expect": {"rule": null} = não alerta.
+   "events": ["line", ...]            # or {"line": "...", "repeat": N}  or list of both
+                                      # (a dict can override "log_format"/"location" per event:
+                                      #  the meta-correlation mixes correlator JSON with syslog)
+   "expect": {"rule": "110001", "level": 10, "decoder": "json", "fields": {"field": "value"}},
+   "fires_within": 130}              # optional: the rule must appear in SOME of the first N events
+Without "fires_within", "expect" applies to the LAST event. "expect": {"rule": null} = no alert.
 """
 import json, socket, struct, sys
 

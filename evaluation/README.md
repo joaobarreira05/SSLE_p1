@@ -1,5 +1,5 @@
-# Avaliação (F4)
-- **Eficácia:** FP/TP por ameaça (baseline sem ataque vs com ataque).
-- **Escala:** repetir com 10/25/50 elementos (acrescentar linhas ao inventário) e medir uso de CPU/RAM/scrape.
-- **Largura de banda (bónus):** `bytes` federados com vs sem agregação (comparar `/federate` com scrape direto).
-- **MTTD/MTTR:** `measure.sh <epoch>` após cada PoC; média de 3 execuções.
+# Evaluation (F4)
+- **Effectiveness:** FP/TP per threat (baseline without attack vs with attack).
+- **Scale:** repeat with 10/25/50 elements (add lines to the inventory) and measure CPU/RAM/scrape usage.
+- **Bandwidth (bonus):** federated `bytes` with vs without aggregation (compare `/federate` with direct scrape).
+- **MTTD/MTTR:** `measure.sh <epoch>` after each PoC; mean of 3 runs.

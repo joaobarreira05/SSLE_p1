@@ -1,4 +1,0 @@
-fase,data,horas,descricao
-F0,2026-11-06,0.5,setup e diagnóstico do host (staging)
-F1,2026-11-06,1.5,infra como código: projetos/redes/frota (inventory + deploy.sh)
-F2,2026-11-06,2.0,monitorização: Prometheus hierárquico + federation + Alertmanager + correlator (demo de causa raiz)
