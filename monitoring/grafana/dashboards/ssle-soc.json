@@ -1,7 +1,7 @@
 {
   "uid": "ssle-soc",
-  "title": "SSLE — SOC (visão global)",
-  "description": "Vista do SOC no core/obs: só agregados federados dos sites (R5) + incidentes do correlator.",
+  "title": "SSLE — SOC (global view)",
+  "description": "SOC view on core/obs: federated site aggregates only (R5) + correlator incidents.",
   "tags": [
     "ssle",
     "soc",
@@ -26,8 +26,8 @@
     {
       "id": 1,
       "type": "geomap",
-      "title": "Sites — disponibilidade",
-      "description": "Posição de cada site (lat/lon do inventário, servida pelo reg-01 como site_info) e a fração de elementos 'up'. Sem Internet no lab o mapa de fundo não carrega; os marcadores sim.",
+      "title": "Sites — availability",
+      "description": "Position of each site (lat/lon from inventory, served by reg-01 as site_info) and the fraction of 'up' elements. Without Internet in the lab the base map does not load; markers do.",
       "gridPos": {
         "x": 0,
         "y": 0,
@@ -180,8 +180,8 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "Disponibilidade por site",
-      "description": "site:up:ratio — média de up{job=\"node\"} no site (recording rule federada).",
+      "title": "Availability per site",
+      "description": "site:up:ratio — mean of up{job=\"node\"} on the site (federated recording rule).",
       "gridPos": {
         "x": 10,
         "y": 0,
@@ -250,7 +250,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Incidentes abertos",
+      "title": "Open incidents",
       "description": "",
       "gridPos": {
         "x": 18,
@@ -270,7 +270,7 @@
             "uid": "prom-global"
           },
           "expr": "correlator_open_incidents",
-          "legendFormat": "abertos",
+          "legendFormat": "open",
           "range": true,
           "instant": false
         }
@@ -315,8 +315,8 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "À espera (settle)",
-      "description": "Incidentes com causa raiz nova à espera da janela de estabilização (CORRELATOR_SETTLE).",
+      "title": "Pending (settle)",
+      "description": "Incidents with a new root cause waiting for the settle window (CORRELATOR_SETTLE).",
       "gridPos": {
         "x": 21,
         "y": 0,
@@ -335,7 +335,7 @@
             "uid": "prom-global"
           },
           "expr": "correlator_pending_incidents",
-          "legendFormat": "pendentes",
+          "legendFormat": "pending",
           "range": true,
           "instant": false
         }
@@ -380,7 +380,7 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "Incidentes desde o arranque",
+      "title": "Incidents since start",
       "description": "",
       "gridPos": {
         "x": 10,
@@ -441,8 +441,8 @@
     {
       "id": 6,
       "type": "stat",
-      "title": "Redução de ruído (último)",
-      "description": "Alertas em bruto que o correlator juntou no último incidente (N alertas → 1).",
+      "title": "Noise reduction (last)",
+      "description": "Raw alerts the correlator merged into the last incident (N alerts → 1).",
       "gridPos": {
         "x": 14,
         "y": 5,
@@ -461,7 +461,7 @@
             "uid": "prom-global"
           },
           "expr": "correlator_last_noise_reduction",
-          "legendFormat": "alertas → 1 incidente",
+          "legendFormat": "alerts → 1 incident",
           "range": true,
           "instant": false
         }
@@ -502,8 +502,8 @@
     {
       "id": 7,
       "type": "stat",
-      "title": "Elementos registados dinamicamente",
-      "description": "R2: elementos que entraram pelo reg-01 do site (fora do inventário).",
+      "title": "Dynamically registered elements",
+      "description": "R2: elements that entered via the site reg-01 (outside inventory).",
       "gridPos": {
         "x": 18,
         "y": 5,
@@ -563,8 +563,8 @@
     {
       "id": 8,
       "type": "table",
-      "title": "Alertas a disparar (todos os sites)",
-      "description": "ALERTS{alertstate=\"firing\"} federado dos Prometheus de site (renomeado no global).",
+      "title": "Firing alerts (all sites)",
+      "description": "ALERTS{alertstate=\"firing\"} federated from site Prometheus instances (renamed on global).",
       "gridPos": {
         "x": 0,
         "y": 11,
@@ -626,7 +626,7 @@
     {
       "id": 9,
       "type": "timeseries",
-      "title": "Elementos em baixo por site",
+      "title": "Elements down per site",
       "description": "",
       "gridPos": {
         "x": 12,
@@ -676,8 +676,8 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "Federation — amostras por recolha, por site (R5)",
-      "description": "Quantas séries o global puxa de cada site a cada 30 s: só agregados (site.*:.*), up e alertas ativos — não as séries em bruto. É o custo de banda da monitorização por localização.",
+      "title": "Federation — samples per scrape, per site (R5)",
+      "description": "How many series the global pulls from each site every 30 s: aggregates only (site.*:.*), up and active alerts — not raw series. This is the bandwidth cost of monitoring by location.",
       "gridPos": {
         "x": 0,
         "y": 20,
@@ -725,7 +725,7 @@
     {
       "id": 11,
       "type": "timeseries",
-      "title": "Pedidos por serviço e site (agregado)",
+      "title": "Requests per service and site (aggregated)",
       "description": "",
       "gridPos": {
         "x": 12,

@@ -1,7 +1,7 @@
 {
   "uid": "ssle-t1",
   "title": "SSLE — T1 DoS (ing-01)",
-  "description": "Ameaça 1: taxa no ing-01 (avr), latência vista pelo servidor e pelo CLIENTE (sensores de opo) contra o SLO de 100 ms, e o estado das regras. Ver threats/t1-ddos/post-mortem.md.",
+  "description": "Threat 1: request rate on ing-01 (avr), latency as seen by the server and the CLIENT (opo sensors) against the 100 ms SLO, and rule state. See threats/t1-ddos/post-mortem.md.",
   "tags": [
     "ssle",
     "t1",
@@ -26,8 +26,8 @@
     {
       "id": 1,
       "type": "timeseries",
-      "title": "Taxa de pedidos no ing-01 (R de RED)",
-      "description": "Entrada do TrafficAnomaly (z-score robusto: mediana + IQR da última hora).",
+      "title": "Request rate on ing-01 (R of RED)",
+      "description": "Input to TrafficAnomaly (robust z-score: median + IQR of the last hour).",
       "gridPos": {
         "x": 0,
         "y": 0,
@@ -46,7 +46,7 @@
             "uid": "prom-avr"
           },
           "expr": "instance:http_requests:rate1m{instance_name=\"ing-01\"}",
-          "legendFormat": "ing-01 (pedidos/s)",
+          "legendFormat": "ing-01 (req/s)",
           "range": true,
           "instant": false
         }
@@ -77,8 +77,8 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "z robusto do TrafficAnomaly (limiar 3)",
-      "description": "A mesma expressão da regra (monitoring/site/rules/anomalies.yml). Escala log; abaixo de 0,1 é ruído de repouso.",
+      "title": "Robust z-score of TrafficAnomaly (threshold 3)",
+      "description": "Same expression as the rule (monitoring/site/rules/anomalies.yml). Log scale; below 0.1 is resting noise.",
       "gridPos": {
         "x": 12,
         "y": 0,
@@ -97,7 +97,7 @@
             "uid": "prom-avr"
           },
           "expr": "abs(instance:http_requests:rate1m{instance_name=\"ing-01\"} - quantile_over_time(0.5, instance:http_requests:rate1m{instance_name=\"ing-01\"}[1h])) / clamp_min((quantile_over_time(0.75, instance:http_requests:rate1m{instance_name=\"ing-01\"}[1h]) - quantile_over_time(0.25, instance:http_requests:rate1m{instance_name=\"ing-01\"}[1h])) / 1.349, 0.5)",
-          "legendFormat": "z robusto",
+          "legendFormat": "robust z",
           "range": true,
           "instant": false
         }
@@ -150,8 +150,8 @@
     {
       "id": 3,
       "type": "timeseries",
-      "title": "Latência p95 — servidor vs cliente (SLO 100 ms)",
-      "description": "A lição da T1: o servidor mede ~23 ms enquanto o cliente sente ~242 ms (a fila antes de o Flask atender). Por isso o SLO tem de ser medido do lado do cliente (ClientLatencySLO).",
+      "title": "p95 latency — server vs client (SLO 100 ms)",
+      "description": "The T1 lesson: the server measures ~23 ms while the client feels ~242 ms (the queue before Flask starts serving). Hence the SLO must be measured on the client side (ClientLatencySLO).",
       "gridPos": {
         "x": 0,
         "y": 8,
@@ -170,7 +170,7 @@
             "uid": "prom-avr"
           },
           "expr": "instance:http_request_duration_seconds:p95_1m{instance_name=\"ing-01\"}",
-          "legendFormat": "servidor (ing-01, medido no Flask)",
+          "legendFormat": "server (ing-01, measured in Flask)",
           "range": true,
           "instant": false
         },
@@ -181,7 +181,7 @@
             "uid": "prom-opo"
           },
           "expr": "instance:ssle_sensor_upstream_duration_seconds:p95_1m{role=\"sensor\"}",
-          "legendFormat": "cliente ({{instance_name}})",
+          "legendFormat": "client ({{instance_name}})",
           "range": true,
           "instant": false
         }
@@ -265,8 +265,8 @@
     {
       "id": 4,
       "type": "timeseries",
-      "title": "Estado das regras (1 = pending · 2 = firing)",
-      "description": "MTTD = instante em que passa a firing − início do estímulo (for: 1m depois do 1.º sinal).",
+      "title": "Rule state (1 = pending · 2 = firing)",
+      "description": "MTTD = instant it switches to firing − stimulus start (for: 1m after the 1st signal).",
       "gridPos": {
         "x": 12,
         "y": 8,
@@ -310,7 +310,7 @@
             "fillOpacity": 35,
             "gradientMode": "scheme",
             "spanNulls": false,
-            "axisLabel": "estado"
+            "axisLabel": "state"
           },
           "thresholds": {
             "mode": "absolute",
@@ -363,8 +363,8 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Leituras dos sensores (ok / erro)",
-      "description": "Dano colateral: leituras perdidas (timeout 5 s) durante o ataque e durante a resposta.",
+      "title": "Sensor readings (ok / error)",
+      "description": "Collateral damage: lost readings (timeout 5 s) during the attack and during the response.",
       "gridPos": {
         "x": 0,
         "y": 17,
@@ -447,8 +447,8 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "Latência servida — distribuição (p95 do ing-01 vs SLO)",
-      "description": "Mesmo durante o ataque, o servidor 'acha' que está rápido: o tempo de fila não entra aqui.",
+      "title": "Served latency — distribution (ing-01 p95 vs SLO)",
+      "description": "Even during the attack, the server 'thinks' it is fast: queue time is not included here.",
       "gridPos": {
         "x": 12,
         "y": 17,
