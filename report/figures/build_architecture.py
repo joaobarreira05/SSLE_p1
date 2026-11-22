@@ -3,7 +3,7 @@
 """
 Architecture (data-flow) figure generated from the inventory — hand-written SVG, no Graphviz:
 
-    python3 report/figures/build_architecture.py     # → report/figures/arquitetura.svg (+ .png via rsvg-convert)
+    python3 report/figures/build_architecture.py     # → report/figures/architecture.svg (+ .png via rsvg-convert)
 
 SOC (core) on top, one card per site with the inventory elements below. Four flows, each with its own colour:
 metrics (site Prometheus → global, ONLY aggregates), alerts and incidents (Alertmanager → correlator →
@@ -110,10 +110,10 @@ def main():
         for k, e in enumerate(els):
             p += box(x + 12, top + 28 + k * 48, cw - 24, 42, "%s  %s  (%s)" % (e["name"], e["ip"], e["role"]),
                      [roles.get(e["role"], "")], bold=False)
-        # do site para a faixa: métricas, alertas, logs (verticais, sem cruzamentos)
+        # from the site to the band: metrics, alerts, logs (vertical, no crossings)
         for off, kind in ((-90, "metric"), (-40, "alert"), (60, "log")):
             p += arrow(x + cw / 2 + off, top, x + cw / 2 + off, BY + BH, kind)
-        if s == "opo":   # a quarentena desce ao site dos sensores
+        if s == "opo":   # quarantine goes down to the sensors' site
             p += arrow(x + cw - 50, BY + BH, x + cw - 50, top, "resp")
     # ── legenda ──
     lx, ly = 20, H - 16
@@ -123,7 +123,7 @@ def main():
         p.append('<text x="%d" y="%d" font-size="11" fill="%s">%s</text>' % (lx + 40, ly, C["muted"], escape(label)))
         lx += 60 + 6.2 * len(label)
     p.append("</svg>")
-    path = os.path.join(HERE, "arquitetura.svg")
+    path = os.path.join(HERE, "architecture.svg")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(p) + "\n")
     if shutil.which("rsvg-convert"):

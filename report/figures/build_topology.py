@@ -3,7 +3,7 @@
 """
 Name-topology figure GENERATED from the inventory (single source of truth) — hand-written SVG, no Graphviz:
 
-    python3 report/figures/build_topology.py        # → report/figures/topologia.svg (+ .png via chromium)
+    python3 report/figures/build_topology.py        # → report/figures/topology.svg (+ .png via chromium)
 
 One column per Incus project/network (core and each site: city, subnet, team), one box per element with
 its canonical identity ssle:<region>:<site>:<host>:<inst>, and inventory dependencies as arrows
@@ -60,11 +60,11 @@ def main():
     for ed in g["edges"]:
         (fx, fy), (tx, ty) = pos[ed["from"]], pos[ed["to"]]
         cross = ed["from"].split(":")[2] != ed["to"].split(":")[2]
-        if cross:   # entre colunas: da esquerda do dependente para a direita da dependência
+        if cross:   # across columns: from the left of the dependent to the right of the dependency
             x1, y1, x2, y2 = fx, fy + BOXH / 2, tx + BOXW, ty + BOXH / 2
             d = "M%d,%d C%d,%d %d,%d %d,%d" % (x1, y1, x1 - 20, y1, x2 + 20, y2, x2 + 8, y2)
             color, dash = "#ea580c", ' stroke-dasharray="6 4"'
-        else:       # na mesma coluna: pela ESQUERDA da caixa (a direita fica para as arestas entre sites)
+        else:       # same column: along the LEFT of the box (the right is kept for cross-site edges)
             x1, y1, x2, y2 = fx, fy + BOXH / 2, tx, ty + BOXH / 2
             bend = 16 + 3 * abs(y1 - y2) / (BOXH + GAP)
             d = "M%d,%d C%d,%d %d,%d %d,%d" % (x1, y1, x1 - bend, y1, x2 - bend, y2, x2 - 8, y2)
@@ -81,14 +81,14 @@ def main():
     svg = ('<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" '
            'font-family="Inter, DejaVu Sans, Arial, sans-serif"><defs>%s</defs>%s</svg>\n'
            % (W, H, W, H, defs, "".join(parts)))
-    out = os.path.join(HERE, "topologia.svg")
+    out = os.path.join(HERE, "topology.svg")
     with open(out, "w", encoding="utf-8") as fh:
         fh.write(svg)
     print(os.path.relpath(out, ROOT))
     chrome = shutil.which("chromium") or shutil.which("google-chrome")
     if chrome:
         with tempfile.TemporaryDirectory() as prof:
-            png = os.path.join(HERE, "topologia.png")
+            png = os.path.join(HERE, "topology.png")
             subprocess.run([chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars",
                             "--user-data-dir=" + prof, "--window-size=%d,%d" % (W, H),
                             "--screenshot=" + png, "file://" + out],

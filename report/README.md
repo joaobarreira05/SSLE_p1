@@ -18,8 +18,8 @@ Article-style structure. The final report is in **LaTeX** (English) in [`latex/m
 
 | Figure | File | How to generate | Status |
 |---|---|---|---|
-| Architecture | [`figures/arquitetura.png`](figures/arquitetura.png) (+ `.svg`) | `python3 report/figures/build_architecture.py` (from inventory: 4 flows) | ✅ |
-| Name topology | [`figures/topologia.png`](figures/topologia.png) (+ `.svg`) | `python3 report/figures/build_topology.py` (from inventory) | ✅ |
+| Architecture | [`figures/architecture.png`](figures/architecture.png) (+ `.svg`) | `python3 report/figures/build_architecture.py` (from inventory: 4 flows) | ✅ |
+| Name topology | [`figures/topology.png`](figures/topology.png) (+ `.svg`) | `python3 report/figures/build_topology.py` (from inventory) | ✅ |
 | 3 ADTrees | [`figures/adtree-t1.png`](figures/adtree-t1.png), [`t2`](figures/adtree-t2.png), [`t3`](figures/adtree-t3.png) (+ `.svg`) | `python3 report/figures/build_adtrees.py` (Kordy et al. notation; defences ✓ tested / ○ planned) | ✅ |
 | Timeline per PoC | T1: table in post-mortem | — | — |
 | Grafana during a PoC | [`figures/t1-replay-run1-dashboard.png`](figures/t1-replay-run1-dashboard.png) | `bash monitoring/grafana/replay-t1.sh 1` (**replay** from staging) | — (definitive from T490) |
