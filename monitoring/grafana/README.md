@@ -39,7 +39,7 @@ In CI (`bash tools/test-all.sh`): the **21 PromQL expressions** from the dashboa
 
 ## T1 figure — *replay* of staging evidence (06/11, run 1)
 
-`bash monitoring/grafana/replay-t1.sh 1` → `report/figures/t1-replay-run1-{dashboard,latencia,regras}.png`
+`bash monitoring/grafana/replay-t1.sh 1` → `report/figures/t1-replay-run1-{dashboard,latency,rules}.png`
 
 ![T1 — dashboard (replay)](../../report/figures/t1-replay-run1-dashboard.png)
 
