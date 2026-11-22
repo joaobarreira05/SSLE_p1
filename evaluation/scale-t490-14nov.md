@@ -31,8 +31,8 @@
 
 ## Federation (real, 3 sites)
 
-55 total series, 7 971 B text, **1 110 B gzip**. At 4 requests/min per site:
-~4.4 kB/min across all sites (confirmed against the extrapolated value from `federation-bytes.sh`).
+55 total series, 7 971 B text, **1 110 B gzip**. The global federates every 30 s (2 requests/min per site):
+~2.2 kB/min across all sites (consistent with the extrapolated value from `federation-bytes.sh`).
 
 ## Container memory (Incus)
 
