@@ -149,8 +149,36 @@ The true cause is the **external load** arriving at `ing-01`, and that origin th
       is 30 s old. Cost: +≤ 30 s on SOC MTTD (chosen trade-off: accuracy > speed). The test
       `test_without_settle_the_sensor_would_be_blamed` proves the problem and `test_client_first_never_blames_the_sensor`
       proves the fix.
-- [ ] **NAT only for Internet** (preserves origin IP within the lab) — with confirmation.
-- [ ] **T490 (`full`):** Wazuh 110100/110101 + proportional response (*rate-limit* → `firewall-drop` with
-      `timeout`) and compare recovery against these 45 s; **distributed** variant from `kali-01` and
-      clients on 2–3 sites; `limits.cpu=1` on `ing-01`, as in lecture 7.
+- [x] **NAT off during the PoCs** (`infra/nat.sh off`): origin IPs are preserved between sites.
+- [x] **T490 (`full`):** Wazuh 110100/110101/110110 + `ssle-ratelimit` (runs 4–10, report §5.1);
+      **distributed** variant with clients on 3 sites (runs 11–13, below). Not done: `limits.cpu=1` on `ing-01`.
 - [ ] Serve with `gunicorn` (503 responses under saturation) for the 3rd signal to distinguish flash crowd.
+
+## Follow-up on the T490 (22/11/2026): run 10 and three origins (runs 11–13)
+
+Evidence: [`evidence-22nov/run-10`](evidence-22nov/run-10) and [`evidence-ddos/`](evidence-ddos/)
+(`summary.json` per run, `ar.log`, `nft-ssle-rl.txt`, raw Prometheus series).
+
+| Run | Origins | Served (mean) | `TrafficAnomaly` MTTD | SOC incident | Mean/std would fire? | SIEM responses (s after T0) | Client p95 max |
+|---|---|---|---|---|---|---|---|
+| 10 | host | ~20 req/s | 79.6 s | 124.7 s, `ing-01` | yes (z 8.4) | 110100 host +1.6 | 300 ms |
+| 11 | host, sen-02, web-01 | 60 req/s | 79.9 s | 124.0 s, `ing-01` | yes (z 6.7) | 110100 host +3.9, sen-02 +124.9; "all" **never** | 600 ms |
+| 12 | same | 17 req/s | 79.7 s | 115.1 s, `ing-01` | **no** (z 0.7) | 110100 sen-02 +20.7; 110101 "all" +20.7 | 2 369 ms |
+| 13 | same | 21 req/s | 79.1 s | 120.5 s, `ing-01` | **no** (z 1.1) | 110110 "all" +120.1; 110100 host +175.1 | 2 367 ms |
+
+**What the three origins showed.**
+1. **The "all origins" response had never engaged** (since 12/11). 110100 always puts the attacker's IP in
+   the `nft` interval set first; `0.0.0.0/0` overlaps it, `nft` refused it, `ssle-ratelimit.sh` died under
+   `set -e` before logging, and `wazuh-execd` — which had already registered the key — answered `abort` to
+   every later 110101/110110. In run 11 `web-01` was never limited. Fixed (own set `limited_all`, `goto rl`,
+   `nft` failures logged, regression case in `test-ar.sh`); in runs 12–13 every origin has its own bucket.
+2. **Per-origin limiting does not contain a spread attack.** Each origin stayed below 20 conn/s: in runs
+   12–13 nothing was dropped and the client p95 reached 2.4 s. It raises the attacker's cost (more bots),
+   it does not stop them; that needs aggregate admission control or a 2nd replica.
+3. **Detection and correlation do not care how the load is spread**: MTTD ~80 s and root cause `ing-01`
+   in all runs; mean/std would again have missed the later attacks of the hour (runs 12–13).
+4. **A bot attacking its own upstream is explained away**: `sen-02` raised `OutboundAnomaly`, which the
+   correlator attributed to `ing-01` (on which `sen-02` depends), so 110210 does not quarantine it.
+5. **Throughput varied** (60 req/s in run 11, 17–24 in runs 12–13, ~20 in single-origin runs). Not the
+   limiter: run 13 served 17 req/s in its first 75 s, before any limit existed. On a shared host we could
+   not isolate it, so the claim from these runs is the timing of detection and response, not the impact.
