@@ -1,0 +1,2 @@
+2026-11-22T22:12:40+00:00 ssle-quarantine: QUARENTENA add rule=110210 site-opo/sen-01 (10.10.2.50)
+2026-11-22T22:22:40+00:00 ssle-quarantine: QUARENTENA del rule=110210 site-opo/sen-01 (10.10.2.50)
