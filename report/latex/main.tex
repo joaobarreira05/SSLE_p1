@@ -81,9 +81,9 @@ service (T1), IoT botnet (T2) and junk e-mail from compromised sensors (T3)---ar
 correlated and mitigated automatically, linked by a meta-correlation rule that identifies
 ``one botnet, two impacts.'' Evaluated on a 15-container lab with 14~Wazuh agents, the
 system achieves SIEM response in ${\sim}6$~s (T1), full quarantine in ${\sim}140$~s (T2),
-and zero false positives in 9~T1 runs. The testing process uncovered 17~SIEM defects, 15
-of them silent---valid configuration that never fired---showing that ``loads without errors''
-does not mean ``detects.''
+and @@FPABSTRACT@@. The testing process uncovered 19~SIEM defects, 16 of them
+silent---valid configuration that never fired or never acted---showing that ``loads without
+errors'' does not mean ``detects.''
 \end{abstract}
 
 \newpage
@@ -138,8 +138,9 @@ configurations and responses without needing the lab;
 (ii)~a cross-site root-cause correlator with a settle window that never blames the client
 for the server's problem;
 (iii)~Wazuh rules and responses validated against the real \texttt{wazuh-analysisd} (positive
-and negative cases) and with real agents, from stimulus to response, which uncovered 17~defects,
-15~of them \textbf{silent} (valid configuration that never fired or misfired);
+and negative cases) and with real agents, from stimulus to response; together with a multi-origin attack and an
+attack-free window on the lab, this uncovered 19~defects, 16~of them \textbf{silent} (valid
+configuration that never fired, misfired or never acted);
 (iv)~measurements of MTTD, false positives, response effectiveness (SIEM in ${\sim}6$~s,
 quarantine in ${\sim}140$~s) and noise reduction, on a fleet of 15~containers with 14~Wazuh
 agents; and
@@ -192,8 +193,8 @@ second attack appears less anomalous than the first. \textbf{Robust} estimators,
 median and the interquartile or median absolute dispersion~\cite{iglewicz1993}, resist this
 contamination. A unit test of our rules shows the effect on the second of two consecutive
 attacks: $z \approx 2.0$ with mean/std (no alarm) versus $z \approx 39.6$ with median/IQR.
-The live T1 runs confirm it: mean/std would have missed 2 of 3
-(Section~\ref{sec:t1}).
+The live T1 runs confirm it: mean/std would have missed 5 of the 9~runs (2/3 in staging,
+3/6 on the T490), while the robust version detected all~9 (Section~\ref{sec:t1}).
 
 \subsection{IoT Threats and Botnets}
 
@@ -274,7 +275,7 @@ executor (\texttt{responder}).
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{arquitetura.png}
+  \includegraphics[width=\textwidth]{architecture.png}
   \caption{Architecture and data flows, generated from the inventory. Four flows: metrics
     (the global receives only aggregates), alerts $\to$ correlator $\to$ incident, agent logs
     $\to$ SIEM, and responses (dashed).}
@@ -289,7 +290,7 @@ and re-running the idempotent deploy.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{topologia.png}
+  \includegraphics[width=0.85\textwidth]{topology.png}
   \caption{Name topology (full profile). One column per Incus project/network; each box
     holds the element's canonical identity; arrows are inventory dependencies, dashed arrows
     are cross-site dependencies the correlator follows.}
@@ -299,10 +300,12 @@ and re-running the idempotent deploy.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{grafana-soc-live.png}
-  \caption{SOC dashboard (live, T490): per-site availability, open incidents, settled
-    alerts, federation cost per site, aggregated request rate and element-down history.
-    The geomap places each site using coordinates from the inventory; map tiles
-    require Internet, which the lab disables for realistic isolation (NAT~off).}
+  \caption{SOC dashboard (live, T490, 22/11, a quiet 15~min): per-site availability, open
+    incidents, settling alerts, federation cost per site, aggregated request rate and
+    element-down history. The geomap places each site using coordinates from the inventory.
+    The figures are rendered on the host with the same dashboards and the lab's Prometheus
+    servers (\texttt{monitoring/grafana/shot-live.sh}); inside the lab, with NAT off, the base
+    map does not load, only the markers.}
   \label{fig:soc-dashboard}
 \end{figure}
 
@@ -427,7 +430,8 @@ The project's rules occupy reserved ranges---\texttt{1100xx}~correlator,
 \end{enumerate}
 
 These two levels uncovered \textbf{17~defects} (2~fatal at load time, 7~caught by the
-assertion cases, 8~only with real agents). Of these~17, 15~were silent: the SIEM started,
+assertion cases, 8~only with real agents), and the live lab two more
+(Section~\ref{sec:evaluation}). Of the~19, 16~were silent: the SIEM started,
 the dashboard showed green, and the threat went undetected. For example: a second
 \texttt{<ruleset>} that erased default lists; a composite rule over a level-0 rule whose
 events the \texttt{analysisd} discards; cross-agent correlation requiring
@@ -630,7 +634,7 @@ SPF/DKIM/DMARC remain as a planned countermeasure against spoofing.
     T2 & 112 $\to$ \textbf{49} Password Brute Forcing & T1110, T1053.003, T1543.002, T1571 &
       Wazuh 110200/110201/110202; correlator $\to$ 110210 &
       \texttt{ssle-quarantine} (\texttt{incus pause}, 600\,s timeout) \\
-    T3 & 210 & T1496, T1566 &
+    T3 & 210 & T1496, T1534 &
       Wazuh 110300--110310 (spamd, Postfix, CDB) &
       \texttt{firewall-drop} (600\,s), reputation \\
     Meta & --- & --- &
@@ -660,14 +664,22 @@ source (\texttt{<mitre><id>...</id></mitre>}).
     110201 & T2 & T1053.003, T1543.002 & Scheduled Task / Systemd \\
     110202 & T2 & T1571    & Non-Standard Port \\
     110210 & T2 & T1071    & Application Layer Protocol \\
-    110300 & T3 & T1566    & Phishing \\
-    110301 & T3 & T1566    & Phishing \\
+    110300 & T3 & T1496    & Resource Hijacking \\
+    110301 & T3 & T1534    & Internal Spearphishing \\
     110302 & T3 & T1496    & Resource Hijacking \\
-    110304 & T3 & T1566    & Phishing \\
+    110304 & T3 & T1534    & Internal Spearphishing \\
     110900 & Meta & T1071, T1499 & App.\ Layer Protocol + DoS \\
     \bottomrule
   \end{tabular}
 \end{table}
+
+The spam rules are deliberately \emph{not} tagged T1566 (Phishing). T1566 is
+\textbf{initial access} from outside, seen by whoever receives the mail; in T3 the sender is
+an element of our own fleet that is already compromised (the T2~bot). Its abuse of the MTA
+to emit volume or to relay outwards consumes our resources and reputation, which is
+\textbf{T1496} (Resource Hijacking: 110300, 110302). Its messages to the domain's own
+mailboxes come from inside the organisation, which ATT\&CK models as \textbf{T1534}
+(Internal Spearphishing: 110301, 110304).
 
 Common principles: all responses are \textbf{proportional} (limit before blocking, pause
 instead of deleting), \textbf{reversible} (\texttt{timeout} and automatic \texttt{delete}),
@@ -704,8 +716,15 @@ requiring per-instance detection and cross-site correlation.
 
 A \textbf{limited, fixed-duration} stimulus, only on the lab's internal networks:
 20~concurrent \texttt{curl} cycles for 120~s against the \texttt{/work} endpoint of
-\texttt{ing-01} (${\sim}160$~requests/s, against a baseline of 0.2~requests/s generated by
-the sensors). Each run is measured by a script that records the stimulus start/end timestamps
+\texttt{ing-01}, against a baseline of 0.2--0.4~requests/s generated by the sensors. The
+stimulus (script and parameters) is the same in every run, but the load it
+\textbf{delivers} is not: ${\sim}160$~requests/s in staging, where there was no response,
+and ${\sim}21$~requests/s on the T490 (Table~\ref{tab:t1-results}), about $7\times$ less.
+On the T490 the service itself is slower (server $p_{95}$ of 151--495~ms against 23~ms) and
+serves only ${\sim}20$ \texttt{/work} requests/s---run~13 served 17~requests/s before any
+limit was in place---and the per-origin limiter under test, active a few seconds into each
+run at 20~new connections/s, binds at the same level (it dropped 1\,940 connection attempts
+in run~10). Each run is measured by a script that records the stimulus start/end timestamps
 and extracts the metrics from the \textbf{sources} (the \texttt{ALERTS} series, sensor
 metrics and the correlator's \texttt{incidents.json}), not from a stopwatch.
 
@@ -748,16 +767,25 @@ metrics and the correlator's \texttt{incidents.json}), not from a stopwatch.
     & \textbf{Control group} (staging, no response, 3~runs) &
       \textbf{T490 with SIEM response} (6~runs) \\
     \midrule
+    Delivered load (peak) &
+      $160.1 \pm 2.2$ requests/s &
+      $21.5 \pm 1.1$ requests/s (bound by the service and the limiter) \\
     Detection \texttt{Traffic\-Anomaly} &
       MTTD $81.7 \pm 2.9$\,s (3/3) &
-      MTTD $80.5 \pm 5.1$\,s (6/6) \\
+      MTTD $81.2 \pm 5.1$\,s (6/6) \\
+    Mean/std counterproof &
+      would fire in 1/3 & would fire in 3/6 \\
+    \texttt{Service\-Latency\-High} (server SLO) &
+      \textbf{0/3} & 5/6, never before the client SLO \\
+    \texttt{Client\-Latency\-SLO} &
+      3/3 retroactively ($T_0 + 80$\,s) & 6/6, MTTD $76.2 \pm 4.2$\,s \\
     \textbf{SIEM response} (110100 $\to$ nft) &
       --- & ${\sim}6$\,s (active in all runs) \\
     SOC incident (correlator) &
       MTTD $92.9 \pm 0.1$\,s (3/3, root cause \texttt{ing-01}) &
       MTTD $120.2 \pm 7.4$\,s (6/6, root cause \texttt{ing-01}) \\
     Dropped packets (nft) &
-      --- & 597--1\,098 per run \\
+      --- & 597--1\,098 per run (runs 7--9) \\
     Lost readings &
       \textbf{0} & \textbf{0} \\
     Recovery after stimulus &
@@ -770,8 +798,65 @@ The SIEM response (\texttt{ssle-ratelimit}, rule~110100: $\geq 100$ requests/10\
 same origin $\to$ nft at 20~conn/s) activates in ${\sim}6$\,s---more than ten times faster
 than metric-based detection (${\sim}80$\,s). The nft rule creates a per-origin set at
 20~conn/s (burst~40), dropping excess without affecting the legitimate sensors
-(0.2~conn/s). Rule~110110 (correlator: root cause in an exposed service) confirms and
-reinforces the limiter ${\sim}2$\,min later.
+(0.2~conn/s). Rule~110110 (correlator: root cause in an exposed service) fires ${\sim}2$\,min
+later and should extend the limit to \textbf{all} origins. In runs~4--10 it was a silent no-op
+(the 18th defect, found by the multi-origin run below); with a single origin this did not change
+the outcome, because 110100 had already limited that origin.
+
+\paragraph{Re-run and distributed variant (T490, 22/11).}
+Run~10 repeated the single-origin stimulus (Figure~\ref{fig:t1-attack}): \texttt{TrafficAnomaly}
+MTTD 79.6\,s, SIEM response 1.6\,s (1\,940~packets dropped), SOC incident at 124.7\,s with
+root cause \texttt{ing-01}, 0~lost readings---within the spread of runs~4--9. The distributed variant splits the same
+21~clients across \textbf{three origins on three sites} (7~each, 240\,s): the hypervisor on
+\texttt{net-avr}, \texttt{sen-02} (\texttt{opo}) and \texttt{web-01} (\texttt{lis}).
+
+\begin{table}[H]
+  \centering
+  \caption{T1 with three origins (evidence in \texttt{threats/t1-ddos/evidence-ddos/}).}
+  \label{tab:t1-ddos}
+  \small
+  \begin{tabular}{@{}p{3.6cm}p{3.4cm}p{3cm}p{3cm}@{}}
+    \toprule
+    & \textbf{Run 11} (before the fix) & \textbf{Run 12} (after) & \textbf{Run 13} (after) \\
+    \midrule
+    Requests served (mean) & 60\,req/s & 17\,req/s & 21\,req/s \\
+    \texttt{TrafficAnomaly} MTTD & 79.9\,s & 79.7\,s & 79.1\,s \\
+    SOC incident (root cause) & 124.0\,s (\texttt{ing-01}) & 115.1\,s (\texttt{ing-01}) & 120.5\,s (\texttt{ing-01}) \\
+    Per-origin limit (110100) & host +3.9\,s, \texttt{sen-02} +124.9\,s & \texttt{sen-02} +20.7\,s & host +175.1\,s \\
+    ``All origins'' (110101/110110) & \textbf{never engaged} & +20.7\,s (110101) & +120.1\,s (110110) \\
+    Attack origins with a bucket & 2/3 (\texttt{web-01} never) & 3/3 & 3/3 \\
+    Packets dropped & 25 & 0 & 0 \\
+    Client $p_{95}$ max / lost readings & 600\,ms / 0 & 2\,369\,ms / 0 & 2\,367\,ms / 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Detection and correlation do not depend on how the load is spread: MTTD stays at ${\sim}80$\,s
+and the SOC incident points to \texttt{ing-01} in all three runs. The response did depend on it.
+In run~11, 110101 ($\geq 300$ requests/10\,s in total) fired 4\,s into the attack and 110110 at
+124\,s, but neither engaged: the per-origin rule, at one origin per minute (its \texttt{ignore}
+is per rule), limited the hypervisor and \texttt{sen-02}, and \texttt{web-01} was never limited.
+The cause: 110100 always puts the attacker's IP in the
+\texttt{nft} interval set first, and the ``all origins'' element \texttt{0.0.0.0/0} overlaps
+it, so \texttt{nft} refused it; the script stopped before logging, and \texttt{wazuh-execd},
+which had already registered the key, answered ``already active'' to every later alert. It had
+been silently inert since 12/11. After the fix (a separate set for the ``all'' mode, a
+regression test, and every \texttt{nft} failure logged), every origin, attacker or legitimate,
+gets its own bucket (runs~12--13).
+
+That is also the limit of this defence. Each of the three origins stayed below 20~new
+connections/s, so in runs~12--13 the limiter dropped \textbf{nothing} while the client
+$p_{95}$ reached 2.4\,s: per-origin limiting cannot stop an attack spread below the per-origin
+threshold. It raises the attacker's cost---the ``control $N$ bots \textbf{and} coordinate
+them'' branch of the ADTree---but containing it needs aggregate admission control (a global
+limit or fast 503s at the service) or a second replica (Section~\ref{sec:conclusions}). The
+service throughput itself also varied between runs (60~req/s in run~11, 17--24 in runs~12--13
+and ${\sim}21$ in the single-origin runs); the limiter was not the cause---run~13 served
+17~req/s in its first 75\,s, before any limit was in place---and on a shared host we could not
+isolate it, so the result we claim from these runs is the timing of detection and response,
+not the impact. Finally, \texttt{sen-02}, as an attack origin, raised \texttt{OutboundAnomaly};
+the correlator explained it as a symptom of \texttt{ing-01}, on which \texttt{sen-02} depends,
+so a bot attacking its own upstream service is not quarantined by 110210.
 
 \begin{figure}[H]
   \centering
@@ -786,39 +871,48 @@ reinforces the limiter ${\sim}2$\,min later.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{grafana-t1-live.png}
-  \caption{T1 dashboard (live, T490, baseline): request rate ${\sim}0.3$\,req/s from
-    two sensors, robust z-score $< 1$ (no anomaly), client latency well under the
-    100\,ms SLO, and zero errors. This is the steady state before an attack.}
+  \caption{T1 dashboard (live, T490, 22/11, the 15~min before run~10): request rate
+    ${\sim}0.4$\,req/s from two sensors, robust z-score $< 0.1$ (no anomaly), client latency
+    under 20\,ms against the 100\,ms SLO, and zero errors. This is the steady state before an
+    attack.}
   \label{fig:t1-live}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{grafana-t1-attack.png}
-  \caption{T1 dashboard during a live attack (T490, 16/11): request rate spikes from
-    baseline to ${\sim}20$\,req/s, robust z-score crosses the threshold~3,
-    client latency rises to ${\sim}1.5$\,s, and all four alert rules fire
-    (TrafficAnomaly, ServiceLatencyHigh, ClientLatencySLO). The attack resolves
-    after the \texttt{ssle-ratelimit} active response drops excess connections.}
+  \caption{T1 run~10 (live, T490, 22/11): the request rate rises from the baseline to
+    ${\sim}20$\,req/s (the service's capacity on the T490; \texttt{ssle-ratelimit} is active
+    ${\sim}2$\,s into the run);
+    the robust z-score crosses the threshold~3; the client $p_{95}$ reaches ${\sim}400$\,ms
+    against ${\sim}170$\,ms on the server. Three rules fire, as four alert instances:
+    \texttt{TrafficAnomaly} and \texttt{ServiceLatencyHigh} on \texttt{ing-01}, and
+    \texttt{ClientLatencySLO} on each of the two sensors.}
   \label{fig:t1-attack}
 \end{figure}
 
 \subsubsection{Post-mortem}
 
-\paragraph{What worked.} The robust z-score detected all runs without false positives and the
+\paragraph{What worked.} The robust z-score detected all 9~runs and the
 correlator opened \textbf{one} incident per run with the correct root cause. The live
 counterproof confirmed what the unit test predicted: with mean/std, the first attack inflates
-the standard deviation and subsequent attacks within the same hour \textbf{go undetected}.
+the standard deviation and later attacks within the same hour often \textbf{go undetected}.
 An attacker repeating the attack would gain invisibility. The mean/std counterproof would
-have missed 2 of 3 runs (max $z = 3.3$ and 2.8 in runs~2 and~3).
+have missed 5 of the 9~runs: 2 of 3 in staging (max $z = 3.3$ and 2.8 in runs~2 and~3) and
+3 of 6 on the T490 (max $z = 3.6$, 3.5 and 2.9 in runs~6, 8 and~9).
 
 \paragraph{What did not work, and the lesson.}
-The SLO measured \textbf{on the server} failed all three runs: the application measured 23~ms
-while the client waited 242~ms. The server's histogram starts counting when the request is
-already being served, and the queue \textbf{before} that (accepting the connection, obtaining
-a thread, contending the interpreter with 20~expensive requests) is invisible---and that
-queue is what the client feels. \textbf{A latency SLO must be measured on the client side.}
-The fix is the third detection layer: over the same evidence, it would fire in all three runs.
+In staging, the SLO measured \textbf{on the server} failed all three runs: the application
+measured 23~ms while the client waited 242~ms. The server's histogram starts counting when the
+request is already being served, and the queue \textbf{before} that (accepting the
+connection, obtaining a thread, contending the interpreter with 20~expensive requests) is
+invisible---and that queue is what the client feels. On the T490 the server SLO did fire in
+5 of 6~runs, because there the service itself slowed down (server $p_{95}$ of 151--495~ms),
+but it still under-reported the impact (client $p_{95}$ of 216--2\,200~ms), never fired
+before the client-side rule (up to 60~s later in runs~4--5) and missed run~6 entirely.
+\textbf{A latency SLO must be measured on the client side.} The fix is the third detection
+layer: over the staging evidence it would fire in all three runs, and live on the T490 it
+fired in all six.
 
 \paragraph{Weaknesses found.}
 \begin{enumerate}
@@ -833,8 +927,15 @@ The fix is the third detection layer: over the same evidence, it would fire in a
     legitimate fleet expansion would also trigger. Distinguishing the two would require a
     third signal (5xx error rate), which the Flask development server does not produce under
     load (it queues instead of refusing).
+  \item \textbf{The ``all origins'' response never engaged} (fixed, 22/11): silent from the
+    first T490 run until a test with three origins (above). A single-origin PoC cannot exercise
+    a response meant for many origins.
+  \item \textbf{Per-origin limiting does not contain a spread attack}: three origins below
+    20~conn/s each saturated the service with nothing dropped (Table~\ref{tab:t1-ddos}).
+  \item \textbf{A bot attacking its own upstream is explained away}: its
+    \texttt{OutboundAnomaly} joins the victim's incident, so 110210 does not quarantine it.
   \item \textbf{Lab on a single host}: the attacker and target share CPU, and the staging VM
-    was sometimes paused outside measured windows.
+    was sometimes paused outside measured windows; service throughput varied between T490 runs.
 \end{enumerate}
 
 
@@ -958,13 +1059,20 @@ state of composite rules is \textbf{per-agent}, so rule~110900 did not join the 
   \end{tabular}
 \end{table}
 
+A repeat on 22/11 (evidence \texttt{threats/t2-botnet/evidence/*-22nov.*}) reproduced the chain:
+110201 at $T_0$, 110200 at +122\,s, the correlator incident with \texttt{OutboundAnomaly} and
+110210 at +154\,s, \texttt{incus pause} at +155\,s, and the automatic resume 600\,s later. The
+quarantine itself then made \texttt{sen-01} an \texttt{ElementDown} root cause; that incident
+carries no botnet indicator and correctly ended at 110211 (investigate, no response).
+
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{grafana-soc-t2.png}
-  \caption{SOC dashboard during the T2 PoC (live, T490, 16/11): \texttt{opo} drops
-    to 75\% (1 of 4 elements down), one open incident, and six active alerts
-    including \texttt{OutboundAnomaly} and \texttt{ElementDown} on
-    \texttt{sen-01}. The sensor is FROZEN (\texttt{incus pause}).}
+  \caption{SOC dashboard during the T2 PoC (live, T490, 22/11, from 2~min before the
+    stimulus): \texttt{opo} drops to 75\% (1 of 4 elements down) once \texttt{sen-01} is
+    FROZEN (\texttt{incus pause}, 22:12:40), with one open incident and three firing alerts on
+    \texttt{sen-01}: \texttt{OutboundAnomaly} (the botnet indicator), \texttt{ElementDown} and
+    \texttt{ServiceDown} (consequences of the quarantine itself).}
   \label{fig:soc-t2}
 \end{figure}
 
@@ -1161,8 +1269,9 @@ ${\sim}140$\,s.
     \midrule
     Demo: \texttt{sto-01} stopped (live, staging) &
       2 & \textbf{1} & \texttt{sto-01} (not \texttt{ing-01}) \\
-    T1: load on \texttt{ing-01} (live, 3$\times$ staging + 6$\times$ T490) &
-      1/run & 1 & \texttt{ing-01} (9/9) \\
+    T1: load on \texttt{ing-01} (live, 3$\times$ staging + 10$\times$ T490, 3 of them
+      with three origins) &
+      1--4/run & 1 & \texttt{ing-01} (13/13) \\
     Client symptom before server (test) &
       2 & 1 & \texttt{ing-01} (with 30\,s window); \texttt{sen-01} without it \\
     Two independent faults (test) &
@@ -1172,8 +1281,14 @@ ${\sim}140$\,s.
 \end{table}
 
 The ten correlator tests use the real inventory graph. On the T490 (15~containers, 3~sites),
-correlation was confirmed live: the T1 root cause was identified in 9/9 cross-site runs, and
+correlation was confirmed live: the T1 root cause was identified in all 13~runs, including the
+three with origins on three sites, and
 T2 produced quarantine of the correct sensor with \texttt{OutboundAnomaly} as the indicator.
+
+\subsection{False Positives over an Attack-Free Window}
+\label{sec:fp}
+
+@@FPSECTION@@
 
 \subsection{SIEM and Response Validation}
 
@@ -1196,9 +1311,13 @@ T2 produced quarantine of the correct sensor with \texttt{OutboundAnomaly} as th
   \end{tabular}
 \end{table}
 
-Along the way, \textbf{17~defects} appeared: 2~fatal at load, 7~caught by assertion cases
-and 8~only with real agents. Of these~17, 15~were silent: the SIEM started, the dashboard
-showed green and the threat passed. This is the strongest process result of this work: in a
+Along the way, \textbf{19~defects} appeared: 2~fatal at load, 7~caught by assertion cases,
+8~only with real agents and 2~only in the live lab. Of these~19, 16~were silent: the SIEM
+started, the dashboard showed green and the threat passed. The last two were found by tests
+shaped like reality rather than like the rule: a T1 with three origins showed that the
+``all origins'' response of 110101/110110 had \textbf{never engaged} since the first run
+(Section~\ref{sec:t1}), and the attack-free window showed rule~110202 firing with no port
+change at all (Section~\ref{sec:fp}). This is the strongest process result of this work: in a
 detection system, a test that only checks that the configuration loads tests nothing.
 
 \subsection{Federation Bandwidth and Scale}
@@ -1225,8 +1344,8 @@ would pull (all time series):
 
 The federated series are $2N + 5$: 5~site aggregates (constant) plus the \texttt{up} of each
 target, retained because the global root-cause analysis needs to know \textbf{which} element
-is down. With one request every 15\,s, a site of 50~elements costs \textbf{4.2\,kB/min}
-between sites, against 1.2\,MB/min without hierarchy. Savings grow with $N$, because each
+is down. The global federates every 30\,s (2~requests/min), so a site of 50~elements costs
+\textbf{2.1\,kB/min} between sites, against 0.6\,MB/min without hierarchy. Savings grow with $N$, because each
 element adds 2~series on one side and ${\sim}820$ on the other.
 
 \paragraph{Lab scale (T490, 14/11, 15~containers, 12~elements across 3~sites):}
@@ -1263,9 +1382,13 @@ Prometheus did not exceed 35\,MiB RSS---the dominant cost is disk (TSDB) and net
 \subsection{Threats to Validity}
 
 \begin{itemize}
-  \item T1 was measured in staging (control group) and on the T490 (with response). The
-    different hardware prevents direct comparison of absolute latency, but MTTD and
-    effectiveness are comparable (same software, same stimulus).
+  \item T1 was measured in staging (control group) and on the T490 (with response), with the
+    same software and the same stimulus script, but \textbf{not the same delivered load}:
+    ${\sim}160$~requests/s in staging against ${\sim}21$~requests/s on the T490, where the
+    service is slower and the per-origin limiter binds within seconds. The
+    detection rule is relative (robust $z$ against each instance's own baseline) and both
+    loads are far above its threshold ($z_{\max} \approx 320$ and $\approx 42$), so MTTD is
+    comparable; absolute latencies and the server-SLO outcome are not.
   \item The SIEM validation ran in Docker, without \texttt{systemd} or Incus. The scripts are
     from the deploy, but the installation and timing in the lab differ.
   \item The PoCs are benign emulations: SSH brute force is logged with \texttt{logger} (there
@@ -1287,9 +1410,9 @@ fleet, monitoring targets, dependency graph and SIEM configuration. The main res
 four.
 
 First, \textbf{robust} anomaly detection (median/IQR) detected all T1 runs without false
-positives (9/9, MTTD ${\sim}81$\,s), where mean/std would have missed two. The SIEM response
+positives (9/9, MTTD ${\sim}81$\,s), where mean/std would have missed five. The SIEM response
 (rule~110100 $\to$ \texttt{ssle-ratelimit} nft) activates in ${\sim}6$\,s, more than ten
-times faster than metric-based detection, and drops 597--1\,098 packets per run without
+times faster than metric-based detection, and drops 597--1\,098 packets per run (runs 7--9) without
 affecting the legitimate sensors.
 
 Second, graph-based correlation reduced $N$ alerts to \textbf{one} incident with the correct
@@ -1303,9 +1426,9 @@ Fourth, meta-correlation links the threats: a sensor that is a root cause of ano
 \textbf{and} the origin of an impact is treated as a bot (rule~110900, level~14).
 
 The methodological lesson carries the most weight: \textbf{``loads without errors'' does not
-mean ``detects.''} Of the 17~defects found in the SIEM, 15~were valid configuration that
-never fired or misfired, and only appeared with tests that assert ``this event must produce
-this rule'' and with real agents.
+mean ``detects.''} Of the 19~defects found in the SIEM, 16~were valid configuration that
+never fired, misfired or never acted, and only appeared with tests that assert ``this event
+must produce this rule,'' with real agents, and with live runs shaped like the real attack.
 
 \subsection{Limitations}
 
@@ -1346,13 +1469,14 @@ this rule'' and with real agents.
 \begin{itemize}
   \item \textbf{Attack tolerance (bridge to Project~2):} a second ingestion replica,
     discovered by the site registry, so that the T1 response can be ``scale out'' rather than
-    just ``limit.''
+    just ``limit,'' and aggregate admission control (a global limit or fast 503s) for attacks
+    spread below the per-origin threshold (Table~\ref{tab:t1-ddos}).
   \item \textbf{Proactive prevention:} per-origin rate-limit always active at the entry of
     exposed services and SPF/DKIM/DMARC on the MTA.
   \item \textbf{Automatic reimaging} from reference snapshots as a T2 response, after
     forensics.
   \item \textbf{Scale beyond the lab:} with 50~elements per site, federation saves
-    $> 99$\,\% of bandwidth (4.2\,kB/min per site); the site Prometheus uses $< 27$\,MiB RSS
+    $> 99$\,\% of bandwidth (2.1\,kB/min per site); the site Prometheus uses $< 27$\,MiB RSS
     and $< 2$\,\% CPU. Validation with 150+ real elements on distinct hardware (multiple
     hosts, WAN latencies) remains to be done.
 \end{itemize}
