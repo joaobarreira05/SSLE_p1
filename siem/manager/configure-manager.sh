@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Aplica o SIEM-como-código ao MANAGER (corre DENTRO do core/wazuh, como root). Chamado pelo
-# infra/deploy.sh (perfil full) e pelo siem/tests/it-agents.sh — o mesmo código nos dois sítios.
+# Applies the SIEM-as-code to the MANAGER (runs INSIDE core/wazuh, as root). Called by
+# infra/deploy.sh (full profile) and by siem/tests/it-agents.sh — the same code in both places.
 #
-#   configure-manager.sh [pacote]          # pacote = /tmp/ssle-siem (default), com:
+#   configure-manager.sh [package]         # package = /tmp/ssle-siem (default), with:
 #     rules/ decoders/ lists/              → /var/ossec/etc/…
-#     shared/<grupo>/agent.conf            → /var/ossec/etc/shared/<grupo>/ (validado com verify-agent-conf)
-#     groups.txt                           → grupos a criar ANTES das inscrições (agent_groups -a)
-#     ossec-ssle.conf                      → fundido no ossec.conf por apply.py (white_list, CDB, respostas)
+#     shared/<group>/agent.conf            → /var/ossec/etc/shared/<group>/ (validated with verify-agent-conf)
+#     groups.txt                           → groups to create BEFORE enrolment (agent_groups -a)
+#     ossec-ssle.conf                      → merged into ossec.conf by apply.py (white_list, CDB, responses)
 #     apply.py
-# Falha fechada: guarda o ossec.conf/regras ATUAIS; se o manager se queixar depois do restart, repõe-nos,
-# reinicia e sai ≠ 0 (fica o último estado bom, nunca um SIEM meio-configurado sem regras).
+# Fail closed: saves the CURRENT ossec.conf/rules; if the manager complains after the restart, restores
+# them, restarts and exits ≠ 0 (the last good state stays, never a half-configured SIEM without rules).
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 PKG="${1:-/tmp/ssle-siem}"
@@ -29,7 +29,7 @@ install -o wazuh -g wazuh -m 660 "$PKG/rules/local_rules.xml" "$O/etc/rules/loca
 for f in "$PKG"/decoders/*.xml; do install -o wazuh -g wazuh -m 660 "$f" "$O/etc/decoders/"; done
 for f in "$PKG"/lists/*; do install -o wazuh -g wazuh -m 660 "$f" "$O/etc/lists/"; done
 
-# grupos (antes das inscrições: o authd recusa um agente com um grupo que não existe)
+# groups (before enrolment: authd refuses an agent with a group that does not exist)
 while read -r g; do
   [ -z "$g" ] && continue
   [ -d "$O/etc/shared/$g" ] || "$O/bin/agent_groups" -a -g "$g" -q >/dev/null
@@ -38,10 +38,10 @@ for d in "$PKG"/shared/*/; do
   g="$(basename "$d")"
   [ -d "$O/etc/shared/$g" ] || "$O/bin/agent_groups" -a -g "$g" -q >/dev/null
   "$O/bin/verify-agent-conf" -f "$d/agent.conf" >/dev/null 2>&1 \
-    || { say "✗ shared/$g/agent.conf inválido:"; "$O/bin/verify-agent-conf" -f "$d/agent.conf" || true; exit 1; }
+    || { say "✗ shared/$g/agent.conf is invalid:"; "$O/bin/verify-agent-conf" -f "$d/agent.conf" || true; exit 1; }
   install -o wazuh -g wazuh -m 660 "$d/agent.conf" "$O/etc/shared/$g/agent.conf"
 done
-say "grupos: $(tr '\n' ' ' < "$PKG/groups.txt")"
+say "groups: $(tr '\n' ' ' < "$PKG/groups.txt")"
 
 "$PY" "$PKG/apply.py" "$O/etc/ossec.conf" "$PKG/ossec-ssle.conf" > "$O/etc/ossec.conf.new"
 install -o root -g wazuh -m 660 "$O/etc/ossec.conf.new" "$O/etc/ossec.conf"; rm -f "$O/etc/ossec.conf.new"
@@ -54,14 +54,14 @@ restart() {
   sleep 3
 }
 restart
-# avisos de config vêm do analysisd/execd/authd; do remoted só contam erros (durante o restart os agentes
-# religam e aparece "WARNING: (1246): Unable to send file 'merged.mg'", que é transitório — visto no it-agents.sh)
+# config warnings come from analysisd/execd/authd; from remoted only errors count (during the restart agents
+# reconnect and "WARNING: (1246): Unable to send file 'merged.mg'" shows up, which is transient — seen in it-agents.sh)
 errs=$(grep -E 'wazuh-(analysisd|execd|authd): (ERROR|CRITICAL|WARNING)|wazuh-remoted: (ERROR|CRITICAL)' "$O/logs/ossec.log" || true)
 if [ -n "$errs" ]; then
-  say "✗ o manager queixou-se — a repor o último estado bom:"; sed 's/^/    /' <<<"$errs"
+  say "✗ the manager complained — restoring the last good state:"; sed 's/^/    /' <<<"$errs"
   cp -a "$BK/ossec.conf" "$O/etc/ossec.conf"; cp -a "$BK/local_rules.xml" "$O/etc/rules/local_rules.xml"
   rm -f "$O"/etc/decoders/ssle_*.xml "$O"/etc/lists/ssle-*
   cp -a "$BK"/ssle_*.xml "$O/etc/decoders/" 2>/dev/null || true; cp -a "$BK"/ssle-* "$O/etc/lists/" 2>/dev/null || true
   restart; exit 1
 fi
-say "✓ regras, decoders, listas, grupos e respostas aplicados (sem erros nem avisos)"
+say "✓ rules, decoders, lists, groups and responses applied (no errors or warnings)"

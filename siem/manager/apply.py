@@ -31,7 +31,7 @@ def section(frag, tag):
 
 
 def merge(conf, frag):
-    frag = re.sub(r"<!--.*?-->", "", frag, flags=re.S)            # comentários do template ficam no Git
+    frag = re.sub(r"<!--.*?-->", "", frag, flags=re.S)            # template comments stay in Git
     wl = re.findall(r"<white_list>[^<]+</white_list>", section(frag, "global"))
     lists = re.findall(r"<list>[^<]+</list>", section(frag, "ruleset"))
     body = re.sub(r"<global>.*?</global>|<ruleset>.*?</ruleset>", "", section(frag, "ossec_config"), flags=re.S)
@@ -39,7 +39,7 @@ def merge(conf, frag):
     conf = strip_previous(conf)
     for tag, items in (("global", wl), ("ruleset", lists)):
         if "</%s>" % tag not in conf:
-            raise SystemExit("ossec.conf sem <%s>: recuso aplicar (falha fechada)" % tag)
+            raise SystemExit("ossec.conf without <%s>: refusing to apply (fail closed)" % tag)
         block = "    %s\n%s\n    %s\n" % (BEGIN, "\n".join("    " + i for i in items), END)
         conf = conf.replace("  </%s>" % tag, block + "  </%s>" % tag, 1) if "  </%s>" % tag in conf \
             else conf.replace("</%s>" % tag, block + "</%s>" % tag, 1)

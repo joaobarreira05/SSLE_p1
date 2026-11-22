@@ -1,15 +1,15 @@
 <!--
-  SpamAssassin (spamd) → campos para as regras 1103xx. Validado no wazuh-analysisd 4.14.10
-  (bash siem/tests/run-logtest.sh). O spamd escreve, por mensagem, DUAS linhas (aula 8 §5):
+  SpamAssassin (spamd) → fields for the 1103xx rules. Validated on wazuh-analysisd 4.14.10
+  (bash siem/tests/run-logtest.sh). spamd writes TWO lines per message (lecture 8 §5):
 
     spamd[1234]: spamd: identified spam (6.2/5.0) for debian-spamd:109 in 0.3 seconds, 547 bytes.
     spamd[1234]: spamd: result: Y 6 - ALL_TRUSTED,DRUGS_ERECTILE scantime=0.3,size=547,…,required_score=5.0,…
 
-  · "result:"  → veredito (Y = spam, "." = ham), score INTEIRO ("%2d": "Y  6", "Y 1000", ".  0", ". -1"),
-                 lista de testes e o required_score;
-  · "identified spam / clean message" → score com décimas e limiar (é o que fica no relatório).
-  A versão anterior procurava "score=… required=…", que o spamd não escreve: nunca extraía nada.
-  PCRE2 porque o OS_Regex não tem grupos opcionais nem sinal negativo.
+  · "result:"  → verdict (Y = spam, "." = ham), INTEGER score ("%2d": "Y  6", "Y 1000", ".  0", ". -1"),
+                 list of tests and the required_score;
+  · "identified spam / clean message" → score with decimals and threshold (what goes in the report).
+  The previous version looked for "score=… required=…", which spamd does not write: it never extracted anything.
+  PCRE2 because OS_Regex has no optional groups and no negative sign.
 -->
 <decoder name="spamassassin">
   <program_name>spamd</program_name>

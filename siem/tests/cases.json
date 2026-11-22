@@ -1,6 +1,6 @@
 [
  {
-  "name": "correlator: incidente warning",
+  "name": "correlator: warning incident",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
@@ -13,7 +13,7 @@
   }
  },
  {
-  "name": "correlator: crítico com causa raiz no storage",
+  "name": "correlator: critical with root cause on storage",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
@@ -28,7 +28,7 @@
   }
  },
  {
-  "name": "correlator: incidente resolvido",
+  "name": "correlator: resolved incident",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
@@ -40,7 +40,7 @@
   }
  },
  {
-  "name": "T1: causa raiz no ing-01 → limitar débito (não isolar)",
+  "name": "T1: root cause on ing-01 → limit the rate (do not isolate)",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
@@ -55,7 +55,7 @@
   }
  },
  {
-  "name": "T1: 100 pedidos da mesma origem em 10 s",
+  "name": "T1: 100 requests from the same origin in 10 s",
   "events": [
    {
     "line": "10.10.9.10 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
@@ -75,7 +75,7 @@
   }
  },
  {
-  "name": "T1: 60 pedidos da mesma origem não chegam (sem falso positivo)",
+  "name": "T1: 60 requests from the same origin are not enough (no false positive)",
   "events": [
    {
     "line": "10.10.9.11 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
@@ -90,7 +90,7 @@
   }
  },
  {
-  "name": "T1: 300 pedidos de 4 origens (75 cada) → DDoS distribuído",
+  "name": "T1: 300 requests from 4 origins (75 each) → distributed DDoS",
   "events": [
    {
     "line": "10.10.9.20 - - [08/Nov/2026:20:00:00 +0000] \"GET /work HTTP/1.1\" 200 15 \"-\" \"curl/8.14.1\"",
@@ -124,7 +124,7 @@
   }
  },
  {
-  "name": "T2: 8 passwords erradas da mesma origem (como o threats/t2-botnet/run.sh)",
+  "name": "T2: 8 wrong passwords from the same origin (as in threats/t2-botnet/run.sh)",
   "events": [
    {
     "line": "Nov  8 20:00:01 sen-02 sshd[4100]: Failed password for root from 10.10.99.66 port 2222 ssh2",
@@ -143,7 +143,7 @@
   }
  },
  {
-  "name": "T2: 8 tentativas com utilizador inexistente",
+  "name": "T2: 8 attempts with a non-existent user",
   "log_format": "syslog",
   "location": "/var/log/auth.log",
   "events": [
@@ -158,7 +158,7 @@
   }
  },
  {
-  "name": "T2: 3 falhas não são força bruta",
+  "name": "T2: 3 failures are not brute force",
   "events": [
    {
     "line": "Nov  8 20:00:01 sen-02 sshd[4100]: Failed password for root from 10.10.99.69 port 2222 ssh2",
@@ -173,7 +173,7 @@
   }
  },
  {
-  "name": "T2: porta nova à escuta (533 → 110202)",
+  "name": "T2: new listening port (533 → 110202)",
   "log_format": "full_command",
   "location": "netstat listening ports",
   "events": [
@@ -186,7 +186,7 @@
   }
  },
  {
-  "name": "T2: portas iguais não alertam",
+  "name": "T2: unchanged ports do not alert",
   "log_format": "full_command",
   "location": "netstat listening ports",
   "events": [
@@ -199,7 +199,7 @@
   }
  },
  {
-  "name": "T2: sensor com OutboundAnomaly é a causa raiz → quarentena",
+  "name": "T2: sensor with OutboundAnomaly is the root cause → quarantine",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
@@ -215,7 +215,7 @@
   }
  },
  {
-  "name": "T2: sensor causa raiz só por latência (vítima da T1) → SEM quarentena",
+  "name": "T2: sensor is root cause only through latency (T1 victim) → NO quarantine",
   "log_format": "json",
   "location": "/var/log/ssle/incidents.json",
   "events": [
@@ -248,7 +248,7 @@
   }
  },
  {
-  "name": "T3: GTUBE (score 1000) → alta confiança",
+  "name": "T3: GTUBE (score 1000) → high confidence",
   "log_format": "syslog",
   "location": "/var/log/mail.log",
   "events": [
@@ -266,7 +266,7 @@
   }
  },
  {
-  "name": "T3: ham (score 0) não alerta",
+  "name": "T3: ham (score 0) does not alert",
   "log_format": "syslog",
   "location": "/var/log/mail.log",
   "events": [
@@ -284,7 +284,7 @@
   }
  },
  {
-  "name": "T3: linha 'identified spam' não duplica o alerta",
+  "name": "T3: the 'identified spam' line does not duplicate the alert",
   "log_format": "syslog",
   "location": "/var/log/mail.log",
   "events": [
@@ -295,7 +295,7 @@
   }
  },
  {
-  "name": "T3: 10 spams em 2 min → vaga",
+  "name": "T3: 10 spams in 2 min → wave",
   "log_format": "syslog",
   "location": "/var/log/mail.log",
   "events": [
@@ -311,7 +311,7 @@
   }
  },
  {
-  "name": "T3: 10 GTUBE (cada uma acaba na 110304) → vaga na mesma",
+  "name": "T3: 10 GTUBE (each ends at 110304) → still a wave",
   "log_format": "syslog",
   "location": "/var/log/mail.log",
   "events": [
@@ -327,7 +327,7 @@
   }
  },
  {
-  "name": "T3: 5 relays recusados da mesma origem",
+  "name": "T3: 5 refused relays from the same origin",
   "events": [
    {
     "line": "Nov  8 20:00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[10.10.3.99]: 554 5.7.1 <x@external.example>: Relay access denied; from=<a@lis.ssle.lab> to=<x@external.example> proto=ESMTP helo=<sen-01>",
@@ -345,7 +345,7 @@
   }
  },
  {
-  "name": "T3: rejeição a origem na lista de reputação (CDB)",
+  "name": "T3: rejection of an origin on the reputation list (CDB)",
   "events": [
    {
     "line": "Nov  8 20:00:00 mail-01 postfix/smtpd[2000]: NOQUEUE: reject: RCPT from unknown[192.0.2.50]: 554 5.7.1 <x@external.example>: Relay access denied; from=<a@lis.ssle.lab> to=<x@external.example> proto=ESMTP helo=<sen-01>",
@@ -363,7 +363,7 @@
   }
  },
  {
-  "name": "meta: sensor comprometido E origem de relay → uma botnet, dois impactos",
+  "name": "meta: compromised sensor AND relay origin → one botnet, two impacts",
   "events": [
    {
     "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-02\",\"root_cause_instance\":\"sen-02\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.51\",\"root_cause_ip\":\"10.10.2.51\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}",
@@ -386,7 +386,7 @@
   }
  },
  {
-  "name": "meta: sensor comprometido E origem de DoS",
+  "name": "meta: compromised sensor AND DoS origin",
   "events": [
    {
     "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-03\",\"root_cause_instance\":\"sen-03\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.52\",\"root_cause_ip\":\"10.10.2.52\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}",
@@ -410,7 +410,7 @@
   }
  },
  {
-  "name": "meta: relay de OUTRA origem não correlaciona com o sensor",
+  "name": "meta: relay from ANOTHER origin does not correlate with the sensor",
   "events": [
    {
     "line": "{\"ts\":\"2026-11-08T20:00:00Z\",\"origin\":\"prometheus\",\"site\":\"opo\",\"severity\":\"critical\",\"status\":\"open\",\"root_cause\":\"ssle:pt:opo:t490:sen-04\",\"root_cause_instance\":\"sen-04\",\"root_cause_role\":\"sensor\",\"srcip\":\"10.10.2.53\",\"root_cause_ip\":\"10.10.2.53\",\"incident_count\":1,\"alert_names\":[\"OutboundAnomaly\"]}",

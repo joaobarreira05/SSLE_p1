@@ -37,7 +37,7 @@ def call(command, parameters):
 
 
 def expand(events):
-    """[(linha, {overrides de log_format/location}), ...] pela ordem de envio."""
+    """[(line, {log_format/location overrides}), ...] in sending order."""
     out = []
     for e in events if isinstance(events, list) else [events]:
         if isinstance(e, dict):
@@ -57,21 +57,21 @@ def get(d, dotted):
 
 
 def check(out, exp):
-    """Lista de diferenças entre o alerta 'out' e o esperado 'exp' (vazia = passou)."""
+    """List of differences between alert 'out' and the expected 'exp' (empty = passed)."""
     rule = get(out, "rule.id") if out else None
     errs = []
     if "rule" in exp and str(exp["rule"] or "") != str(rule or ""):
-        errs.append("regra %s (esperada %s)" % (rule, exp["rule"]))
+        errs.append("rule %s (expected %s)" % (rule, exp["rule"]))
     if "level" in exp and get(out, "rule.level") != exp["level"]:
-        errs.append("nível %s (esperado %s)" % (get(out, "rule.level"), exp["level"]))
+        errs.append("level %s (expected %s)" % (get(out, "rule.level"), exp["level"]))
     if "decoder" in exp and get(out, "decoder.name") != exp["decoder"] and get(out, "decoder.parent") != exp["decoder"]:
-        errs.append("decoder %s/%s (esperado %s)" % (get(out, "decoder.parent"), get(out, "decoder.name"), exp["decoder"]))
+        errs.append("decoder %s/%s (expected %s)" % (get(out, "decoder.parent"), get(out, "decoder.name"), exp["decoder"]))
     for k, v in exp.get("fields", {}).items():
         got = get(out, "data." + k)
         if got is None:
             got = get(out, k)
         if str(got) != str(v):
-            errs.append("campo %s=%r (esperado %r)" % (k, got, v))
+            errs.append("field %s=%r (expected %r)" % (k, got, v))
     return errs
 
 
@@ -97,7 +97,7 @@ def run_case(c):
         hits = [i for i, o in enumerate(outs[:n]) if str(get(o, "rule.id")) == str(exp.get("rule"))]
         if not hits:
             seen = sorted({str(get(o, "rule.id")) for o in outs})
-            return ["a regra %s não disparou em %d eventos (regras vistas: %s)" % (exp.get("rule"), n, ",".join(seen))], None
+            return ["rule %s did not fire in %d events (rules seen: %s)" % (exp.get("rule"), n, ",".join(seen))], None
         return check(outs[hits[0]], exp), hits[0] + 1
     return check(outs[-1] if outs else {}, exp), len(outs)
 
@@ -109,17 +109,17 @@ def main(path):
     for c in cases:
         try:
             errs, at = run_case(c)
-        except Exception as e:      # noqa: BLE001 — qualquer erro do socket conta como falha
+        except Exception as e:      # noqa: BLE001 — any socket error counts as a failure
             errs, at = ["erro: %s" % e], None
         exp = c.get("expect", {})
-        tag = "regra %s" % exp.get("rule") if exp.get("rule") else "sem alerta"
-        where = " (no evento %d)" % at if at and "fires_within" in c else ""
+        tag = "rule %s" % exp.get("rule") if exp.get("rule") else "no alert"
+        where = " (at event %d)" % at if at and "fires_within" in c else ""
         if errs:
             fails += 1
             print("  ✗ %s — %s: %s" % (c["name"], tag, "; ".join(errs)))
         else:
             print("  ✓ %s — %s%s" % (c["name"], tag, where))
-    print("\n%d/%d casos passaram" % (len(cases) - fails, len(cases)))
+    print("\n%d/%d cases passed" % (len(cases) - fails, len(cases)))
     return 1 if fails else 0
 
 
