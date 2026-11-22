@@ -1,0 +1,6 @@
+| run | t0 | peak_rate_rps | 1st_signal_s | mttd_TrafficAnomaly_s | mttd_SOC_s | robust_z_max | mean_std_z_max | mean_std_would_fire | server_p95_max_ms | ServiceLatencyHigh | mttd_ClientLatencySLO_s | ClientLatencySLO_retro_s | sensor_p95_max_ms | time_to_impact_s | recovery_after_stimulus_s | lost_readings | root_cause_SOC |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 11 | 21:36:15 | 65.2 | 19.9 | 79.9 | 124.0 | 129.5 | 6.7 | True | 87.3 | False | 79.9 | 69.9 | 600.0 | 9.9 | 49.7 | 0 | ing-01 |
+| 12 | 21:48:43 | 19.8 | 19.7 | 79.7 | 115.1 | 38.8 | 0.7 | False | 827.8 | True | 79.7 | 69.7 | 2368.8 | 9.7 | 49.5 | 0 | ing-01 |
+| 13 | 21:59:02 | 25.2 | 19.1 | 79.1 | 120.5 | 10.2 | 1.1 | False | 809.7 | True | 79.1 | 69.1 | 2366.7 | 9.1 | 49.5 | 0 | ing-01 |
+| **mean ± σ** |  | 36.7 ± 24.8 | 19.6 ± 0.4 | 79.6 ± 0.4 | 119.9 ± 4.5 | 59.5 ± 62.3 | 2.8 ± 3.4 | False/True | 574.9 ± 422.4 | False/True | 79.6 ± 0.4 | 69.6 ± 0.4 | 1778.5 ± 1020.6 | 9.6 ± 0.4 | 49.6 ± 0.1 | 0.0 ± 0.0 | ing-01 |

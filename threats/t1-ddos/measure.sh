@@ -34,7 +34,7 @@ T1=$(date +%s.%N)
 echo "[t1/$N] stimulus ended; waiting ${SETTLE}s for recovery…"
 # Capture active-response evidence (nft + AR log) while the response is active
 sleep 10   # give Wazuh time to deliver the AR
-incus exec ing-01 --project site-avr -- nft list table inet ssle_rl 2>&1 > "$EV/nft-ssle-rl.txt" || true
+incus exec ing-01 --project site-avr -- nft list table inet ssle_rl > "$EV/nft-ssle-rl.txt" 2>&1 || true
 incus exec ing-01 --project site-avr -- cat /var/ossec/logs/active-responses.log 2>/dev/null > "$EV/ar.log" || true
 echo "[t1/$N] AR evidence captured → $EV/nft-ssle-rl.txt, $EV/ar.log"
 sleep $((SETTLE - 10))

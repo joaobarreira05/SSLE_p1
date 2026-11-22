@@ -1,0 +1,52 @@
+{
+  "run": 13,
+  "t0": "2026-11-22T21:59:02.924328+00:00",
+  "stimulus_s": 240,
+  "concurrency": 7,
+  "origins": "host site-opo/sen-02 site-lis/web-01",
+  "peak_rate_rps": 25.2,
+  "server_p95_max_ms": 809.7,
+  "TrafficAnomaly": {
+    "first_signal_s": 19.1,
+    "mttd_s": 79.1,
+    "resolved_after_stimulus_s": -45.5
+  },
+  "ServiceLatencyHigh": {
+    "mttd_s": 79.1,
+    "fired": true
+  },
+  "ClientLatencySLO": {
+    "mttd_s": 79.1,
+    "fired": true,
+    "retro_mttd_s": 69.1
+  },
+  "z_max": {
+    "robust": 10.2,
+    "mean_std": 1.1,
+    "mean_std_would_fire": false,
+    "mean_std_mttd_s": null
+  },
+  "impact": {
+    "sensor_p95_max_ms": 2366.7,
+    "time_to_impact_s": 9.1,
+    "recovery_after_stimulus_s": 49.5,
+    "sensor_readings_ok": 203,
+    "sensor_readings_lost": 0
+  },
+  "soc": {
+    "mttd_s": 120.5,
+    "root_cause": "ssle:pt:avr:t490:ing-01",
+    "alerts": [
+      "ClientLatencySLO",
+      "OutboundAnomaly",
+      "ServiceLatencyHigh",
+      "TrafficAnomaly"
+    ],
+    "raw_alert_count": 4,
+    "cross_site": true
+  },
+  "siem_responses": {
+    "110110 all origins (bucket per origin)": 120.1,
+    "110100 origin 10.10.1.1": 175.1
+  }
+}

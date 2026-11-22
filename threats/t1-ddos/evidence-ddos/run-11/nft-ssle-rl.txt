@@ -1,0 +1,22 @@
+table inet ssle_rl {
+	set limited {
+		type ipv4_addr
+		flags interval,timeout
+		elements = { 10.10.1.1 timeout 15m expires 10m54s266ms,
+			     10.10.2.51 timeout 15m expires 12m54s809ms }
+	}
+
+	set buckets {
+		type ipv4_addr
+		size 65535
+		flags dynamic,timeout
+		timeout 1m
+		elements = { 10.10.1.1 limit rate over 20/second burst 40 packets expires 49s523ms,
+			     10.10.2.51 limit rate over 20/second burst 40 packets expires 57s470ms }
+	}
+
+	chain input {
+		type filter hook input priority filter - 5; policy accept;
+		tcp dport 8000 ct state new ip saddr @limited update @buckets { ip saddr limit rate over 20/second burst 40 packets } counter packets 1965 bytes 117900 drop
+	}
+}

@@ -1,0 +1,49 @@
+{
+  "run": 10,
+  "t0": "2026-11-22T21:26:44.360918+00:00",
+  "stimulus_s": 120,
+  "concurrency": 20,
+  "origins": "host",
+  "peak_rate_rps": 20.5,
+  "server_p95_max_ms": 170.6,
+  "TrafficAnomaly": {
+    "first_signal_s": 19.6,
+    "mttd_s": 79.6,
+    "resolved_after_stimulus_s": 59.3
+  },
+  "ServiceLatencyHigh": {
+    "mttd_s": 124.6,
+    "fired": true
+  },
+  "ClientLatencySLO": {
+    "mttd_s": 64.6,
+    "fired": true,
+    "retro_mttd_s": 64.6
+  },
+  "z_max": {
+    "robust": 40.3,
+    "mean_std": 8.4,
+    "mean_std_would_fire": true,
+    "mean_std_mttd_s": 79.6
+  },
+  "impact": {
+    "sensor_p95_max_ms": 300.0,
+    "time_to_impact_s": 4.6,
+    "recovery_after_stimulus_s": 49.3,
+    "sensor_readings_ok": 165,
+    "sensor_readings_lost": 0
+  },
+  "soc": {
+    "mttd_s": 124.7,
+    "root_cause": "ssle:pt:avr:t490:ing-01",
+    "alerts": [
+      "ClientLatencySLO",
+      "TrafficAnomaly"
+    ],
+    "raw_alert_count": 2,
+    "cross_site": true
+  },
+  "siem_responses": {
+    "110100 origem 10.10.1.1": 1.6
+  }
+}

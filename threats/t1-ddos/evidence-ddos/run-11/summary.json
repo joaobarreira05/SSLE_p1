@@ -1,0 +1,51 @@
+{
+  "run": 11,
+  "t0": "2026-11-22T21:36:15.064875+00:00",
+  "stimulus_s": 240,
+  "concurrency": 7,
+  "origins": "host site-opo/sen-02 site-lis/web-01",
+  "peak_rate_rps": 65.2,
+  "server_p95_max_ms": 87.3,
+  "TrafficAnomaly": {
+    "first_signal_s": 19.9,
+    "mttd_s": 79.9,
+    "resolved_after_stimulus_s": 59.7
+  },
+  "ServiceLatencyHigh": {
+    "mttd_s": null,
+    "fired": false
+  },
+  "ClientLatencySLO": {
+    "mttd_s": 79.9,
+    "fired": true,
+    "retro_mttd_s": 69.9
+  },
+  "z_max": {
+    "robust": 129.5,
+    "mean_std": 6.7,
+    "mean_std_would_fire": true,
+    "mean_std_mttd_s": 94.9
+  },
+  "impact": {
+    "sensor_p95_max_ms": 600.0,
+    "time_to_impact_s": 9.9,
+    "recovery_after_stimulus_s": 49.7,
+    "sensor_readings_ok": 209,
+    "sensor_readings_lost": 0
+  },
+  "soc": {
+    "mttd_s": 124.0,
+    "root_cause": "ssle:pt:avr:t490:ing-01",
+    "alerts": [
+      "ClientLatencySLO",
+      "OutboundAnomaly",
+      "TrafficAnomaly"
+    ],
+    "raw_alert_count": 4,
+    "cross_site": true
+  },
+  "siem_responses": {
+    "110100 origem 10.10.1.1": 3.9,
+    "110100 origem 10.10.2.51": 124.9
+  }
+}
