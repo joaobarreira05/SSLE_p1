@@ -1,12 +1,12 @@
-# Preseed do `incus admin init` no T490 (Arch, raiz em ext4).
-# Aplicado por infra/t490/setup-host.sh --apply  (só se ainda não houver pool "lab").
+# Preseed for `incus admin init` on the T490 (Arch, root on ext4).
+# Applied by infra/t490/setup-host.sh --apply  (only if there is no "lab" pool yet).
 #
-# - pool "lab" em btrfs: como a raiz é ext4, o Incus cria um FICHEIRO loop
-#   (/var/lib/incus/disks/lab.img, esparso) e formata-o em btrfs → snapshots copy-on-write.
-#   @@POOL_SIZE@@ é substituído pelo script (default 180GiB; o disco tem ~250 GiB livres).
-# - incusbr0: bridge por omissão (só para testes); as redes do lab (net-*) cria-as o infra/deploy.sh
-#   a partir do inventário. IPv6 desligado, como nas aulas.
-# - profile default: disco raiz na pool "lab" (o deploy usa este profile para toda a frota).
+# - "lab" pool on btrfs: since the root is ext4, Incus creates a loop FILE
+#   (/var/lib/incus/disks/lab.img, sparse) and formats it as btrfs → copy-on-write snapshots.
+#   @@POOL_SIZE@@ is replaced by the script (default 180GiB; the disk has ~250 GiB free).
+# - incusbr0: default bridge (tests only); the lab networks (net-*) are created by infra/deploy.sh
+#   from the inventory. IPv6 off, as in the lectures.
+# - default profile: root disk on the "lab" pool (the deploy uses this profile for the whole fleet).
 config: {}
 networks:
 - name: incusbr0

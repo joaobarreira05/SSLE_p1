@@ -14,7 +14,7 @@ _spec = importlib.util.spec_from_file_location("inventory", os.path.join(HERE, "
 inventory = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(inventory)
 CONF = inventory.registry_config(inventory.build("t490", staging=False), "opo")
-TOKEN = "t0ken-de-teste-nao-e-segredo"
+TOKEN = "test-t0ken-not-a-secret"
 
 
 class Clock:
@@ -50,7 +50,7 @@ class Write(unittest.TestCase):
 
     def test_wrong_or_missing_token_is_refused(self):
         r, _ = make()
-        self.assertRejects(403, "auth", lambda: r.register(NEW, "errado"))
+        self.assertRejects(403, "auth", lambda: r.register(NEW, "wrong"))
         self.assertRejects(403, "auth", lambda: r.register(NEW, None))
         self.assertEqual(r.snapshot()["rejections"], {"auth": 2})
 

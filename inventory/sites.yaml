@@ -1,20 +1,20 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Fonte ÚNICA de verdade do Projeto 1 (SSLE).
-# Daqui saem: projetos e redes Incus, contentores, alvos do Prometheus,
-# inscrição dos agentes Wazuh e rotas do Alertmanager.
-# Acrescentar um site/elemento = acrescentar linhas aqui e correr infra/deploy.sh.
+# SINGLE source of truth of Project 1 (SSLE).
+# From here come: Incus projects and networks, containers, Prometheus targets,
+# Wazuh agent enrolment and Alertmanager routes.
+# Adding a site/element = adding lines here and running infra/deploy.sh.
 #
-# NOTA: formato em "block style" puro (sem {flow}) de propósito, para o leitor
-# portável infra/inventory.py conseguir lê-lo sem depender de PyYAML/yq.
+# NOTE: pure "block style" format (no {flow}) on purpose, so that the portable
+# reader infra/inventory.py can read it without depending on PyYAML/yq.
 #
-# Identidade canónica de cada elemento:  ssle:<region>:<site>:<host>:<instancia>
-#   ex.: ssle:pt:avr:t490:ing-01
-# O <host> (máquina física) é injetado no deploy (uname): t490 ou mac-m2.
+# Canonical identity of each element:  ssle:<region>:<site>:<host>:<instance>
+#   e.g.: ssle:pt:avr:t490:ing-01
+# The <host> (physical machine) is injected at deploy time (uname): t490 or mac-m2.
 # ─────────────────────────────────────────────────────────────────────────────
 
 region: pt
 
-# Rede do SOC (core): Wazuh, observabilidade global, responder.
+# SOC network (core): Wazuh, global observability, responder.
 core:
   subnet: 10.10.0.0/24
   gateway: 10.10.0.1
@@ -42,11 +42,11 @@ sites:
     subnet: 10.10.3.0/24
     gateway: 10.10.3.1
 
-# ─── Elementos ───────────────────────────────────────────────────────────────
-# campos: name, site(ou 'core'), role, ip, exporter(node|flask|global|registry|none),
-#         (flask + role sensor = envia leituras à 1.ª dependência, em :8000/ingest)
-#         deps(lista de instâncias locais), staging(true=entra na fatia reduzida),
-#         image(opcional: imagem Incus só deste elemento; por omissão a SSLE_IMAGE do deploy)
+# ─── Elements ────────────────────────────────────────────────────────────────
+# fields: name, site(or 'core'), role, ip, exporter(node|flask|global|registry|none),
+#         (flask + role sensor = sends readings to the 1st dependency, at :8000/ingest)
+#         deps(list of local instances), staging(true=included in the reduced slice),
+#         image(optional: Incus image for this element only; by default the deploy's SSLE_IMAGE)
 elements:
 
   # ---- core / SOC ----
@@ -54,15 +54,15 @@ elements:
     site: core
     role: observability
     ip: 10.10.0.10
-    exporter: global          # Prometheus global + Alertmanager + correlator
+    exporter: global          # global Prometheus + Alertmanager + correlator
     staging: true
   - name: wazuh
     site: core
     role: siem
     ip: 10.10.0.30
     exporter: node
-    image: images:ubuntu/22.04   # o caminho provado na aula 6 (wazuh-install.sh -a -i, 4.14)
-    staging: false            # pesado (4-6 GiB): só no T490
+    image: images:ubuntu/22.04   # the path proved in lecture 6 (wazuh-install.sh -a -i, 4.14)
+    staging: false            # heavy (4-6 GiB): T490 only
   - name: responder
     site: core
     role: responder
@@ -70,7 +70,7 @@ elements:
     exporter: node
     staging: false
 
-  # ---- site avr (sede + SOC): web/ingestão/storage ----
+  # ---- site avr (headquarters + SOC): web/ingestion/storage ----
   - name: prom-01
     site: avr
     role: prometheus
@@ -81,7 +81,7 @@ elements:
     site: avr
     role: registry
     ip: 10.10.1.20
-    exporter: registry       # registry do site (R2): leases + HTTP SD + site_info (registry/)
+    exporter: registry       # site registry (R2): leases + HTTP SD + site_info (registry/)
     staging: false
   - name: sto-01
     site: avr
@@ -106,7 +106,7 @@ elements:
       - sto-01
     staging: false
 
-  # ---- site opo (IoT): sensores ----
+  # ---- site opo (IoT): sensors ----
   - name: prom-01
     site: opo
     role: prometheus
@@ -123,7 +123,7 @@ elements:
     site: opo
     role: sensor
     ip: 10.10.2.50
-    exporter: flask          # envia telemetria ao ing-01 (baseline legítima + impacto no cliente)
+    exporter: flask          # sends telemetry to ing-01 (legitimate baseline + client-side impact)
     deps:
       - ing-01@avr
     staging: true
@@ -131,7 +131,7 @@ elements:
     site: opo
     role: sensor
     ip: 10.10.2.51
-    exporter: flask          # envia telemetria ao ing-01 (baseline legítima + impacto no cliente)
+    exporter: flask          # sends telemetry to ing-01 (legitimate baseline + client-side impact)
     deps:
       - ing-01@avr
     staging: false

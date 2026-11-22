@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# MTTD/MTTR de uma PoC: compara o instante do estímulo com o 1.o alerta e a recuperação.
-# Uso: anota T0 (estímulo) e corre; lê os timestamps do incidents.json.
+# MTTD/MTTR of a PoC: compares the stimulus instant with the 1st alert and the recovery.
+# Usage: note T0 (stimulus) and run; reads the timestamps from incidents.json.
 set -euo pipefail
-T0="${1:?uso: measure.sh <epoch_do_estimulo>}"
+T0="${1:?usage: measure.sh <stimulus_epoch>}"
 first=$(incus exec obs --project core -- sh -c 'head -1 /var/log/ssle/incidents.json' </dev/null | jq -r '.ts')
-[ -n "$first" ] && echo "MTTD ~= $(( $(date -d "$first" +%s) - T0 )) s (estímulo -> 1.o incidente)"
-echo "MTTR: medir do estímulo até a métrica de impacto voltar ao normal (ver Grafana/consulta)."
+[ -n "$first" ] && echo "MTTD ~= $(( $(date -d "$first" +%s) - T0 )) s (stimulus -> 1st incident)"
+echo "MTTR: measure from the stimulus until the impact metric is back to normal (see Grafana/query)."

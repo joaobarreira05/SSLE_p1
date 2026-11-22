@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Leitor da fonte única inventory/sites.yaml e gerador dos artefactos derivados
-(alvos do Prometheus, federation, grafo de dependências, listas para o deploy).
+Reader of the single source of truth inventory/sites.yaml and generator of the derived artefacts
+(Prometheus targets, federation, dependency graph, lists for the deploy).
 
-Portável: usa PyYAML se existir; senão cai para um mini-parser de YAML em
-"block style" (stdlib), suficiente para o nosso sites.yaml. Assim o deploy
-corre tanto nesta VM (sem yq/PyYAML) como no T490.
+Portable: uses PyYAML if available; otherwise falls back to a "block style" YAML mini-parser
+(stdlib), enough for our sites.yaml. This way the deploy runs both in the staging VM
+(without yq/PyYAML) and on the T490.
 """
 import json, os, re, sys, argparse, platform
 
@@ -48,7 +48,7 @@ def _split_kv(s):
 
 
 class _Mini:
-    """Mini-parser de YAML block-style (mapas, listas, listas-de-mapas, escalares)."""
+    """Block-style YAML mini-parser (maps, lists, lists of maps, scalars)."""
     def __init__(self, text):
         self.lines = []
         for line in text.splitlines():
@@ -105,7 +105,7 @@ class _Mini:
                 break
             rest = content[2:]
             if ":" in rest:
-                # item-mapa: reescreve a linha do traço como entrada de mapa a indent+2
+                # map item: rewrites the dash line as a map entry at indent+2
                 self.lines[self.pos] = [indent + 2, rest.strip()]
                 lst.append(self._map(indent + 2))
             else:
@@ -124,7 +124,7 @@ def load_inventory():
         return _Mini(text).parse()
 
 
-# ── modelo ──────────────────────────────────────────────────────────────────
+# ── model ───────────────────────────────────────────────────────────────────
 def default_host():
     m = platform.machine().lower()
     return "t490" if m in ("x86_64", "amd64") else "mac-m2"
@@ -149,7 +149,7 @@ def build(host, staging):
     teams = {c: s.get("team") for c, s in inv.get("sites", {}).items()}
     teams["core"] = "soc"
 
-    # que sites entram (depois do filtro staging)?
+    # which sites are included (after the staging filter)?
     used = set()
     for e in inv.get("elements", []):
         if staging and not e.get("staging", False):
@@ -187,7 +187,7 @@ def build(host, staging):
             "ip": e.get("ip"),
             "exporter": e.get("exporter", "node"),
             "deps": e.get("deps") or [],
-            "image": e.get("image") or "",            # vazio = SSLE_IMAGE do deploy
+            "image": e.get("image") or "",            # empty = the deploy's SSLE_IMAGE
             "project": project_name(site),
             "network": net_name(site),
             "team": teams.get(site, "soc"),
@@ -224,7 +224,7 @@ def graph(model):
 
 
 def site_targets(model, site):
-    """file_sd por site: um bloco por elemento, com todas as labels."""
+    """Per-site file_sd: one block per element, with every label."""
     node, flask = [], []
     for e in model["elements"]:
         if e["site"] != site:
@@ -233,13 +233,13 @@ def site_targets(model, site):
             node.append({"targets": ["%s:%d" % (e["ip"], NODE_PORT)], "labels": e["labels"]})
         if e["exporter"] == "flask":
             lbl = dict(e["labels"])
-            lbl["service"] = e["role"]      # os agregados RED agrupam por service
+            lbl["service"] = e["role"]      # the RED aggregates group by service
             flask.append({"targets": ["%s:%d" % (e["ip"], FLASK_PORT)], "labels": lbl})
     return {"node": node, "flask": flask}
 
 
 def federate_targets(model):
-    """alvos do Prometheus global: o prom-01 de cada site."""
+    """Global Prometheus targets: each site's prom-01."""
     out = []
     for e in model["elements"]:
         if e["role"] == "prometheus":
@@ -249,7 +249,7 @@ def federate_targets(model):
 
 
 def registry_config(model, site):
-    """Config do registry (reg-01) de um site: metadados do site + elementos ESTÁTICOS (inventário)."""
+    """Registry (reg-01) config of a site: site metadata + STATIC elements (inventory)."""
     net = next((n for n in model["networks"] if n["site"] == site), None)
     if net is None:
         return None
@@ -270,7 +270,7 @@ def registry_element(model, site):
 
 
 def site_prometheus(model, site):
-    """prometheus.yml do site a partir do template: AM central + (se houver reg-01) o HTTP SD."""
+    """Site prometheus.yml from the template: central AM + (if there is a reg-01) the HTTP SD."""
     with open(SITE_PROM_TMPL, encoding="utf-8") as fh:
         text = fh.read()
     obs = obs_element(model)
@@ -279,7 +279,7 @@ def site_prometheus(model, site):
     text = text.replace("@@ALERTMANAGER@@", "%s:%d" % (obs["ip"], ALERT_PORT) if obs else "localhost:%d" % ALERT_PORT)
     if reg:
         text = text.replace("@@REGISTRY@@", "%s:%d" % (reg["ip"], REGISTRY_PORT))
-    else:   # sem registry neste site: tira o bloco inteiro (nada de alvos de SD a falhar para sempre)
+    else:   # no registry on this site: remove the whole block (no SD targets failing forever)
         out, skip = [], False
         for line in text.splitlines(keepends=True):
             if line.strip() == "# >>> registry":
@@ -293,10 +293,10 @@ def site_prometheus(model, site):
 
 
 def grafana_datasources(model):
-    """Datasources do Grafana (corre no core/obs): o global + um Prometheus por site (drill-down por
-    instância, que o global não tem — só federa agregados) + o Alertmanager. UIDs estáveis: os
-    dashboards em monitoring/grafana/dashboards/ referem-nos."""
-    lines = ["# GERADO por infra/inventory.py grafana (fonte: inventory/sites.yaml) — não editar à mão",
+    """Grafana datasources (runs on core/obs): the global + one Prometheus per site (per-instance
+    drill-down, which the global lacks — it only federates aggregates) + the Alertmanager. Stable UIDs:
+    the dashboards in monitoring/grafana/dashboards/ reference them."""
+    lines = ["# GENERATED by infra/inventory.py grafana (source: inventory/sites.yaml) — do not edit by hand",
              "apiVersion: 1", "datasources:",
              "  - {name: Prometheus-Global, uid: prom-global, type: prometheus, access: proxy, "
              "url: 'http://localhost:%d', isDefault: true}" % PROM_PORT,
@@ -310,12 +310,12 @@ def grafana_datasources(model):
 
 
 def wazuh_agent_name(e):
-    """Nome do agente Wazuh: <site>-<nome> (prom-01/reg-01 repetem-se entre sites; o Wazuh exige únicos)."""
+    """Wazuh agent name: <site>-<name> (prom-01/reg-01 repeat across sites; Wazuh requires unique names)."""
     return "%s-%s" % (e["site"], e["name"])
 
 
 def wazuh_agents(model):
-    """Uma linha por agente a inscrever: nome, projeto, instância, IP, grupos (o SIEM não monitoriza-se a si)."""
+    """One line per agent to enrol: name, project, instance, IP, groups (the SIEM does not monitor itself)."""
     rows = []
     for e in model["elements"]:
         if e["role"] == "siem":
@@ -326,9 +326,9 @@ def wazuh_agents(model):
 
 
 def wazuh_manager_conf(model, agents):
-    """siem/manager/ossec-ssle.conf com os @@…@@ resolvidos. agents = {nome_do_agente: id}.
-    Falha fechada: um <active-response> cujo agente-alvo não está inscrito SAI (com aviso), em vez de
-    ficar a apontar para um ID errado ou inexistente."""
+    """siem/manager/ossec-ssle.conf with the @@…@@ placeholders resolved. agents = {agent_name: id}.
+    Fail closed: an <active-response> whose target agent is not enrolled is DROPPED (with a warning),
+    instead of pointing at a wrong or non-existent ID."""
     with open(WAZUH_MANAGER_TMPL, encoding="utf-8") as fh:
         text = fh.read()
     keep = [e["ip"] for e in model["elements"] if e["site"] == "core" or e["role"] == "prometheus"]
@@ -336,7 +336,7 @@ def wazuh_manager_conf(model, agents):
     svc = []
     for e in model["elements"]:
         if e["role"] in ("ingestion", "web"):
-            svc.append("  <!-- %s: causa raiz de T1 (110110) → limitar débito por origem no próprio serviço -->\n"
+            svc.append("  <!-- %s: T1 root cause (110110) → limit the rate per origin on the service itself -->\n"
                        "  <active-response>\n    <command>ssle-ratelimit</command>\n"
                        "    <location>defined-agent</location>\n    <agent_id>@@AGENT_ID:%s@@</agent_id>\n"
                        "    <rules_id>110110</rules_id>\n    <timeout>300</timeout>\n  </active-response>"
@@ -347,26 +347,26 @@ def wazuh_manager_conf(model, agents):
         block = m.group(0)
         for name in re.findall(r"@@AGENT_ID:([\w.-]+)@@", block):
             if name not in agents:
-                sys.stderr.write("aviso: agente %s não inscrito — resposta omitida (falha fechada)\n" % name)
+                sys.stderr.write("warning: agent %s not enrolled — response omitted (fail closed)\n" % name)
                 return ""
             block = block.replace("@@AGENT_ID:%s@@" % name, agents[name])
         return block
-    # blocos ancorados ao início da linha: o comentário do cabeçalho também diz "<active-response>" e uma
-    # regex solta começava a casar aí e engolia os <command> (apanhado pelo siem/tests/it-agents.sh)
+    # blocks anchored at the start of the line: the header comment also says "<active-response>" and an
+    # unanchored regex started matching there and swallowed the <command> blocks (caught by siem/tests/it-agents.sh)
     text = re.sub(r"^(?:[ \t]*<!--[^\n]*-->\n)?[ \t]*<active-response>\n.*?^[ \t]*</active-response>\n",
                   resolve, text, flags=re.S | re.M)
     if "@@" in text:
-        raise SystemExit("ossec-ssle.conf: marcadores por resolver: %s" % sorted(set(re.findall(r"@@[^@]+@@", text))))
+        raise SystemExit("ossec-ssle.conf: unresolved placeholders: %s" % sorted(set(re.findall(r"@@[^@]+@@", text))))
     return text
 
 
 def read_agent_ids(path):
-    """'id nome …' por linha (as 2 primeiras colunas do client.keys do manager; o resto — a chave — ignora-se)."""
+    """'id name …' per line (the first 2 columns of the manager's client.keys; the rest — the key — is ignored)."""
     out = {}
     with open(path, encoding="utf-8") as fh:
         for line in fh:
             p = line.split()
-            if len(p) >= 2 and p[0].isdigit() and not p[1].startswith("!"):   # "!" = agente removido
+            if len(p) >= 2 and p[0].isdigit() and not p[1].startswith("!"):   # "!" = removed agent
                 out[p[1]] = p[0]
     return out
 
@@ -425,14 +425,14 @@ def render(model, out):
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 def main():
-    ap = argparse.ArgumentParser(description="Leitor do inventário SSLE P1")
+    ap = argparse.ArgumentParser(description="SSLE P1 inventory reader")
     ap.add_argument("cmd", choices=["model", "graph", "render", "federate", "targets", "siteprom", "grafana",
                                     "wazuh-agents", "wazuh-manager"])
     ap.add_argument("--host", default=default_host())
     ap.add_argument("--staging", action="store_true")
     ap.add_argument("--out", default=os.path.join(ROOT, "build"))
     ap.add_argument("--site", default=None)
-    ap.add_argument("--agents", default=None, help="wazuh-manager: ficheiro 'id nome' (client.keys sem as chaves)")
+    ap.add_argument("--agents", default=None, help="wazuh-manager: 'id name' file (client.keys without the keys)")
     a = ap.parse_args()
 
     m = build(a.host, a.staging)

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Deploy idempotente do lab do Projeto 1 (SSLE) a partir de inventory/sites.yaml.
+# Idempotent deploy of the Project 1 (SSLE) lab from inventory/sites.yaml.
 #
-#   SSLE_PROFILE=staging|full   (default: staging — fatia reduzida p/ pouca RAM)
-#   SSLE_HOST=<label>           (default: auto por uname → t490 / mac-m2)
+#   SSLE_PROFILE=staging|full   (default: staging — reduced slice for low RAM)
+#   SSLE_HOST=<label>           (default: auto by uname → t490 / mac-m2)
 #   SSLE_IMAGE=images:debian/trixie
-#   SSLE_SKIP_APPS=1            (só infra: projetos, redes, contentores)
-#   SSLE_GRAFANA=0|1            (default: 1 no full, 0 no staging — o Grafana precisa de ~300 MiB)
+#   SSLE_SKIP_APPS=1            (infra only: projects, networks, containers)
+#   SSLE_GRAFANA=0|1            (default: 1 in full, 0 in staging — Grafana needs ~300 MiB)
 #
-# Reentrante: correr várias vezes só acrescenta/corrige o que falta.
+# Re-entrant: running it several times only adds/fixes what is missing.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -31,65 +31,65 @@ exists_inst() { incus list --project "$2" --format csv -c n 2>/dev/null | grep -
 exists_net()  { incus network show "$1" >/dev/null 2>&1; }
 exists_proj() { incus project show "$1" >/dev/null 2>&1; }
 
-# ── 0. render do inventário ────────────────────────────────────────────────────
+# ── 0. inventory render ────────────────────────────────────────────────────────
 render() {
   local args=(render --out "$BUILD" --host "$HOST_LABEL")
   [ "$PROFILE" = staging ] && args+=(--staging)
   python3 "$ROOT/infra/inventory.py" "${args[@]}" >/dev/null
-  ok "inventário renderizado em build/ (profile=$PROFILE, host=$HOST_LABEL)"
+  ok "inventory rendered into build/ (profile=$PROFILE, host=$HOST_LABEL)"
 }
 
-# ── 1. projetos ────────────────────────────────────────────────────────────────
+# ── 1. projects ────────────────────────────────────────────────────────────────
 projects() {
-  log "projetos Incus"
+  log "Incus projects"
   local projs; projs="$(cut -f2 "$BUILD/containers.tsv" | sort -u)"
   while read -r p <&3; do
     [ -z "$p" ] && continue
-    if exists_proj "$p"; then ok "projeto $p (existe)"; else
+    if exists_proj "$p"; then ok "project $p (exists)"; else
       incus project create "$p" -c features.images=false -c features.profiles=false >/dev/null </dev/null
-      ok "projeto $p criado"
+      ok "project $p created"
     fi
   done 3<<< "$projs"
 }
 
-# ── 2. redes ─────────────────────────────────────────────────────────────────
+# ── 2. networks ──────────────────────────────────────────────────────────────
 networks() {
-  log "redes Incus"
+  log "Incus networks"
   while IFS=$'\t' read -r bridge subnet gateway dns <&3; do
     [ -z "$bridge" ] && continue
     local mask="${subnet#*/}"
-    if exists_net "$bridge"; then ok "rede $bridge (existe)"; else
+    if exists_net "$bridge"; then ok "network $bridge (exists)"; else
       incus network create "$bridge" \
         ipv4.address="$gateway/$mask" ipv4.nat=true ipv6.address=none \
         dns.domain="$dns" >/dev/null </dev/null
-      ok "rede $bridge ($gateway/$mask, dns=$dns)"
+      ok "network $bridge ($gateway/$mask, dns=$dns)"
     fi
   done 3< "$BUILD/networks.tsv"
 }
 
-# ── 3. contentores ─────────────────────────────────────────────────────────────
+# ── 3. containers ──────────────────────────────────────────────────────────────
 launch_one() {
   local name="$1" proj="$2" net="$3" ip="$4" exporter="$5" role="$6" site="$7" team="$8" img="${9:--}"
-  [ "$img" = - ] && img="$IMAGE"            # imagem própria só se o inventário a der (ex.: wazuh)
+  [ "$img" = - ] && img="$IMAGE"            # own image only if the inventory gives one (e.g. wazuh)
   if exists_inst "$name" "$proj"; then
-    ok "$proj/$name (existe)"
+    ok "$proj/$name (exists)"
   else
     incus launch "$img" "$name" --project "$proj" --network "$net" >/dev/null </dev/null
     incus config device set "$name" eth0 ipv4.address="$ip" --project "$proj" >/dev/null </dev/null
-    ok "$proj/$name lançado em $net ($ip)"
+    ok "$proj/$name launched on $net ($ip)"
   fi
   incus config set "$name" user.site="$site" user.role="$role" user.team="$team" --project "$proj" >/dev/null </dev/null
-  # Rede: um só NIC por contentor. A comunicação core<->sites faz-se por
-  # encaminhamento entre bridges do próprio host (verificado no teste de fumo).
+  # Network: a single NIC per container. core<->sites communication is done by
+  # routing between the host's own bridges (verified in the smoke test).
 }
 
 containers() {
-  log "contentores"
+  log "containers"
   while IFS=$'\t' read -r name proj net ip exporter role site team deps image <&3; do
     [ -z "$name" ] && continue
     launch_one "$name" "$proj" "$net" "$ip" "$exporter" "$role" "$site" "$team" "$image"
   done 3< "$BUILD/containers.tsv"
-  log "à espera de rede (rota default) nos contentores…"
+  log "waiting for network (default route) in the containers…"
   while IFS=$'\t' read -r name proj net ip rest <&3; do
     [ -z "$name" ] && continue
     local up=0
@@ -97,11 +97,11 @@ containers() {
       if cexec "$name" "$proj" sh -c 'ip -4 route 2>/dev/null | grep -q "^default"' 2>/dev/null; then up=1; break; fi
       sleep 1 || true
     done
-    [ "$up" = 1 ] && ok "$proj/$name com rede ($ip)" || warn "$proj/$name sem rota default (segue mesmo assim)"
+    [ "$up" = 1 ] && ok "$proj/$name has network ($ip)" || warn "$proj/$name has no default route (carrying on anyway)"
   done 3< "$BUILD/containers.tsv"
 }
 
-# ── 4. provisionamento ─────────────────────────────────────────────────────────
+# ── 4. provisioning ────────────────────────────────────────────────────────────
 APT="DEBIAN_FRONTEND=noninteractive apt-get"
 apt_in() { local n="$1" p="$2"; shift 2; cexec "$n" "$p" sh -c "$APT update -qq && $APT install -y -qq --no-install-recommends $*"; }
 
@@ -112,16 +112,16 @@ prov_node() {   # node_exporter
   cexec "$n" "$p" systemctl enable --now prometheus-node-exporter >/dev/null 2>&1 || true
 }
 
-prov_flask() {  # serviço Flask + node_exporter
+prov_flask() {  # Flask service + node_exporter
   local n="$1" p="$2" role="$3" site="$4" deps="$5"
   prov_node "$n" "$p"
   cexec "$n" "$p" sh -c "dpkg -s python3-flask >/dev/null 2>&1" || apt_in "$n" "$p" python3-flask python3
   cexec "$n" "$p" mkdir -p /opt/ssle /var/log/ssle
   cpush "$ROOT/services/app.py" "$n/opt/ssle/app.py" "$p"
-  # serviços expostos (T1): log de acesso "combined" que o agente Wazuh lê (siem/shared/role-<papel>/agent.conf)
+  # exposed services (T1): "combined" access log read by the Wazuh agent (siem/shared/role-<role>/agent.conf)
   local accesslog=""; case "$role" in ingestion|web) accesslog="SSLE_ACCESS_LOG=/var/log/ssle/access.log" ;; esac
-  # dependências -> "nome=ip:porta" a partir do grafo/inventário (node_exporter:9100)
-  # sensores: enviam leituras à 1.ª dependência (a ingestão), em :8000/ingest
+  # dependencies -> "name=ip:port" from the graph/inventory (node_exporter:9100)
+  # sensors: send readings to the 1st dependency (ingestion), at :8000/ingest
   local depenv="" upstream=""
   if [ "$deps" != "-" ]; then
     IFS=',' read -ra ds <<< "$deps"
@@ -144,15 +144,15 @@ Restart=always
 WantedBy=multi-user.target
 UNIT
 systemctl daemon-reload && systemctl enable ssle-service >/dev/null 2>&1 && systemctl restart ssle-service"
-  # restart (e não só enable --now): um re-deploy com código novo tem de o pôr a correr
+  # restart (not just enable --now): a re-deploy with new code must get it running
 }
 
-prov_prom_site() {  # Prometheus de site
+prov_prom_site() {  # site Prometheus
   local n="$1" p="$2" site="$3"
   prov_node "$n" "$p"
   cexec "$n" "$p" sh -c "dpkg -s prometheus >/dev/null 2>&1" || apt_in "$n" "$p" prometheus
-  local am; am="$(cut -f3 "$BUILD/obs.tsv"):9093"   # Alertmanager central (obs, via routing)
-  # template → config: AM central e, se o site tiver reg-01, o HTTP SD (infra/inventory.py siteprom)
+  local am; am="$(cut -f3 "$BUILD/obs.tsv"):9093"   # central Alertmanager (obs, via routing)
+  # template → config: central AM and, if the site has reg-01, the HTTP SD (infra/inventory.py siteprom)
   local args=(siteprom --site "$site" --host "$HOST_LABEL"); [ "$PROFILE" = staging ] && args+=(--staging)
   python3 "$ROOT/infra/inventory.py" "${args[@]}" > "$BUILD/prometheus-$site.yml"
   cpush "$BUILD/prometheus-$site.yml" "$n/etc/prometheus/prometheus.yml" "$p"
@@ -160,10 +160,10 @@ prov_prom_site() {  # Prometheus de site
   cpush "$BUILD/targets/$site/node.json"  "$n/etc/prometheus/targets/node.json"  "$p"
   cpush "$BUILD/targets/$site/flask.json" "$n/etc/prometheus/targets/flask.json" "$p"
   cexec "$n" "$p" systemctl restart prometheus
-  ok "  prometheus de $site configurado (AM=$am)"
+  ok "  prometheus of $site configured (AM=$am)"
 }
 
-prov_registry() {  # registry do site (R2): leases + HTTP SD + site_info — registry/
+prov_registry() {  # site registry (R2): leases + HTTP SD + site_info — registry/
   local n="$1" p="$2" site="$3"
   prov_node "$n" "$p"
   cexec "$n" "$p" sh -c "dpkg -s python3-flask >/dev/null 2>&1" || apt_in "$n" "$p" python3-flask python3
@@ -171,7 +171,7 @@ prov_registry() {  # registry do site (R2): leases + HTTP SD + site_info — reg
   cpush "$ROOT/registry/core.py" "$n/opt/registry/core.py" "$p"
   cpush "$ROOT/registry/app.py" "$n/opt/registry/app.py" "$p"
   cpush "$BUILD/targets/$site/registry.json" "$n/opt/registry/registry.json" "$p"
-  # token de escrita do site: GERADO aqui (nunca fixo no código), fica em build/secrets (fora do Git)
+  # site write token: GENERATED here (never fixed in the code), kept in build/secrets (outside Git)
   local tok="$BUILD/secrets/registry-$site.token"
   if [ ! -s "$tok" ]; then
     (umask 077; mkdir -p "$BUILD/secrets"; python3 -c 'import secrets; print(secrets.token_urlsafe(32))' > "$tok")
@@ -179,7 +179,7 @@ prov_registry() {  # registry do site (R2): leases + HTTP SD + site_info — reg
   incus file push "$tok" "$n/etc/ssle/registry.token" --project "$p" --mode 0600 --uid 0 --gid 0 --quiet
   cexec "$n" "$p" sh -c 'cat > /etc/systemd/system/ssle-registry.service <<UNIT
 [Unit]
-Description=SSLE registry de site (R2)
+Description=SSLE site registry (R2)
 After=network-online.target
 [Service]
 Environment=SSLE_REGISTRY_CONFIG=/opt/registry/registry.json SSLE_REGISTRY_TOKEN_FILE=/etc/ssle/registry.token PORT=5050
@@ -189,7 +189,7 @@ Restart=always
 WantedBy=multi-user.target
 UNIT
 systemctl daemon-reload && systemctl enable ssle-registry >/dev/null 2>&1 && systemctl restart ssle-registry'
-  ok "  registry de $site (token em build/secrets/registry-$site.token, 0600 no contentor)"
+  ok "  registry of $site (token in build/secrets/registry-$site.token, 0600 in the container)"
 }
 
 prov_obs() {  # Prometheus global + Alertmanager + correlator
@@ -197,23 +197,23 @@ prov_obs() {  # Prometheus global + Alertmanager + correlator
   prov_node "$n" "$p"
   cexec "$n" "$p" sh -c "dpkg -s prometheus >/dev/null 2>&1" || apt_in "$n" "$p" prometheus
   cexec "$n" "$p" sh -c "dpkg -s python3-flask >/dev/null 2>&1" || apt_in "$n" "$p" python3-flask python3
-  # alertmanager: apt se existir, senão binário oficial
+  # alertmanager: apt if available, otherwise the official binary
   if ! cexec "$n" "$p" sh -c "command -v alertmanager >/dev/null 2>&1 || dpkg -s prometheus-alertmanager >/dev/null 2>&1"; then
     if ! apt_in "$n" "$p" prometheus-alertmanager; then
-      warn "apt sem prometheus-alertmanager — a obter binário oficial"
+      warn "apt has no prometheus-alertmanager — fetching the official binary"
       cexec "$n" "$p" sh -c 'cd /tmp && A=$(uname -m); case $A in aarch64) G=arm64;; x86_64) G=amd64;; esac; \
         apt-get install -y -qq curl >/dev/null; \
         curl -sL https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-$G.tar.gz | tar xz; \
         install alertmanager-0.28.1.linux-$G/alertmanager /usr/local/bin/alertmanager'
     fi
   fi
-  # configs globais
+  # global configs
   sed "s/HOSTPLACEHOLDER/$HOST_LABEL/g" "$ROOT/monitoring/global/prometheus.yml" > "$BUILD/global-prometheus.yml"
   cpush "$BUILD/global-prometheus.yml" "$n/etc/prometheus/prometheus.yml" "$p"
   cpush "$ROOT/monitoring/global/rules.yml" "$n/etc/prometheus/rules/rules.yml" "$p"
   cpush "$BUILD/federate.json" "$n/etc/prometheus/federate.json" "$p"
   cpush "$ROOT/monitoring/global/alertmanager.yml" "$n/etc/alertmanager/alertmanager.yml" "$p"
-  # alertmanager como serviço (usa o do apt se existir; senão unit própria)
+  # alertmanager as a service (uses the apt one if present; otherwise its own unit)
   if cexec "$n" "$p" sh -c "dpkg -s prometheus-alertmanager >/dev/null 2>&1"; then
     cpush "$ROOT/monitoring/global/alertmanager.yml" "$n/etc/prometheus/alertmanager.yml" "$p"
     cexec "$n" "$p" systemctl restart prometheus-alertmanager || true
@@ -233,7 +233,7 @@ systemctl daemon-reload && systemctl enable --now alertmanager'
   # correlator
   cexec "$n" "$p" mkdir -p /opt/correlator /var/log/ssle
   cpush "$ROOT/correlator/app.py" "$n/opt/correlator/app.py" "$p"
-  cpush "$ROOT/correlator/rca.py" "$n/opt/correlator/rca.py" "$p"     # núcleo RCA (o app.py importa-o)
+  cpush "$ROOT/correlator/rca.py" "$n/opt/correlator/rca.py" "$p"     # RCA core (app.py imports it)
   cpush "$BUILD/graph.json" "$n/opt/correlator/graph.json" "$p"
   cexec "$n" "$p" sh -c 'cat > /etc/systemd/system/ssle-correlator.service <<UNIT
 [Unit]
@@ -247,8 +247,8 @@ Restart=always
 WantedBy=multi-user.target
 UNIT
 systemctl daemon-reload && systemctl enable ssle-correlator >/dev/null 2>&1 && systemctl restart ssle-correlator'
-  # node_exporter do HOST (só escuta em 127.0.0.1 — infra/t490/setup-host.sh): um proxy device do Incus
-  # com bind=instance abre 127.0.0.1:9101 DENTRO do obs e liga-o ao 127.0.0.1:9100 do host, sem expor nada
+  # HOST node_exporter (listens only on 127.0.0.1 — infra/t490/setup-host.sh): an Incus proxy device
+  # with bind=instance opens 127.0.0.1:9101 INSIDE obs and connects it to the host's 127.0.0.1:9100, exposing nothing
   if [ "$HOST_LABEL" = t490 ] && [ "$PROFILE" = full ]; then
     incus config device show "$n" --project "$p" 2>/dev/null | grep -q '^hostnode:' || \
       incus config device add "$n" hostnode proxy listen=tcp:127.0.0.1:9101 connect=tcp:127.0.0.1:9100 \
@@ -260,13 +260,13 @@ systemctl daemon-reload && systemctl enable ssle-correlator >/dev/null 2>&1 && s
   fi
   cpush "$BUILD/hypervisor.json" "$n/etc/prometheus/hypervisor.json" "$p"
   cexec "$n" "$p" systemctl restart prometheus
-  ok "  obs: prometheus global + alertmanager + correlator configurados"
+  ok "  obs: global prometheus + alertmanager + correlator configured"
   local want_grafana=0; [ "$PROFILE" = full ] && want_grafana=1
   [ "${SSLE_GRAFANA:-$want_grafana}" = 1 ] && prov_grafana "$n" "$p"
   return 0
 }
 
-prov_grafana() {  # Grafana no obs: datasources do inventário + dashboards como código (monitoring/grafana/)
+prov_grafana() {  # Grafana on obs: datasources from the inventory + dashboards as code (monitoring/grafana/)
   local n="$1" p="$2" ver=11.6.1
   if ! cexec "$n" "$p" sh -c "dpkg -s grafana 2>/dev/null | grep -q '^Version: $ver'"; then
     apt_in "$n" "$p" ca-certificates curl gnupg
@@ -281,7 +281,7 @@ prov_grafana() {  # Grafana no obs: datasources do inventário + dashboards como
   for d in "$ROOT"/monitoring/grafana/dashboards/*.json; do
     cpush "$d" "$n/var/lib/grafana/dashboards/ssle/$(basename "$d")" "$p"
   done
-  # só na rede do core (chega-se por túnel SSH a partir do host/Mac), sem anónimo, sem telemetria
+  # only on the core network (reached through an SSH tunnel from the host/Mac), no anonymous access, no telemetry
   local obs_ip; obs_ip="$(cut -f3 "$BUILD/obs.tsv")"
   cexec "$n" "$p" sh -c "mkdir -p /etc/systemd/system/grafana-server.service.d && cat > /etc/systemd/system/grafana-server.service.d/ssle.conf <<UNIT
 [Service]
@@ -289,26 +289,26 @@ Environment=GF_SERVER_HTTP_ADDR=$obs_ip GF_AUTH_ANONYMOUS_ENABLED=false GF_ANALY
 Environment=GF_ANALYTICS_CHECK_FOR_UPDATES=false GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES=false GF_NEWS_NEWS_FEED_ENABLED=false
 UNIT
 chown -R grafana:grafana /var/lib/grafana/dashboards && systemctl daemon-reload && systemctl enable grafana-server >/dev/null 2>&1 && systemctl restart grafana-server"
-  # password de admin GERADA (nunca a 'admin' por omissão), guardada fora do Git
+  # admin password GENERATED (never the default 'admin'), kept outside Git
   local pw="$BUILD/secrets/grafana-admin.pass"
   [ -s "$pw" ] || (umask 077; mkdir -p "$BUILD/secrets"; python3 -c 'import secrets; print(secrets.token_urlsafe(18))' > "$pw")
   incus file push "$pw" "$n/root/grafana-admin.pass" --project "$p" --mode 0600 --quiet
   cexec "$n" "$p" sh -c 'sleep 5; grafana cli --homepath /usr/share/grafana admin reset-admin-password "$(cat /root/grafana-admin.pass)" >/dev/null 2>&1; rm -f /root/grafana-admin.pass'
-  ok "  grafana $ver em http://$obs_ip:3000 (admin: build/secrets/grafana-admin.pass; túnel: ssh -L 3000:$obs_ip:3000 …)"
+  ok "  grafana $ver at http://$obs_ip:3000 (admin: build/secrets/grafana-admin.pass; tunnel: ssh -L 3000:$obs_ip:3000 …)"
 }
 
-prov_mail() {  # MTA do site (T3): Postfix + SpamAssassin da aula 8 — threats/t3-spam/mail-setup.sh
+prov_mail() {  # site MTA (T3): Postfix + SpamAssassin from lecture 8 — threats/t3-spam/mail-setup.sh
   local n="$1" p="$2" site="$3"
   prov_node "$n" "$p"
   local subnet; subnet="$(awk -F'\t' -v b="net-$site" '$1 == b {print $2}' "$BUILD/networks.tsv")"
   cpush "$ROOT/threats/t3-spam/mail-setup.sh" "$n/tmp/mail-setup.sh" "$p"
   cexec "$n" "$p" bash /tmp/mail-setup.sh "127.0.0.0/8 $subnet" "$site.ssle.lab"
-  ok "  mail-01 de $site: relay só para $subnet; saída para fora desligada"
+  ok "  mail-01 of $site: relay only for $subnet; outbound delivery disabled"
 }
 
 provision() {
-  [ "${SSLE_SKIP_APPS:-0}" = 1 ] && { warn "SSLE_SKIP_APPS=1 — salto o provisionamento"; return; }
-  log "provisionamento (apt + configs)"
+  [ "${SSLE_SKIP_APPS:-0}" = 1 ] && { warn "SSLE_SKIP_APPS=1 — skipping provisioning"; return; }
+  log "provisioning (apt + configs)"
   while IFS=$'\t' read -r name proj net ip exporter role site team deps _image <&3; do
     [ -z "$name" ] && continue
     case "$exporter" in
@@ -324,13 +324,13 @@ provision() {
   done 3< "$BUILD/containers.tsv"
 }
 
-# ── 5. SIEM (só no full): Wazuh all-in-one, agentes por grupo, respostas ─────────────────────────────────
-# Os passos DENTRO dos contentores são os mesmos scripts que o siem/tests/it-agents.sh prova em Docker
-# (manager e agentes reais): siem/manager/configure-manager.sh e siem/agent/install-agent.sh.
+# ── 5. SIEM (full only): Wazuh all-in-one, agents per group, responses ───────────────────────────────────
+# The steps INSIDE the containers are the same scripts that siem/tests/it-agents.sh proves in Docker
+# (real manager and agents): siem/manager/configure-manager.sh and siem/agent/install-agent.sh.
 WAZUH_VERSION=""
 siem_node() { awk -F'\t' -v r="$1" '$6 == r {print $1 "\t" $2 "\t" $4; exit}' "$BUILD/containers.tsv"; }
 
-siem_bundle() {  # siem_bundle <ficheiro "id nome"> → build/siem (o pacote que o configure-manager.sh consome)
+siem_bundle() {  # siem_bundle <"id name" file> → build/siem (the package configure-manager.sh consumes)
   local out="$BUILD/siem"; rm -rf "$out"; mkdir -p "$out"
   cp -r "$ROOT/siem/rules" "$ROOT/siem/decoders" "$ROOT/siem/lists" "$ROOT/siem/shared" "$out/"
   cp "$ROOT/siem/manager/apply.py" "$out/"
@@ -338,7 +338,7 @@ siem_bundle() {  # siem_bundle <ficheiro "id nome"> → build/siem (o pacote que
   python3 "$ROOT/infra/inventory.py" wazuh-manager --host "$HOST_LABEL" --agents "$1" > "$out/ossec-ssle.conf"
 }
 
-siem_configure() {  # siem_configure <ficheiro "id nome">
+siem_configure() {  # siem_configure <"id name" file>
   local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node siem)"
   siem_bundle "$1"
   cexec "$n" "$p" rm -rf /tmp/siem
@@ -347,29 +347,29 @@ siem_configure() {  # siem_configure <ficheiro "id nome">
   cexec "$n" "$p" bash /tmp/configure-manager.sh /tmp/siem
 }
 
-siem_manager() {  # Wazuh all-in-one como na aula 6 (manager + indexer + dashboard), ~10 min na 1.ª vez
+siem_manager() {  # Wazuh all-in-one as in lecture 6 (manager + indexer + dashboard), ~10 min the 1st time
   local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node siem)"
-  [ -n "$n" ] || { warn "inventário sem elemento role=siem — salto o SIEM"; return 1; }
+  [ -n "$n" ] || { warn "inventory has no role=siem element — skipping the SIEM"; return 1; }
   if ! cexec "$n" "$p" sh -c 'dpkg -s wazuh-manager >/dev/null 2>&1'; then
-    log "  wazuh-install.sh -a -i em $p/$n (manager+indexer+dashboard; ~10 min)"
+    log "  wazuh-install.sh -a -i on $p/$n (manager+indexer+dashboard; ~10 min)"
     apt_in "$n" "$p" curl ca-certificates
     cexec "$n" "$p" sh -c 'cd /root && curl -fsSO https://packages.wazuh.com/4.14/wazuh-install.sh && bash wazuh-install.sh -a -i'
   fi
-  # passwords GERADAS pelo instalador → build/secrets (fora do Git), 0600; ficam também no tar, só root, no contentor
+  # passwords GENERATED by the installer → build/secrets (outside Git), 0600; also kept in the tar, root only, in the container
   local pw="$BUILD/secrets/wazuh-passwords.txt"
   [ -s "$pw" ] || (umask 077; mkdir -p "$BUILD/secrets"
     cexec "$n" "$p" tar -O -xf /root/wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt > "$pw")
-  # LimitNOFILE do serviço systemd (65536 por omissão) < analysisd.rlimit_nofile (458752) → EPERM em contentores
+  # LimitNOFILE of the systemd service (65536 by default) < analysisd.rlimit_nofile (458752) → EPERM in containers
   cexec "$n" "$p" sh -c 'mkdir -p /etc/systemd/system/wazuh-manager.service.d && cat > /etc/systemd/system/wazuh-manager.service.d/nofile.conf <<UNIT
 [Service]
 LimitNOFILE=524288
 UNIT
 systemctl daemon-reload'
   WAZUH_VERSION="$(cexec "$n" "$p" dpkg-query -W -f='${Version}' wazuh-manager)"
-  ok "  wazuh-manager $WAZUH_VERSION em $ip (passwords: build/secrets/wazuh-passwords.txt; dashboard: ssh -L 8443:$ip:443 …)"
+  ok "  wazuh-manager $WAZUH_VERSION at $ip (passwords: build/secrets/wazuh-passwords.txt; dashboard: ssh -L 8443:$ip:443 …)"
 }
 
-siem_agents() {  # um agente por elemento (menos o próprio SIEM), com o grupo do site e o do papel
+siem_agents() {  # one agent per element (except the SIEM itself), with the site group and the role group
   local wip; wip="$(siem_node siem | cut -f3)"
   while IFS=$'\t' read -r agent proj inst _ip groups <&3; do
     [ -z "$agent" ] && continue
@@ -386,53 +386,53 @@ siem_agents() {  # um agente por elemento (menos o próprio SIEM), com o grupo d
   done 3< "$BUILD/wazuh-agents.tsv"
 }
 
-siem_responder() {  # API do Incus só na bridge do core + certificado RESTRITO aos site-* (menor privilégio)
+siem_responder() {  # Incus API only on the core bridge + certificate RESTRICTED to site-* (least privilege)
   local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node responder)"
   [ -n "$n" ] || return 0
   local want; want="$(awk -F'\t' '$1 == "net-core" {print $3}' "$BUILD/networks.tsv"):8443"
   local addr; addr="$(incus config get core.https_address </dev/null)"
   if [ -z "$addr" ]; then
-    incus config set core.https_address "$want" </dev/null; ok "  API do Incus só em $want (bridge do core)"
+    incus config set core.https_address "$want" </dev/null; ok "  Incus API only on $want (core bridge)"
   elif [ "$addr" != "$want" ]; then
-    warn "core.https_address já é '$addr' (não fui eu: não mexo) — quarentena por configurar"; return 0
+    warn "core.https_address is already '$addr' (not set by me: left alone) — quarantine not configured"; return 0
   fi
   cexec "$n" "$p" sh -c 'command -v incus >/dev/null' || apt_in "$n" "$p" incus-client
   if ! cexec "$n" "$p" sh -c 'incus remote list --format csv 2>/dev/null | grep -q "^t490,"'; then
-    incus config trust revoke-token responder </dev/null >/dev/null 2>&1 || true      # token pendente antigo
+    incus config trust revoke-token responder </dev/null >/dev/null 2>&1 || true      # old pending token
     local tok; tok="$(incus config trust add responder --restricted --projects site-avr,site-opo,site-lis </dev/null | tail -1)"
     cexec "$n" "$p" incus remote add t490 "$tok" >/dev/null
   fi
-  # prova do menor privilégio: vê os sites, NÃO vê o core. Se vir o core → retira o certificado (falha fechada)
-  if cexec "$n" "$p" incus list t490: --project site-opo --format csv -c n 2>/dev/null | grep -q .; then ok "  responder vê site-opo"
-  else warn "responder não chega à API do Incus (quarentena não vai funcionar)"; fi
-  # incus list retorna 0 com output vazio em projetos restritos — usar incus info num contentor concreto
+  # least-privilege proof: sees the sites, does NOT see the core. If it sees the core → remove the certificate (fail closed)
+  if cexec "$n" "$p" incus list t490: --project site-opo --format csv -c n 2>/dev/null | grep -q .; then ok "  responder sees site-opo"
+  else warn "responder cannot reach the Incus API (quarantine will not work)"; fi
+  # incus list returns 0 with empty output on restricted projects — use incus info on a concrete container
   if cexec "$n" "$p" incus info t490:obs --project core >/dev/null 2>&1; then
-    warn "o certificado do responder VÊ o projeto core — a retirá-lo (falha fechada)"
+    warn "the responder certificate SEES the core project — removing it (fail closed)"
     local fp; fp="$(incus config trust list --format csv </dev/null | awk -F, '$1 == "responder" {print $4}')"
     [ -n "$fp" ] && incus config trust remove "$fp" </dev/null
-  else ok "  responder NÃO vê o projeto core (certificado restrito aos site-*)"; fi
+  else ok "  responder does NOT see the core project (certificate restricted to site-*)"; fi
 }
 
 siem() {
   [ "$PROFILE" = full ] || return 0
   [ "${SSLE_SKIP_APPS:-0}" = 1 ] && return 0
-  log "SIEM (Wazuh) — manager, agentes por grupo, respostas"
+  log "SIEM (Wazuh) — manager, agents per group, responses"
   python3 "$ROOT/infra/inventory.py" wazuh-agents --host "$HOST_LABEL" > "$BUILD/wazuh-agents.tsv"
   siem_manager || return 0
   : > "$BUILD/wazuh-agent-ids.txt"
-  siem_configure "$BUILD/wazuh-agent-ids.txt"           # 1.ª passagem: regras/grupos ANTES das inscrições
+  siem_configure "$BUILD/wazuh-agent-ids.txt"           # 1st pass: rules/groups BEFORE enrolment
   siem_agents
   local n p ip; IFS=$'\t' read -r n p ip <<<"$(siem_node siem)"
-  # só as colunas id e nome do client.keys saem do contentor (as chaves ficam lá)
+  # only the id and name columns of client.keys leave the container (the keys stay there)
   cexec "$n" "$p" sh -c "cut -d' ' -f1,2 /var/ossec/etc/client.keys" > "$BUILD/wazuh-agent-ids.txt"
-  siem_configure "$BUILD/wazuh-agent-ids.txt"           # 2.ª passagem: respostas com os IDs reais
+  siem_configure "$BUILD/wazuh-agent-ids.txt"           # 2nd pass: responses with the real IDs
   siem_responder
-  ok "  SIEM: $(grep -c . "$BUILD/wazuh-agent-ids.txt") agentes inscritos"
+  ok "  SIEM: $(grep -c . "$BUILD/wazuh-agent-ids.txt") agents enrolled"
 }
 
 main() {
   log "=== SSLE P1 deploy (profile=$PROFILE, image=$IMAGE, host=$HOST_LABEL) ==="
   render; projects; networks; containers; provision; siem
-  log "=== concluído. 'incus list --all-projects' para ver a frota. ==="
+  log "=== done. 'incus list --all-projects' to see the fleet. ==="
 }
 main "$@"

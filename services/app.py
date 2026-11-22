@@ -64,7 +64,7 @@ class Histogram:
     """Minimal cumulative histogram in Prometheus exposition format."""
 
     def __init__(self):
-        self.counts = [0] * (len(BUCKETS) + 1)   # último = +Inf
+        self.counts = [0] * (len(BUCKETS) + 1)   # last = +Inf
         self.total = 0.0
         self.n = 0
 
