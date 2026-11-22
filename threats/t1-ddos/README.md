@@ -12,7 +12,8 @@
      to the `ing-01` incident (`avr`) following the inventory graph: 1 incident, root cause `ing-01`.
   Baseline = legitimate sensor telemetry (`sen-0x` → `POST /ingest` every ~5 s).
   Wazuh (profile `full`) — per-origin frequency (rule 110100) and volume (110101).
-- **Response:** per-origin rate-limit, `firewall-drop` with timeout, graceful degradation (503), scale replica.
+- **Response (implemented):** `ssle-ratelimit` (nft) — per origin from 110100, and for **every** origin (each with
+  its own bucket) from 110101/110110; 300 s timeout. **Planned:** graceful degradation (503) and a 2nd replica.
   The per-origin responses **require** that inter-site traffic does **not** pass through NAT (see post-mortem).
 - **Measured PoC:** `bash measure.sh <n> [duration_s=120] [concurrency=20]` — runs [`run.sh`](run.sh), waits for
   recovery and computes MTTD/impact/recovery from the `ALERTS` series and sensor metrics.
@@ -22,7 +23,14 @@
 ## Run
 ```bash
 # baseline: let sensors send ≥ 20 min before the 1st run
-bash threats/t1-ddos/measure.sh 1 120 20
+bash threats/t1-ddos/measure.sh 4 120 20
+# distributed variant: 7 clients on each of 3 origins (3 sites), 240 s, separate evidence folder
+EVROOT=threats/t1-ddos/evidence-ddos ORIGINS="host site-opo/sen-02 site-lis/web-01" \
+  bash threats/t1-ddos/measure.sh 12 240 7
 # stimulus only, no measurement:
 bash threats/t1-ddos/run.sh 10.10.1.30 120 20
 ```
+
+Evidence: [`evidence/`](evidence/) (staging runs 1–3, T490 runs 4–9), [`evidence-22nov/`](evidence-22nov/)
+(run 10, the live figure of the report) and [`evidence-ddos/`](evidence-ddos/) (3 origins: run 11 before and
+run 12 after the fix of the "all origins" response).

@@ -20,39 +20,45 @@ Definitions (same as in the post-mortem):
   ClientLatencySLO retro = 1st instant where the SENSOR p95 stays > SLO for 60 s (simulates the
                  for: 1m of the rule on the stored series) - T0; for runs prior to the rule.
 
+  SIEM response = 1st "RATELIMIT add" in the active-response log of the target, per rule and target - T0
+
 --offline: does not talk to Prometheus or Incus; re-reads saved JSONs in run-N/ (queries that
 did not exist at the time remain empty) and the "soc" block from the previous summary.json.
+--keep: runs that already have a summary.json are only read back into the table (neither re-queried
+nor rewritten) — once retention has passed, re-querying would overwrite the evidence with nothing.
 """
-import json, os, statistics, subprocess, sys, urllib.parse, urllib.request
+import json, os, re, statistics, subprocess, sys, urllib.parse, urllib.request
 from datetime import datetime, timezone
 
 PROM_AVR = os.environ.get("PROM_AVR", "http://10.10.1.10:9090")
 PROM_OPO = os.environ.get("PROM_OPO", "http://10.10.2.10:9090")
 TARGET = os.environ.get("TARGET", "ing-01")
-SLO = 0.1          # s — o mesmo do ServiceLatencyHigh
+SLO = 0.1          # s — same as ServiceLatencyHigh
 STEP = 5
 SEL = 'instance_name="%s"' % TARGET
 RATE = 'instance:http_requests:rate1m{%s}' % SEL
 
 QUERIES = {
-    # nome: (prometheus, expressão)
+    # name: (prometheus, expression)
     "alerts-TrafficAnomaly-pending": (PROM_AVR, 'ALERTS{alertname="TrafficAnomaly",%s,alertstate="pending"}' % SEL),
     "alerts-TrafficAnomaly-firing": (PROM_AVR, 'ALERTS{alertname="TrafficAnomaly",%s,alertstate="firing"}' % SEL),
     "alerts-ServiceLatencyHigh-pending": (PROM_AVR, 'ALERTS{alertname="ServiceLatencyHigh",%s,alertstate="pending"}' % SEL),
     "alerts-ServiceLatencyHigh-firing": (PROM_AVR, 'ALERTS{alertname="ServiceLatencyHigh",%s,alertstate="firing"}' % SEL),
     "rate1m": (PROM_AVR, RATE),
     "p95-server": (PROM_AVR, 'instance:http_request_duration_seconds:p95_1m{%s}' % SEL),
-    # contraprova ao vivo: z média/desvio-padrão (versão antiga) vs z robusto (atual)
+    # live counterproof: mean/std-dev z (old version) vs robust z (current)
     "z-meanstd": (PROM_AVR, 'abs(%s - avg_over_time(%s[1h])) / clamp_min(stddev_over_time(%s[1h]), 0.5)' % (RATE, RATE, RATE)),
     "z-robust": (PROM_AVR, 'abs(%s - quantile_over_time(0.5, %s[1h])) / clamp_min((quantile_over_time(0.75, %s[1h]) - quantile_over_time(0.25, %s[1h])) / 1.349, 0.5)' % (RATE, RATE, RATE, RATE)),
-    # impacto no cliente legítimo (sensor de opo → ing-01 de avr)
+    # impact on the legitimate client (opo sensor → avr ing-01)
     "p95-sensor": (PROM_OPO, 'histogram_quantile(0.95, sum by (le) (rate(ssle_sensor_upstream_duration_seconds_bucket[1m])))'),
     "sensor-readings": (PROM_OPO, 'sum by (result) (ssle_sensor_readings_total)'),
-    # SLO do lado do cliente (regra criada depois das execuções de staging de 06/11)
+    # client-side SLO (rule created after the 06/11 staging runs)
     "alerts-ClientLatencySLO-pending": (PROM_OPO, 'ALERTS{alertname="ClientLatencySLO",alertstate="pending"}'),
     "alerts-ClientLatencySLO-firing": (PROM_OPO, 'ALERTS{alertname="ClientLatencySLO",alertstate="firing"}'),
 }
 OFFLINE = False
+KEEP = False
+AR_ADD = re.compile(r"^(\S+) ssle-ratelimit\[[^\]]+\]: RATELIMIT add rule=(\d+) (.*?) →")
 
 
 def prom_range(base, expr, start, end):
@@ -62,7 +68,7 @@ def prom_range(base, expr, start, end):
 
 
 def points(doc):
-    """[(ts, valor)] de todas as séries (NaN/Inf descartados)."""
+    """[(ts, value)] across all series (NaN/Inf discarded)."""
     out = []
     for s in doc.get("data", {}).get("result", []):
         for ts, v in s.get("values", []):
@@ -91,7 +97,7 @@ def last(pts, pred=lambda v: True, lo=None):
 
 
 def sustained(pts, thr, need_s, lo, hi):
-    """1.º instante em que v>thr se mantém durante ≥ need_s (simula o for:)."""
+    """1st instant at which v>thr has held for ≥ need_s (simulates the for:)."""
     run_start = None
     for ts, v in pts:
         if ts < lo or ts > hi:
@@ -117,7 +123,7 @@ def counter_delta(doc, result, t0, te):
         before = [v for ts, v in vals if ts <= t0] or [vals[0][1]]
         after = [v for ts, v in vals if ts <= te] or [vals[-1][1]]
         d = after[-1] - before[-1]
-        return int(d if d >= 0 else after[-1])   # reset do contador → conta desde 0
+        return int(d if d >= 0 else after[-1])   # counter reset → count from 0
     return 0
 
 
@@ -141,7 +147,28 @@ def incidents(t0, te):
     return out
 
 
+def responses(run_dir, t0, te):
+    """First "RATELIMIT add" per rule and target in the saved AR log (ar.log), as seconds after T0."""
+    out = {}
+    try:
+        with open(os.path.join(run_dir, "ar.log")) as fh:
+            for line in fh:
+                m = AR_ADD.match(line.strip())
+                if not m:
+                    continue
+                ts = datetime.fromisoformat(m.group(1)).timestamp()
+                key = "%s %s" % (m.group(2), m.group(3))
+                if t0 <= ts <= te and key not in out:
+                    out[key] = round(ts - t0, 1)
+    except OSError:
+        pass
+    return out
+
+
 def analyze(run_dir):
+    if KEEP and os.path.exists(os.path.join(run_dir, "summary.json")):
+        with open(os.path.join(run_dir, "summary.json")) as fh:
+            return json.load(fh)
     env = {}
     with open(os.path.join(run_dir, "times.env")) as fh:
         for line in fh:
@@ -171,7 +198,7 @@ def analyze(run_dir):
     lh_fire = first(p["alerts-ServiceLatencyHigh-firing"], lo=t0 - 30)
     win = lambda k: [v for ts, v in p[k] if t0 <= ts <= t1 + 60]
     zr, zm = win("z-robust"), win("z-meanstd")
-    legacy_fire = sustained(p["z-meanstd"], 3, 60, t0, te)        # a regra antiga teria disparado?
+    legacy_fire = sustained(p["z-meanstd"], 3, 60, t0, te)        # would the old rule have fired?
     imp_first = first(p["p95-sensor"], lambda v: v > SLO, lo=t0)
     imp_last = last(p["p95-sensor"], lambda v: v > SLO, lo=t0)
     err = counter_delta(docs["sensor-readings"], "error", t0, te)
@@ -195,6 +222,7 @@ def analyze(run_dir):
         "run": n,
         "t0": datetime.fromtimestamp(t0, timezone.utc).isoformat(),
         "stimulus_s": round(t1 - t0), "concurrency": int(env.get("CONC", 0)),
+        "origins": env.get("ORIGINS", "host").strip('"'),
         "peak_rate_rps": round(max(win("rate1m") or [0]), 1),
         "server_p95_max_ms": round(1000 * max(win("p95-server") or [0]), 1),
         "TrafficAnomaly": {"first_signal_s": delta(ta_pend, t0), "mttd_s": delta(ta_fire, t0),
@@ -212,31 +240,32 @@ def analyze(run_dir):
         "soc": {"mttd_s": delta(soc.get("_epoch"), t0), "root_cause": soc.get("root_cause"),
                 "alerts": soc.get("alert_names"), "raw_alert_count": soc.get("raw_alert_count"),
                 "cross_site": soc.get("cross_site")},
+        "siem_responses": responses(run_dir, t0, te),
     }
     with open(os.path.join(run_dir, "summary.json"), "w") as fh:
         json.dump(summary, fh, indent=2, ensure_ascii=False)
     return summary
 
 
-COLS = [  # (cabeçalho, extrator)
+COLS = [  # (header, extractor)
     ("run", lambda s: s["run"]),
     ("t0", lambda s: s["t0"][11:19]),
-    ("taxa_pico_rps", lambda s: s["peak_rate_rps"]),
-    ("1o_sinal_s", lambda s: s["TrafficAnomaly"]["first_signal_s"]),
+    ("peak_rate_rps", lambda s: s["peak_rate_rps"]),
+    ("1st_signal_s", lambda s: s["TrafficAnomaly"]["first_signal_s"]),
     ("mttd_TrafficAnomaly_s", lambda s: s["TrafficAnomaly"]["mttd_s"]),
     ("mttd_SOC_s", lambda s: s["soc"]["mttd_s"]),
-    ("z_robusto_max", lambda s: s["z_max"]["robust"]),
-    ("z_media_desvio_max", lambda s: s["z_max"]["mean_std"]),
-    ("media_desvio_dispararia", lambda s: s["z_max"]["mean_std_would_fire"]),
-    ("p95_servidor_max_ms", lambda s: s["server_p95_max_ms"]),
+    ("robust_z_max", lambda s: s["z_max"]["robust"]),
+    ("mean_std_z_max", lambda s: s["z_max"]["mean_std"]),
+    ("mean_std_would_fire", lambda s: s["z_max"]["mean_std_would_fire"]),
+    ("server_p95_max_ms", lambda s: s["server_p95_max_ms"]),
     ("ServiceLatencyHigh", lambda s: s["ServiceLatencyHigh"]["fired"]),
     ("mttd_ClientLatencySLO_s", lambda s: s["ClientLatencySLO"]["mttd_s"]),
     ("ClientLatencySLO_retro_s", lambda s: s["ClientLatencySLO"]["retro_mttd_s"]),
-    ("p95_sensor_max_ms", lambda s: s["impact"]["sensor_p95_max_ms"]),
-    ("tempo_ate_impacto_s", lambda s: s["impact"]["time_to_impact_s"]),
-    ("recuperacao_apos_estimulo_s", lambda s: s["impact"]["recovery_after_stimulus_s"]),
-    ("leituras_perdidas", lambda s: s["impact"]["sensor_readings_lost"]),
-    ("causa_raiz_SOC", lambda s: (s["soc"]["root_cause"] or "—").split(":")[-1]),
+    ("sensor_p95_max_ms", lambda s: s["impact"]["sensor_p95_max_ms"]),
+    ("time_to_impact_s", lambda s: s["impact"]["time_to_impact_s"]),
+    ("recovery_after_stimulus_s", lambda s: s["impact"]["recovery_after_stimulus_s"]),
+    ("lost_readings", lambda s: s["impact"]["sensor_readings_lost"]),
+    ("root_cause_SOC", lambda s: (s["soc"]["root_cause"] or "—").split(":")[-1]),
 ]
 
 
@@ -255,7 +284,7 @@ def main(dirs):
         vals = [f(s) for s in sums]
         nums = [v for v in vals if isinstance(v, (int, float)) and not isinstance(v, bool)]
         if c in ("run", "t0"):
-            row.append("**média ± σ**" if c == "run" else "")
+            row.append("**mean ± σ**" if c == "run" else "")
         elif len(nums) == len(vals) and nums:
             sd = statistics.stdev(nums) if len(nums) > 1 else 0.0
             row.append("%.1f ± %.1f" % (statistics.mean(nums), sd))
@@ -269,8 +298,12 @@ def main(dirs):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if args and args[0] == "--offline":
-        OFFLINE, args = True, args[1:]
+    while args and args[0] in ("--offline", "--keep"):
+        if args[0] == "--offline":
+            OFFLINE = True
+        else:
+            KEEP = True
+        args = args[1:]
     if not args:
-        sys.exit("uso: analyze.py [--offline] <evidence/run-N> [...]")
+        sys.exit("usage: analyze.py [--offline] [--keep] <evidence/run-N> [...]")
     main(args)
