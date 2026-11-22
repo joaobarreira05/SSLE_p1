@@ -1,29 +1,29 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Instala e inscreve o agente Wazuh num elemento (corre DENTRO do contentor Debian, como root).
-# Chamado pelo infra/deploy.sh (perfil full, via incus exec) e pelo siem/tests/it-agents.sh (via docker
-# exec) — o mesmo código nos dois sítios, para o teste valer pelo deploy.
+# Installs and enrols the Wazuh agent on an element (runs INSIDE the Debian container, as root).
+# Called by infra/deploy.sh (full profile, via incus exec) and by siem/tests/it-agents.sh (via docker
+# exec) — the same code in both places, so that the test stands for the deploy.
 #
-#   install-agent.sh <manager_ip> <nome_agente> <grupos> <papel> <site> <instância> [host]
-#   ex.: install-agent.sh 10.10.0.30 opo-sen-01 site-opo,role-sensor sensor opo sen-01 t490
+#   install-agent.sh <manager_ip> <agent_name> <groups> <role> <site> <instance> [host]
+#   e.g.: install-agent.sh 10.10.0.30 opo-sen-01 site-opo,role-sensor sensor opo sen-01 t490
 #
-# Pacotes extra por papel: rsyslog (auth.log/mail.log: o Debian trixie só tem journald), jq (respostas),
-# nftables (ssle-ratelimit nos serviços expostos). Respostas próprias: se existirem em /tmp/ssle-ar/*.sh,
-# vão para /var/ossec/active-response/bin (root:wazuh 750). Reentrante: se o agente já está instalado e
-# inscrito, só reaplica a configuração local e reinicia.
+# Extra packages per role: rsyslog (auth.log/mail.log: Debian trixie only has journald), jq (responses),
+# nftables (ssle-ratelimit on exposed services). Own responses: if present in /tmp/ssle-ar/*.sh, they go
+# to /var/ossec/active-response/bin (root:wazuh 750). Re-entrant: if the agent is already installed and
+# enrolled, it only reapplies the local configuration and restarts.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
-MANAGER="${1:?manager_ip}"; NAME="${2:?nome}"; GROUPS_="${3:?grupos}"; ROLE="${4:?papel}"
-SITE="${5:?site}"; INST="${6:?instância}"; HOSTL="${7:-t490}"
-VER="${WAZUH_AGENT_VERSION:-4.14.10-1}"          # = versão do manager (o agente nunca pode ser mais novo)
+MANAGER="${1:?manager_ip}"; NAME="${2:?name}"; GROUPS_="${3:?groups}"; ROLE="${4:?role}"
+SITE="${5:?site}"; INST="${6:?instance}"; HOSTL="${7:-t490}"
+VER="${WAZUH_AGENT_VERSION:-4.14.10-1}"          # = manager version (the agent can never be newer)
 export DEBIAN_FRONTEND=noninteractive
 APT=(apt-get -y -qq -o Dpkg::Use-Pty=0 --no-install-recommends)
 say() { echo "[agent:$NAME] $*"; }
 
 extra=(jq)
 case "$ROLE" in
-  sensor) extra+=(rsyslog iproute2) ;;         # iproute2: o "ss" do comando da 533 (agent.conf role-sensor)
-  mail) extra+=(rsyslog iptables) ;;           # iptables: o firewall-drop do Wazuh (110302)
+  sensor) extra+=(rsyslog iproute2) ;;         # iproute2: the "ss" of the 533 command (role-sensor agent.conf)
+  mail) extra+=(rsyslog iptables) ;;           # iptables: Wazuh firewall-drop (110302)
   ingestion|web) extra+=(nftables) ;;
 esac
 need=()
@@ -38,14 +38,14 @@ if ! dpkg -s wazuh-agent >/dev/null 2>&1; then
   echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
     > /etc/apt/sources.list.d/wazuh.list
   apt-get update -qq
-  # variáveis de deployment do pacote: o postinst escreve o manager e a inscrição (authd, porta 1515) com grupos
+  # package deployment variables: postinst writes the manager and the enrolment (authd, port 1515) with groups
   WAZUH_MANAGER="$MANAGER" WAZUH_AGENT_NAME="$NAME" WAZUH_AGENT_GROUP="$GROUPS_" \
     "${APT[@]}" install "wazuh-agent=$VER" >/dev/null
-  apt-mark hold wazuh-agent >/dev/null          # um apt upgrade não pode pôr o agente à frente do manager
-  say "wazuh-agent $VER instalado (manager $MANAGER, grupos $GROUPS_)"
+  apt-mark hold wazuh-agent >/dev/null          # an apt upgrade must not move the agent ahead of the manager
+  say "wazuh-agent $VER installed (manager $MANAGER, groups $GROUPS_)"
 fi
 
-# identidade = a do Prometheus (R1): labels no ossec.conf do próprio agente, entre marcadores (idempotente)
+# identity = the Prometheus one (R1): labels in the agent's own ossec.conf, between markers (idempotent)
 conf=/var/ossec/etc/ossec.conf
 sed -i '/<!-- SSLE:BEGIN -->/,/<!-- SSLE:END -->/d' "$conf"
 cat >> "$conf" <<EOF
@@ -62,27 +62,33 @@ cat >> "$conf" <<EOF
 <!-- SSLE:END -->
 EOF
 
-# comandos vindos do manager (agent.conf do role-sensor: "netstat listening ports") só correm com isto
+# The package's default ossec.conf also runs "netstat -tulpn" under the alias "netstat listening ports" (every
+# 360 s). With two commands on one alias, check_diff compares one's output with the other's and 533 → 110202
+# fires on every switch, with no port change at all (false positives measured on the T490 on 22/11). The only
+# port check is the role-sensor agent.conf one, so the default block goes.
+perl -0pi -e 's#\n[ \t]*<localfile>\s*<log_format>full_command</log_format>\s*<command>netstat -tulpn[^<]*</command>\s*<alias>netstat listening ports</alias>\s*<frequency>\d+</frequency>\s*</localfile>##g' "$conf"
+
+# commands coming from the manager (role-sensor agent.conf: "netstat listening ports") only run with this
 lio=/var/ossec/etc/local_internal_options.conf
 if [ "$ROLE" = sensor ]; then
   grep -q '^logcollector.remote_commands=1' "$lio" 2>/dev/null || echo 'logcollector.remote_commands=1' >> "$lio"
 fi
 
-# respostas próprias
+# own responses
 if compgen -G "/tmp/ssle-ar/*.sh" >/dev/null; then
   for f in /tmp/ssle-ar/*.sh; do
     install -o root -g wazuh -m 750 "$f" "/var/ossec/active-response/bin/$(basename "$f")"
   done
-  say "respostas: $(cd /tmp/ssle-ar && echo *.sh)"
+  say "responses: $(cd /tmp/ssle-ar && echo *.sh)"
 fi
 if [ -s /tmp/ssle-fleet.tsv ]; then install -o root -g wazuh -m 640 /tmp/ssle-fleet.tsv /var/ossec/etc/ssle-fleet.tsv; fi
-# o logcollector só lê o que chega DEPOIS de abrir o ficheiro, e o rsyslog só cria o auth.log/mail.log na
-# 1.ª mensagem: sem o touch, as primeiras linhas perdem-se num restart do agente (visto no it-agents.sh)
+# logcollector only reads what arrives AFTER it opens the file, and rsyslog only creates auth.log/mail.log on
+# the 1st message: without the touch, the first lines are lost on an agent restart (seen in it-agents.sh)
 mkdir -p /var/log/ssle
 case "$ROLE" in
   sensor)
     touch /var/log/auth.log
-    # o FIM em tempo real só vigia pastas que existem quando o agente arranca (110201)
+    # real-time FIM only watches directories that exist when the agent starts (110201)
     mkdir -p /etc/cron.d /etc/systemd/system; install -d -m 700 /root/.ssh ;;
   mail) touch /var/log/mail.log ;;
   ingestion|web) touch /var/log/ssle/access.log ;;
@@ -92,8 +98,8 @@ esac
 if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
   case "$ROLE" in sensor|mail) systemctl enable --now rsyslog >/dev/null 2>&1 || true ;; esac
   systemctl daemon-reload; systemctl enable wazuh-agent >/dev/null 2>&1; systemctl restart wazuh-agent
-else   # contentor sem systemd (teste em Docker)
+else   # container without systemd (Docker test)
   case "$ROLE" in sensor|mail) pgrep -x rsyslogd >/dev/null || rsyslogd 2>/dev/null || true ;; esac
   /var/ossec/bin/wazuh-control restart >/dev/null 2>&1 || /var/ossec/bin/wazuh-control start >/dev/null
 fi
-say "agente a correr ($(/var/ossec/bin/wazuh-control status 2>/dev/null | grep -c 'is running') processos)"
+say "agent running ($(/var/ossec/bin/wazuh-control status 2>/dev/null | grep -c 'is running') processes)"

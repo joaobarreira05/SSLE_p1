@@ -159,6 +159,16 @@ RESULT: SIEM integration OK ✅        (34 checks; automatic unblock, alert 652,
 **Learn:** logtest tests **one** session from **one** origin. Everything that depends on multiple agents,
 real-time (`ignore`, reloads) or the agent's filesystem only surfaces with real agents.
 
+### What only the live lab caught (T490, 22/11/2026)
+
+| Defect | How it was found | Fix |
+|---|---|---|
+| The "all origins" mode of `ssle-ratelimit` (110101/110110) **never engaged**, in any run since 12/11 | T1 with **3 origins on 3 sites** (`threats/t1-ddos/evidence-ddos/run-11`): `web-01` was never limited; `active-responses.log` has only `abort` and `del` for "all origins", never an `add`. 110100 always puts the attacker's IP in the interval set first, and `0.0.0.0/0` overlaps it: `nft` refuses (`interval overlaps with an existing one`), the script dies under `set -e` **before logging**, and `wazuh-execd` keeps the key as active, answering `abort` from then on. Silent: with one origin the outcome did not change | own set `limited_all` for the "all" mode, both sets `goto` the same `rl` chain (one bucket per packet); every `nft` failure is now logged (`RATELIMIT add FAILED`); regression case in `test-ar.sh` (origin already limited + 110110); re-run with 3 origins (`run-12`): all three limited |
+| **110202 false positives** every few minutes on the sensors and on `mail-01`, with no port change | the attack-free window (`evaluation/fp-window.sh`): the agent package's default `ossec.conf` also runs `netstat -tulpn` under the alias `netstat listening ports` (every 360 s); with two commands on one alias, `check_diff` compares one's output with the other's | `install-agent.sh` removes the default block (the only port check is the `role-sensor` one); static check in `it-agents.sh` |
+
+**Learn:** the cases and the agents proved that each rule **fires**; only a run shaped like the real
+attack (several origins) and an hours-long window **without** attacks showed what fires wrongly or acts on nothing.
+
 ## 5. What can only be tested in the lab (T490, full profile)
 
 - **Real `incus pause`** (the responder's restricted certificate, `infra/deploy.sh` → `siem_responder`) and the
