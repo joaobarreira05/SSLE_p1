@@ -1,7 +1,7 @@
-# SÓ PARA TESTE (não é deployada): a versão ANTERIOR do TrafficAnomaly — z-score com
-# média/desvio-padrão da última hora — aplicada à mesma série por instância.
-# Serve de contraprova em anomaly_test.yml: dispara no 1.º ataque, mas NÃO no 2.º,
-# porque o 1.º ataque inflacionou o desvio-padrão ("a baseline aprendeu o ataque").
+# TEST ONLY (not deployed): the PREVIOUS version of TrafficAnomaly — z-score with the
+# mean/std-dev of the last hour — applied to the same per-instance series.
+# Serves as the counterproof in anomaly_test.yml: fires on the 1st attack but NOT on the 2nd,
+# because the 1st attack inflated the std-dev ("the baseline learnt the attack").
 groups:
 - name: legacy-anomalies
   rules:

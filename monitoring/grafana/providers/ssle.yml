@@ -1,6 +1,6 @@
-# Provider de dashboards: o Grafana lê os JSON desta pasta no arranque (e a cada 30 s).
-# No core/obs o deploy copia monitoring/grafana/dashboards/ para /var/lib/grafana/dashboards/ssle.
-# allowUiUpdates: false — a fonte é o Git (build_dashboards.py); mudanças na UI não se guardam.
+# Dashboard provider: Grafana reads the JSON files in this folder at startup (and every 30 s).
+# On core/obs the deploy copies monitoring/grafana/dashboards/ to /var/lib/grafana/dashboards/ssle.
+# allowUiUpdates: false — the source is Git (build_dashboards.py); changes made in the UI are not saved.
 apiVersion: 1
 providers:
   - name: ssle

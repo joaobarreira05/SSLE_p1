@@ -1,6 +1,6 @@
 # promtool test rules monitoring/tests/anomaly_test.yml
-# Cenário (1 amostra/min): 1 h de telemetria legítima a 0,2 pedidos/s (1 sensor a cada 5 s),
-# ATAQUE A de 10 min a 20 pedidos/s (t=60..69), 20 min de calma, ATAQUE B (t=90..95).
+# Scenario (1 sample/min): 1 h of legitimate telemetry at 0.2 requests/s (1 sensor every 5 s),
+# ATTACK A of 10 min at 20 requests/s (t=60..69), 20 min of calm, ATTACK B (t=90..95).
 rule_files:
   - ../site/rules/anomalies.yml
   - legacy/anomaly_mean_std.yml
@@ -11,11 +11,11 @@ tests:
       - series: 'instance:http_requests:rate1m{region="pt",site="avr",host="mac-m2",instance_name="ing-01",role="ingestion",service="ingestion",team="ops-avr"}'
         values: '0.2x59 20x9 0.2x19 20x5'
     alert_rule_test:
-      # em repouso: nada
+      # at rest: nothing
       - eval_time: 59m
         alertname: TrafficAnomaly
         exp_alerts: []
-      # ataque A: o robusto dispara 1 min depois (for: 1m)…
+      # attack A: the robust rule fires 1 min later (for: 1m)…
       - eval_time: 61m
         alertname: TrafficAnomaly
         exp_alerts:
@@ -30,27 +30,27 @@ tests:
               service: ingestion
               team: ops-avr
             exp_annotations:
-              summary: "Tráfego anómalo em ing-01 (ingestion) @ avr: 39.6 desvios robustos"
+              summary: "Anomalous traffic on ing-01 (ingestion) @ avr: 39.6 robust deviations"
               identity: "ssle:pt:avr:mac-m2:ing-01"
-      # …e a versão média/desvio-padrão também (até aqui as duas concordam)
+      # …and so does the mean/std-dev version (so far the two agree)
       - eval_time: 61m
         alertname: TrafficAnomalyMeanStd
         exp_alerts:
           - exp_labels: *ing01
-      # ataque B, 20 min depois do A: o robusto AINDA dispara…
+      # attack B, 20 min after A: the robust rule STILL fires…
       - eval_time: 91m
         alertname: TrafficAnomaly
         exp_alerts:
           - exp_labels: *ing01
             exp_annotations:
-              summary: "Tráfego anómalo em ing-01 (ingestion) @ avr: 39.6 desvios robustos"
+              summary: "Anomalous traffic on ing-01 (ingestion) @ avr: 39.6 robust deviations"
               identity: "ssle:pt:avr:mac-m2:ing-01"
-      # …e a média/desvio-padrão NÃO (z≈2,0: o ataque A inflacionou σ) → falso negativo evitado
+      # …and mean/std-dev does NOT (z≈2.0: attack A inflated σ) → false negative avoided
       - eval_time: 91m
         alertname: TrafficAnomalyMeanStd
         exp_alerts: []
 
-  # Camada absoluta: SLO de latência (p95 > 100 ms durante 1 min)
+  # Absolute layer: latency SLO (p95 > 100 ms for 1 min)
   - interval: 15s
     input_series:
       - series: 'instance:http_request_duration_seconds:p95_1m{region="pt",site="avr",host="mac-m2",instance_name="ing-01",role="ingestion",service="ingestion",team="ops-avr"}'
@@ -73,5 +73,5 @@ tests:
               service: ingestion
               team: ops-avr
             exp_annotations:
-              summary: "Latência p95 de ing-01 (ingestion) @ avr acima do SLO: 0.400 s > 0,100 s"
+              summary: "p95 latency of ing-01 (ingestion) @ avr above the SLO: 0.400 s > 0.100 s"
               identity: "ssle:pt:avr:mac-m2:ing-01"

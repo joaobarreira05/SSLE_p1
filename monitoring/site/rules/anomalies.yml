@@ -1,21 +1,21 @@
-# Deteção de anomalias por instância (Ameaça 1 — DoS/DDoS, e qualquer surto de tráfego; Ameaça 2 — beaconing).
-# Três camadas, de propósito (defesa em profundidade):
-#   1) RELATIVA — TrafficAnomaly: z-score ROBUSTO face à última hora (aprende o "normal" de cada serviço).
-#   2) ABSOLUTA, servidor — ServiceLatencyHigh: o SLO de latência medido DENTRO da app.
-#   3) ABSOLUTA, cliente — ClientLatencySLO / ClientUpstreamErrors: o que o sensor legítimo SENTE.
-#      O alerta nasce no SENSOR (site opo); o correlator segue a aresta sen-0x -> ing-01@avr do
-#      inventário e junta-o ao incidente do servidor (causa raiz ing-01), em vez de culpar o sensor.
+# Per-instance anomaly detection (Threat 1 — DoS/DDoS, and any traffic surge; Threat 2 — beaconing).
+# Three layers, on purpose (defence in depth):
+#   1) RELATIVE — TrafficAnomaly: ROBUST z-score against the last hour (learns each service's "normal").
+#   2) ABSOLUTE, server — ServiceLatencyHigh: the latency SLO measured INSIDE the app.
+#   3) ABSOLUTE, client — ClientLatencySLO / ClientUpstreamErrors: what the legitimate sensor FEELS.
+#      The alert is born on the SENSOR (site opo); the correlator follows the inventory edge
+#      sen-0x -> ing-01@avr and joins it to the server's incident (root cause ing-01), instead of blaming the sensor.
 groups:
 - name: anomalies
   rules:
   - alert: TrafficAnomaly
-    # Centro = MEDIANA e dispersão = IQR/1,349 (≈ σ numa normal) da última hora.
-    # Porquê robusto: com média/desvio-padrão, um ataque "contamina" a baseline — ao fim de
-    # ~6 min de ataque o desvio-padrão já cresceu tanto que z<3, e um 2.º ataque na mesma hora
-    # NÃO dispara (provado em monitoring/tests/anomaly_test.yml). A mediana e o IQR só se movem
-    # se o ataque ocupar >25 % da janela (ponto de rutura do IQR).
-    # clamp_min(…, 0.5): com tráfego muito regular o IQR≈0; o mínimo evita z infinito
-    # (na prática: dispara acima de mediana + 1,5 pedidos/s).
+    # Centre = MEDIAN and spread = IQR/1.349 (≈ σ for a normal) over the last hour.
+    # Why robust: with mean/std-dev, an attack "contaminates" the baseline — after ~6 min of
+    # attack the std-dev has grown so much that z<3, and a 2nd attack within the same hour does
+    # NOT fire (proved in monitoring/tests/anomaly_test.yml). The median and the IQR only move
+    # if the attack occupies >25 % of the window (the IQR's breakdown point).
+    # clamp_min(…, 0.5): with very regular traffic IQR≈0; the minimum avoids an infinite z
+    # (in practice: fires above median + 1.5 requests/s).
     expr: |
       abs(
         instance:http_requests:rate1m
@@ -31,28 +31,28 @@ groups:
       severity: warning
       kind: anomaly
     annotations:
-      summary: "Tráfego anómalo em {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }}: {{ $value | printf \"%.1f\" }} desvios robustos"
+      summary: "Anomalous traffic on {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }}: {{ $value | printf \"%.1f\" }} robust deviations"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
 
   - alert: ServiceLatencyHigh
-    # SLO da API de ingestão: p95 < 100 ms (em repouso o p95 é ~1 ms: margem de 100×).
-    # É o sintoma que o CLIENTE sente — dispara mesmo que o atacante suba a carga devagar
-    # (low-and-slow) e "eduque" a baseline da regra relativa.
+    # Ingestion API SLO: p95 < 100 ms (at rest p95 is ~1 ms: a 100× margin).
+    # It is meant as the symptom the CLIENT feels — it fires even if the attacker raises the load
+    # slowly (low-and-slow) and "trains" the baseline of the relative rule.
     expr: instance:http_request_duration_seconds:p95_1m > 0.1
     for: 1m
     labels:
       severity: critical
       kind: performance
     annotations:
-      summary: "Latência p95 de {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }} acima do SLO: {{ $value | printf \"%.3f\" }} s > 0,100 s"
+      summary: "p95 latency of {{ $labels.instance_name }} ({{ $labels.service }}) @ {{ $labels.site }} above the SLO: {{ $value | printf \"%.3f\" }} s > 0.100 s"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
 
   - alert: ClientLatencySLO
-    # SLO visto pelo CLIENTE: p95 do envio sensor -> ingestão < 100 ms (o mesmo SLO do servidor).
-    # Porquê: na T1 (staging, 3 execuções) o servidor mediu p95 = 23 ms e NUNCA disparou o
-    # ServiceLatencyHigh, enquanto o sensor sentia 242,5 ms (a fila antes do Flask atender).
-    # Em repouso o p95 do sensor foi ≤ 38,7 ms (margem 2,6×); análise retroativa das 3 execuções
-    # com esta regra: disparava em T0 + 80 s nas 3 (threats/t1-ddos/post-mortem.md).
+    # SLO as seen by the CLIENT: p95 of the sensor -> ingestion send < 100 ms (the same SLO as the server).
+    # Why: in T1 (staging, 3 runs) the server measured p95 = 23 ms and NEVER fired
+    # ServiceLatencyHigh, while the sensor felt 242.5 ms (the queue before Flask serves).
+    # At rest the sensor p95 was ≤ 38.7 ms (2.6× margin); retroactive analysis of the 3 runs
+    # with this rule: it would fire at T0 + 80 s in all 3 (threats/t1-ddos/post-mortem.md).
     expr: instance:ssle_sensor_upstream_duration_seconds:p95_1m > 0.1
     for: 1m
     labels:
@@ -60,12 +60,12 @@ groups:
       kind: performance
       slo: client
     annotations:
-      summary: "Cliente {{ $labels.instance_name }} @ {{ $labels.site }} sente a ingestão lenta: p95 {{ $value | printf \"%.3f\" }} s > 0,100 s"
+      summary: "Client {{ $labels.instance_name }} @ {{ $labels.site }} sees slow ingestion: p95 {{ $value | printf \"%.3f\" }} s > 0.100 s"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
 
   - alert: ClientUpstreamErrors
-    # Mais de metade das leituras do sensor falham (timeout 5 s / recusa): a ingestão está
-    # inalcançável ou saturada para lá do atraso. É o sintoma remoto de um ing-01 em baixo.
+    # More than half of the sensor's readings fail (5 s timeout / refusal): ingestion is
+    # unreachable or saturated beyond delay. It is the remote symptom of an ing-01 that is down.
     expr: instance:ssle_sensor_readings:error_ratio_rate1m > 0.5
     for: 1m
     labels:
@@ -73,15 +73,15 @@ groups:
       kind: dependency
       slo: client
     annotations:
-      summary: "Cliente {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | humanizePercentage }} das leituras falham"
+      summary: "Client {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | humanizePercentage }} of readings fail"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"
 
   - alert: OutboundAnomaly
-    # T2: o sensor abre ligações de SAÍDA fora do seu ritmo (beaconing de um C2). Mesmo z-score robusto da
-    # TrafficAnomaly, sobre instance:node_tcp_active_opens:rate1m. clamp_min(…, 0.05): o envio legítimo é
-    # muito regular (IQR≈0); com o mínimo, dispara acima de mediana + 0,15 ligações/s — um beacon a cada 3 s
-    # soma 0,33/s (z ≈ 6,7). CRITICAL de propósito: é o que leva o correlator → Wazuh 110210 → quarentena
-    # (incus pause, reversível em 600 s). Custo de um falso positivo: um sensor pausado 10 min.
+    # T2: the sensor opens OUTBOUND connections outside its rhythm (beaconing to a C2). Same robust z-score as
+    # TrafficAnomaly, over instance:node_tcp_active_opens:rate1m. clamp_min(…, 0.05): legitimate sending is
+    # very regular (IQR≈0); with the minimum, it fires above median + 0.15 connections/s — a beacon every 3 s
+    # adds 0.33/s (z ≈ 6.7). CRITICAL on purpose: it is what leads correlator → Wazuh 110210 → quarantine
+    # (incus pause, reversible in 600 s). Cost of a false positive: a sensor paused for 10 min.
     expr: |
       abs(
         instance:node_tcp_active_opens:rate1m
@@ -98,5 +98,5 @@ groups:
       kind: anomaly
       threat: botnet
     annotations:
-      summary: "Ligações de saída anómalas em {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | printf \"%.1f\" }} desvios robustos (beaconing?)"
+      summary: "Anomalous outbound connections on {{ $labels.instance_name }} @ {{ $labels.site }}: {{ $value | printf \"%.1f\" }} robust deviations (beaconing?)"
       identity: "ssle:{{ $labels.region }}:{{ $labels.site }}:{{ $labels.host }}:{{ $labels.instance_name }}"

@@ -1,9 +1,9 @@
 # promtool test rules monitoring/tests/client_slo_test.yml
-# SLO do lado do CLIENTE (lição da T1): do histograma EM BRUTO do sensor até ao alerta.
-# Cenário (amostras a cada 15 s, como o scrape): o sen-01 de opo envia 1 leitura / 5 s (3 por amostra).
-#   t = 0 … 2m15s : repouso — todas as leituras < 10 ms
-#   t = 2m30s …   : ataque à ingestão — todas entre 100 e 250 ms (o bucket onde caíram os 242,5 ms medidos)
-# Com só 4 buckets chega: o histogram_quantile interpola dentro do bucket, tal como em produção.
+# CLIENT-side SLO (T1 lesson): from the sensor's RAW histogram to the alert.
+# Scenario (samples every 15 s, like the scrape): opo's sen-01 sends 1 reading / 5 s (3 per sample).
+#   t = 0 … 2m15s : rest — every reading < 10 ms
+#   t = 2m30s …   : attack on ingestion — all between 100 and 250 ms (the bucket where the measured 242.5 ms fell)
+# 4 buckets are enough: histogram_quantile interpolates inside the bucket, just as in production.
 rule_files:
   - ../site/rules/aggregates.yml
   - ../site/rules/anomalies.yml
@@ -19,19 +19,19 @@ tests:
         values: '0+3x20'
       - series: 'ssle_sensor_upstream_duration_seconds_bucket{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",le="+Inf"}'
         values: '0+3x20'
-      # nenhuma leitura perdida (como na T1): o alerta de erros NÃO pode disparar
+      # no reading lost (as in T1): the error alert must NOT fire
       - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="ok"}'
         values: '0+3x20'
       - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="error"}'
         values: '0x20'
     promql_expr_test:
-      # repouso: p95 = 0,95 × 10 ms (interpolação no 1.º bucket)
+      # rest: p95 = 0.95 × 10 ms (interpolation in the 1st bucket)
       - expr: instance:ssle_sensor_upstream_duration_seconds:p95_1m
         eval_time: 2m
         exp_samples:
           - labels: 'instance:ssle_sensor_upstream_duration_seconds:p95_1m{region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo"}'
             value: 0.0095
-      # ataque: 0,1 + 0,15 × 0,95 = 0,2425 s — exatamente o p95 que o sensor viu nas 3 execuções da T1
+      # attack: 0.1 + 0.15 × 0.95 = 0.2425 s — exactly the p95 the sensor saw in the 3 T1 runs
       - expr: instance:ssle_sensor_upstream_duration_seconds:p95_1m
         eval_time: 4m
         exp_samples:
@@ -46,7 +46,7 @@ tests:
       - eval_time: 2m15s
         alertname: ClientLatencySLO
         exp_alerts: []
-      # ainda pendente (for: 1m) pouco depois de o ataque começar
+      # still pending (for: 1m) shortly after the attack starts
       - eval_time: 3m15s
         alertname: ClientLatencySLO
         exp_alerts: []
@@ -65,13 +65,13 @@ tests:
               service: sensor
               team: ops-opo
             exp_annotations:
-              summary: "Cliente sen-01 @ opo sente a ingestão lenta: p95 0.242 s > 0,100 s"
+              summary: "Client sen-01 @ opo sees slow ingestion: p95 0.242 s > 0.100 s"
               identity: "ssle:pt:opo:t490:sen-01"
       - eval_time: 4m
         alertname: ClientUpstreamErrors
         exp_alerts: []
 
-  # Ingestão inalcançável: 2/3 das leituras falham → ClientUpstreamErrors (sintoma remoto de ing-01 em baixo)
+  # Ingestion unreachable: 2/3 of readings fail → ClientUpstreamErrors (remote symptom of ing-01 down)
   - interval: 15s
     input_series:
       - series: 'ssle_sensor_readings_total{job="services",instance="10.10.2.50:8000",region="pt",site="opo",host="t490",instance_name="sen-01",role="sensor",service="sensor",team="ops-opo",result="ok"}'
@@ -97,5 +97,5 @@ tests:
               service: sensor
               team: ops-opo
             exp_annotations:
-              summary: "Cliente sen-01 @ opo: 66.67% das leituras falham"
+              summary: "Client sen-01 @ opo: 66.67% of readings fail"
               identity: "ssle:pt:opo:t490:sen-01"

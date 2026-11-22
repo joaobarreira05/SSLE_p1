@@ -1,4 +1,4 @@
-# Convenção de nome: nivel:metrica:operacoes. Só o grupo site-aggregates (site.*:.*) sobe ao global.
+# Naming convention: level:metric:operations. Only the site-aggregates group (site.*:.*) goes up to the global.
 groups:
 - name: site-aggregates
   rules:
@@ -6,10 +6,10 @@ groups:
     expr: count by (region, site) (up{job="node"})
   - record: site:up:ratio
     expr: avg by (region, site) (up{job="node"})
-  # Localização do site (lat/lon do inventário, servida pelo reg-01) → Geomap no Grafana global.
+  # Site location (lat/lon from the inventory, served by reg-01) → Geomap in the global Grafana.
   - record: site:info:last
     expr: max by (region, site, city, lat, lon) (site_info)
-  # Elementos registados dinamicamente (R2: o site cresce sem mexer no inventário).
+  # Dynamically registered elements (R2: the site grows without touching the inventory).
   - record: site:registry_instances:sum
     expr: sum by (region, site, kind) (ssle_registry_instances)
   - record: site:down:count
@@ -20,7 +20,7 @@ groups:
     expr: |
       sum by (region, site, service) (rate(http_requests_total{code=~"5.."}[5m]))
         / clamp_min(sum by (region, site, service) (rate(http_requests_total[5m])), 1)
-  # Latência (D de RED) e impacto no cliente legítimo (sensores) — também sobem ao global.
+  # Latency (D of RED) and impact on the legitimate client (sensors) — also go up to the global.
   - record: site_service:http_request_duration_seconds:p95_5m
     expr: |
       histogram_quantile(0.95,
@@ -34,8 +34,8 @@ groups:
       histogram_quantile(0.95,
         sum by (le, region, site) (rate(ssle_sensor_upstream_duration_seconds_bucket[5m])))
 
-# Por INSTÂNCIA: é a granularidade da DETEÇÃO local (o alerta diz qual elemento é, com a
-# identidade completa). Estas NÃO sobem ao global (o match[] do federate é "site.*:.*").
+# Per INSTANCE: the granularity of local DETECTION (the alert says which element it is, with the
+# full identity). These do NOT go up to the global (the federate match[] is "site.*:.*").
 - name: instance-aggregates
   rules:
   - record: instance:http_requests:rate1m
@@ -47,16 +47,16 @@ groups:
       histogram_quantile(0.95,
         sum by (le, region, site, host, instance_name, role, service, team)
           (rate(http_request_duration_seconds_bucket{job="services"}[1m])))
-  # Lado do CLIENTE (só os sensores têm estas séries): o que a frota legítima sente ao enviar
-  # para a ingestão — inclui a fila ANTES de o Flask atender, que o histograma do servidor não vê
-  # (lição da T1: servidor 23 ms, cliente 242 ms). Base dos alertas ClientLatencySLO/ClientUpstreamErrors.
+  # CLIENT side (only sensors have these series): what the legitimate fleet feels when sending to
+  # ingestion — includes the queue BEFORE Flask serves, which the server histogram does not see
+  # (T1 lesson: server 23 ms, client 242 ms). Basis of the ClientLatencySLO/ClientUpstreamErrors alerts.
   - record: instance:ssle_sensor_upstream_duration_seconds:p95_1m
     expr: |
       histogram_quantile(0.95,
         sum by (le, region, site, host, instance_name, role, service, team)
           (rate(ssle_sensor_upstream_duration_seconds_bucket{job="services"}[1m])))
-  # T2 (botnet): ligações TCP de SAÍDA novas por sensor (node_exporter, netstat). O normal é ~0,2/s (um POST
-  # à ingestão a cada ~5 s); o beaconing de um C2 soma-lhe um ritmo próprio. Base do OutboundAnomaly.
+  # T2 (botnet): new OUTBOUND TCP connections per sensor (node_exporter, netstat). Normal is ~0.2/s (one POST
+  # to ingestion every ~5 s); C2 beaconing adds its own rhythm. Basis of OutboundAnomaly.
   - record: instance:node_tcp_active_opens:rate1m
     expr: |
       sum by (region, site, host, instance_name, role, team)

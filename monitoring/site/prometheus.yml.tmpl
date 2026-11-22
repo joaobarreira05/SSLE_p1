@@ -1,7 +1,7 @@
-# Prometheus de SITE (apt, 2.53.x). Renderizado por infra/deploy.sh:
-#   @@SITE@@         -> código do site (avr, opo, ...)
-#   @@ALERTMANAGER@@ -> endereço do Alertmanager central (perna do obs nesta rede)
-#   @@REGISTRY@@     -> reg-01 do site (ip:5050); sem reg-01 o deploy apaga o bloco ">>> registry"
+# SITE Prometheus (apt, 2.53.x). Rendered by infra/deploy.sh:
+#   @@SITE@@         -> site code (avr, opo, ...)
+#   @@ALERTMANAGER@@ -> address of the central Alertmanager (obs leg on this network)
+#   @@REGISTRY@@     -> the site's reg-01 (ip:5050); without reg-01 the deploy removes the ">>> registry" block
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -27,10 +27,10 @@ scrape_configs:
     file_sd_configs:
       - files: ['/etc/prometheus/targets/flask.json']
   # >>> registry
-  # Elementos que se REGISTAM no reg-01 do site (lease com TTL, registry/core.py). Os do inventário
-  # continuam no file_sd acima: se o registry cair, a frota de base continua monitorizada e o HTTP SD
-  # mantém os últimos alvos que conhecia. O relabel põe o MESMO job das regras (up{job="node"}, …),
-  # por isso liveness, agregados e alertas valem para os dinâmicos sem mudar uma linha.
+  # Elements that REGISTER with the site's reg-01 (lease with TTL, registry/core.py). Inventory elements
+  # stay in the file_sd above: if the registry fails, the base fleet stays monitored and HTTP SD keeps
+  # the last targets it knew. The relabel sets the SAME job as the rules (up{job="node"}, …),
+  # so liveness, aggregates and alerts apply to dynamic elements without changing a line.
   - job_name: node-registry
     http_sd_configs:
       - url: http://@@REGISTRY@@/sd/node

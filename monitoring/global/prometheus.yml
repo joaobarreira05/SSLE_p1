@@ -1,4 +1,4 @@
-# Prometheus GLOBAL (core/obs). Federa só AGREGADOS dos sites (R5: poupa banda).
+# GLOBAL Prometheus (core/obs). Federates only the sites' AGGREGATES (R5: saves bandwidth).
 global:
   scrape_interval: 30s
   evaluation_interval: 30s
@@ -19,7 +19,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9100']
         labels: {site: core, instance_name: obs, host: HOSTPLACEHOLDER}
-  - job_name: hypervisor            # node_exporter do host físico (proxy device do Incus; [] fora do T490)
+  - job_name: hypervisor            # node_exporter of the physical host (Incus proxy device; [] outside the T490)
     file_sd_configs:
       - files: ['/etc/prometheus/hypervisor.json']
   - job_name: alertmanager
@@ -34,13 +34,13 @@ scrape_configs:
     metrics_path: /federate
     params:
       'match[]':
-        - '{__name__=~"site.*:.*"}'   # só as recording rules agregadas dos sites
-        - 'up'                        # liveness por alvo (barato; útil p/ RCA)
-        - 'ALERTS{alertstate="firing"}'  # alertas ATIVOS dos sites (poucas séries) → vista do SOC no Grafana
+        - '{__name__=~"site.*:.*"}'   # only the sites' aggregated recording rules
+        - 'up'                        # per-target liveness (cheap; useful for RCA)
+        - 'ALERTS{alertstate="firing"}'  # ACTIVE alerts of the sites (few series) → SOC view in Grafana
     file_sd_configs:
       - files: ['/etc/prometheus/federate.json']
     metric_relabel_configs:
-      # o ALERTS federado passa a site:alerts:firing (não se mistura com o ALERTS das regras do global)
+      # the federated ALERTS becomes site:alerts:firing (does not mix with the ALERTS of the global's rules)
       - source_labels: [__name__]
         regex: ALERTS
         target_label: __name__

@@ -3,7 +3,7 @@ rule_files:
   - ../site/rules/liveness.yml
 evaluation_interval: 15s
 tests:
-  # ElementDown dispara quando o node_exporter deixa de responder (up=0)
+  # ElementDown fires when node_exporter stops answering (up=0)
   - interval: 15s
     input_series:
       - series: 'up{job="node",region="pt",site="avr",host="mac-m2",instance_name="sto-01",role="storage"}'
@@ -22,9 +22,9 @@ tests:
               instance_name: sto-01
               role: storage
             exp_annotations:
-              summary: "Elemento em baixo: sto-01 @ avr"
+              summary: "Element down: sto-01 @ avr"
               identity: "ssle:pt:avr:mac-m2:sto-01"
-  # ServiceDegraded dispara quando uma dependência fica em baixo
+  # ServiceDegraded fires when a dependency goes down
   - interval: 15s
     input_series:
       - series: 'ssle_dependency_up{region="pt",site="avr",host="mac-m2",instance_name="ing-01",role="ingestion",dep="sto-01"}'
@@ -43,5 +43,5 @@ tests:
               role: ingestion
               dep: sto-01
             exp_annotations:
-              summary: "ing-01 degradado: dependência 'sto-01' em baixo @ avr"
+              summary: "ing-01 degraded: dependency 'sto-01' down @ avr"
               identity: "ssle:pt:avr:mac-m2:ing-01"
