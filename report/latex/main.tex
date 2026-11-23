@@ -426,7 +426,7 @@ The project's rules occupy reserved ranges---\texttt{1100xx}~correlator,
     with both positive and negative cases;
   \item \textbf{Integration with real agents}: manager and five \texttt{wazuh-agent}
     instances in Docker (including a Postfix with \texttt{spamd}), installed by the deploy
-    scripts, from stimulus to response on the correct agent (34~checks).
+    scripts, from stimulus to response on the correct agent (35~checks).
 \end{enumerate}
 
 These two levels uncovered \textbf{17~defects} (2~fatal at load time, 7~caught by the
@@ -1352,7 +1352,7 @@ as built, and that the one rule that did was a defect, not noise to be tuned awa
     Response unit tests &
       Quarantine (fake \texttt{incus}) and rate-limit (real nft in namespace) & 19/19 \\
     Integration with real agents &
-      5~agents + real MTA, stimulus to response & 34/34 \\
+      5~agents + real MTA, stimulus to response & 35/35 \\
     \bottomrule
   \end{tabular}
 \end{table}

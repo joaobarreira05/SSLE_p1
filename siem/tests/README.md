@@ -140,7 +140,7 @@ arguments). Real output (09/11/2026):
   ✓ sen-01 is root cause (agent obs, srcip 172.19.0.6) → 110210 L12 agent=core-obs
   ✓ sen-01 is root cause (obs) AND tries relay on mail-01 → 110900 L14 agent=lis-mail-01 srcip=172.19.0.6
   ✓ firewall-drop ON mail-01 also from 110900: 172.19.0.6 blocked
-RESULT: SIEM integration OK ✅        (34 checks; automatic unblock, alert 652, arrives 600 s later)
+RESULT: SIEM integration OK ✅        (35 checks; automatic unblock, alert 652, arrives 600 s later)
 ```
 
 ### What the integration caught that logtest could not
