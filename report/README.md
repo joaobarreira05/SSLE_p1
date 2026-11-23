@@ -1,6 +1,6 @@
 # Report — section status
 
-Article-style structure. The final report is in **LaTeX** (English) in [`latex/main.tex`](latex/main.tex) → `latex/main.pdf` (25 pages).
+Article-style structure. The final report is in **LaTeX** (English) in [`latex/main.tex`](latex/main.tex) → `latex/main.pdf` (32 pages).
 
 | Section | Status |
 |---|---|

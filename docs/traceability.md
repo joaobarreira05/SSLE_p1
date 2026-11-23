@@ -16,7 +16,7 @@
 | R10 | SIEM: log management | `siem/shared/*/agent.conf` per group (site/role): auth.log, *combined* access log, mail.log, `incidents.json`, FIM, listening-ports command; identity labels on every alert; 14 agents on T490 | ✅ |
 | R11 | Per threat: description…post-mortem | T1–T3 with the 6 subtitles from slide 12 in report §5.1–5.3; PoCs validated on T490 (14/11) with versioned evidence | ✅ |
 | R12 | Conclusions (why it is not perfect, future work) | report §7: limitations (8 points) + future work (4 points) | ✅ |
-| R13 | Report in article/thesis style | `report/latex/main.tex` → `main.pdf` (25 pages, xelatex, English, 15 references) | ✅ |
+| R13 | Report in article/thesis style | `report/latex/main.tex` → `main.pdf` (32 pages, xelatex, English, 15 references) | ✅ |
 | R14 | Demo + repositories | this repo + `infra/demo.sh` | ✅ |
 
 **Staging note:** the SIEM (Wazuh, 4–6 GiB) and the `lis`/`opo`-extra sites are excluded from the `staging` profile

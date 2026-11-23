@@ -1303,12 +1303,13 @@ window (13\,s of data gaps in total).
   \centering
   \caption{False positives over a 10.1-hour attack-free window (T490, 22--23/11).}
   \label{tab:fp}
-  \begin{tabular}{@{}lccl@{}}
+  \begin{tabular}{@{}lccp{7.2cm}@{}}
     \toprule
     \textbf{Source} & \textbf{Events} & \textbf{Per hour} & \textbf{Closest approach to the threshold} \\
     \midrule
-    Prometheus (4 servers) & 0 & 0 & \texttt{TrafficAnomaly} $z = 0.09$, \texttt{OutboundAnomaly} $z = 0.89$ (of 3) \\
-    & & & server p95 5\,ms, client p95 39\,ms (of 100\,ms); errors 0\,\% \\
+    Prometheus (4 servers) & 0 & 0 & robust $z$ 0.09 (\texttt{TrafficAnomaly}) and 0.89
+      (\texttt{OutboundAnomaly}) against~3; $p_{95}$ 5\,ms (server) and 39\,ms (client)
+      against 100\,ms; client errors 0\,\% \\
     Correlator incidents & 0 & 0 & --- \\
     Wazuh alerts & 0 & 0 & no alert at any level $\geq 3$; no events dropped \\
     Active responses & 0 & 0 & --- \\
