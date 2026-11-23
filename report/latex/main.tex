@@ -894,13 +894,15 @@ so a bot attacking its own upstream service is not quarantined by 110210.
 
 \subsubsection{Post-mortem}
 
-\paragraph{What worked.} The robust z-score detected all 9~runs and the
-correlator opened \textbf{one} incident per run with the correct root cause. The live
+\paragraph{What worked.} The robust z-score detected all 13~runs (the original nine plus
+runs~10--13 on 22/11) and the correlator opened \textbf{one} incident per run with the correct
+root cause. The live
 counterproof confirmed what the unit test predicted: with mean/std, the first attack inflates
 the standard deviation and later attacks within the same hour often \textbf{go undetected}.
 An attacker repeating the attack would gain invisibility. The mean/std counterproof would
 have missed 5 of the 9~runs: 2 of 3 in staging (max $z = 3.3$ and 2.8 in runs~2 and~3) and
-3 of 6 on the T490 (max $z = 3.6$, 3.5 and 2.9 in runs~6, 8 and~9).
+3 of 6 on the T490 (max $z = 3.6$, 3.5 and 2.9 in runs~6, 8 and~9); of the four later runs
+it would also have missed runs~12 and~13 (max $z = 0.7$ and 1.1), seven of 13 in total.
 
 \paragraph{What did not work, and the lesson.}
 In staging, the SLO measured \textbf{on the server} failed all three runs: the application
