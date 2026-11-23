@@ -884,8 +884,9 @@ so a bot attacking its own upstream service is not quarantined by 110210.
   \caption{T1 run~10 (live, T490, 22/11): the request rate rises from the baseline to
     ${\sim}20$\,req/s (the service's capacity on the T490; \texttt{ssle-ratelimit} is active
     ${\sim}2$\,s into the run);
-    the robust z-score crosses the threshold~3; the client $p_{95}$ reaches ${\sim}400$\,ms
-    against ${\sim}170$\,ms on the server. Three rules fire, as four alert instances:
+    the robust z-score crosses the threshold~3; the client $p_{95}$ (\texttt{sen-01} orange, \texttt{sen-02} purple) reaches ${\sim}400$\,ms
+    against ${\sim}170$\,ms on the server (blue). Three rules fire, as four alert instances
+    (orange pending, red firing):
     \texttt{TrafficAnomaly} and \texttt{ServiceLatencyHigh} on \texttt{ing-01}, and
     \texttt{ClientLatencySLO} on each of the two sensors.}
   \label{fig:t1-attack}

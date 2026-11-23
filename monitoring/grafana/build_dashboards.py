@@ -186,7 +186,10 @@ def t1():
                       "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]},
                      {"matcher": {"id": "byFrameRefID", "options": "B"},
                       "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}},
-                                     {"id": "custom.lineWidth", "value": 3}]}],
+                                     {"id": "custom.lineWidth", "value": 3}]},
+                     # second sensor in another colour, or the two client lines are indistinguishable
+                     {"matcher": {"id": "byName", "options": "client (sen-02)"},
+                      "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "purple"}}]}],
           desc="The T1 lesson: the server measures ~23 ms while the client feels ~242 ms (the queue before "
                "Flask starts serving). Hence the SLO must be measured on the client side (ClientLatencySLO).")
     rules = "TrafficAnomaly|ServiceLatencyHigh"

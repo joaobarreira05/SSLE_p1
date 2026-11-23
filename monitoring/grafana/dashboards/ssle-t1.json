@@ -247,6 +247,21 @@
                 "value": 3
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client (sen-02)"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
           }
         ]
       },
