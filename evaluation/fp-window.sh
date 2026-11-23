@@ -29,6 +29,23 @@ for p in $PROMS; do
   curl -sf -G "$url/api/v1/query_range" --data-urlencode 'query=up{job="prometheus"}' \
     --data-urlencode "start=$FROM" --data-urlencode "end=$TO" --data-urlencode step=15 > "$T/up-$name.json"
 done
+# headroom: the highest value each alert expression reached in the window (sites only; threshold in brackets)
+rz() { echo "abs($1 - quantile_over_time(0.5,$1[1h])) / clamp_min((quantile_over_time(0.75,$1[1h]) - quantile_over_time(0.25,$1[1h]))/1.349, $2)"; }
+HEAD=(
+  "TrafficAnomaly z [3]|$(rz instance:http_requests:rate1m 0.5)"
+  "OutboundAnomaly z [3]|$(rz instance:node_tcp_active_opens:rate1m 0.05)"
+  "server p95 s [0.1]|instance:http_request_duration_seconds:p95_1m"
+  "client p95 s [0.1]|instance:ssle_sensor_upstream_duration_seconds:p95_1m"
+  "client error ratio [0.5]|instance:ssle_sensor_readings:error_ratio_rate1m"
+)
+for p in ${PROMS#* }; do
+  name="${p%%=*}"; url="${p#*=}"
+  for i in "${!HEAD[@]}"; do
+    curl -sf -G "$url/api/v1/query" --data-urlencode "time=$TO" \
+      --data-urlencode "query=max(max_over_time((${HEAD[$i]#*|})[$((TO - FROM))s:15s]))" > "$T/head-$name-$i.json"
+  done
+done
+printf '%s\n' "${HEAD[@]%%|*}" > "$T/head-names"
 incus exec obs --project core -- cat /var/log/ssle/incidents.json > "$T/incidents.json" 2>/dev/null </dev/null || : > "$T/incidents.json"
 incus exec wazuh --project core -- sh -c 'cat /var/ossec/logs/alerts/alerts.json;
   for f in /var/ossec/logs/alerts/*/*/ossec-alerts-*.json.gz; do [ -f "$f" ] && zcat "$f"; done;
@@ -125,6 +142,15 @@ print("| Prometheus — firing episodes (3 sites + global) | %d | %.2f |" % (n_p
 print("| Correlator — incidents opened | %d | %.2f |" % (len(incidents), len(incidents) / hours))
 print("| Wazuh — SSLE rules (level ≥ 7) and any rule level ≥ 10 | %d | %.2f |" % (n_waz, n_waz / hours))
 print("| Active responses executed | %d | %.2f |" % (len(ar), len(ar) / hours))
+print("\n## Headroom (highest value in the window, site Prometheus servers)\n")
+with open(os.path.join(T, "head-names")) as fh:
+    names = fh.read().splitlines()
+for i, n in enumerate(names):
+    vals = []
+    for f in sorted(glob.glob(os.path.join(T, "head-*-%d.json" % i))):
+        with open(f) as fh:
+            vals += [float(r["value"][1]) for r in json.load(fh)["data"]["result"]]
+    print("- %s: %s" % (n, "%.3f" % max(vals) if vals else "no data"))
 print("\n## Prometheus episodes\n")
 print("\n".join("- `%s` %s on %s: %d" % (k[1], k[2], k[0], v) for k, v in sorted(episodes.items())) or "- none")
 print("\n## Correlator incidents\n")

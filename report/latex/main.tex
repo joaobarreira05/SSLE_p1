@@ -81,7 +81,7 @@ service (T1), IoT botnet (T2) and junk e-mail from compromised sensors (T3)---ar
 correlated and mitigated automatically, linked by a meta-correlation rule that identifies
 ``one botnet, two impacts.'' Evaluated on a 15-container lab with 14~Wazuh agents, the
 system achieves SIEM response in ${\sim}6$~s (T1), full quarantine in ${\sim}140$~s (T2),
-and @@FPABSTRACT@@. The testing process uncovered 19~SIEM defects, 16 of them
+and no false positive from any source over a 10-hour attack-free window. The testing process uncovered 19~SIEM defects, 16 of them
 silent---valid configuration that never fired or never acted---showing that ``loads without
 errors'' does not mean ``detects.''
 \end{abstract}
@@ -1288,7 +1288,51 @@ T2 produced quarantine of the correct sensor with \texttt{OutboundAnomaly} as th
 \subsection{False Positives over an Attack-Free Window}
 \label{sec:fp}
 
-@@FPSECTION@@
+Every alert in the earlier sections answers a stimulus. To measure the opposite, the lab was
+left running \textbf{untouched for 10.1~h} after the last PoC (22/11 22:24 to 23/11 08:30 UTC):
+15~containers, 14~agents, the sensors sending readings, no stimulus and no operator activity.
+Anything that fires in that window is, by definition, a false positive.
+\texttt{evaluation/fp-window.sh} counts it from the sources: firing episodes of \texttt{ALERTS}
+on the three site Prometheus servers and on the global one, incidents opened by the correlator,
+Wazuh alerts (project rules at level~$\geq 7$ and any rule at level~$\geq 10$) and active
+responses executed on every agent that has one. All 30~scrape targets stayed up for the whole
+window (13\,s of data gaps in total).
+
+\begin{table}[H]
+  \centering
+  \caption{False positives over a 10.1-hour attack-free window (T490, 22--23/11).}
+  \label{tab:fp}
+  \begin{tabular}{@{}lccl@{}}
+    \toprule
+    \textbf{Source} & \textbf{Events} & \textbf{Per hour} & \textbf{Closest approach to the threshold} \\
+    \midrule
+    Prometheus (4 servers) & 0 & 0 & \texttt{TrafficAnomaly} $z = 0.09$, \texttt{OutboundAnomaly} $z = 0.89$ (of 3) \\
+    & & & server p95 5\,ms, client p95 39\,ms (of 100\,ms); errors 0\,\% \\
+    Correlator incidents & 0 & 0 & --- \\
+    Wazuh alerts & 0 & 0 & no alert at any level $\geq 3$; no events dropped \\
+    Active responses & 0 & 0 & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The same idle lab was \textbf{not} silent before defect~19 was fixed. A duplicate
+\texttt{netstat} alias in the agent configuration made rule~533 report a ``changed'' listening
+port on every check, and rule~110202 (level~10, the T2 indicator ``new listening port'')
+fired about 20~times per hour on each sensor: 40~times on each of \texttt{sen-01} and
+\texttt{sen-02} in 1.9~h on 19/11, and 14~times each in the 45~minutes before the fix on
+22/11. That is roughly 40~level-10 false positives per hour with no attack at all. No sensor
+was quarantined, because quarantine also needs the correlator's \texttt{OutboundAnomaly}
+incident, but the SOC queue was flooded with exactly the alert that should announce a botnet.
+After the fix (\texttt{install-agent.sh} now removes the default \texttt{netstat} block, and
+\texttt{it-agents.sh} checks that it is gone), the same rule stayed silent for the whole 10.1~h.
+
+\paragraph{What this does and does not show.} Zero events in 10.1~h bounds the rate at
+roughly ${\leq}\,0.3$ false positives per hour (95\,\% upper bound, rule of three: $3/10.1$).
+The bound holds for \emph{this} baseline only. Idle lab traffic is very regular (about
+0.44~req/s on \texttt{ing-01}), so the IQR floor of the robust $z$ dominates and the score barely
+moves. Real traffic, with daily cycles, deployments and legitimate bursts, will come closer to
+the thresholds. The window shows that the rules do not fire on normal operation of the system
+as built, and that the one rule that did was a defect, not noise to be tuned away.
 
 \subsection{SIEM and Response Validation}
 
@@ -1409,8 +1453,8 @@ This work shows that a detection system for a distributed infrastructure can be 
 fleet, monitoring targets, dependency graph and SIEM configuration. The main results are
 four.
 
-First, \textbf{robust} anomaly detection (median/IQR) detected all T1 runs without false
-positives (9/9, MTTD ${\sim}81$\,s), where mean/std would have missed five. The SIEM response
+First, \textbf{robust} anomaly detection (median/IQR) detected all 13~T1 runs (MTTD ${\sim}80$\,s),
+where mean/std would have missed seven, and raised no alert over a 10-hour attack-free window. The SIEM response
 (rule~110100 $\to$ \texttt{ssle-ratelimit} nft) activates in ${\sim}6$\,s, more than ten
 times faster than metric-based detection, and drops 597--1\,098 packets per run (runs 7--9) without
 affecting the legitimate sensors.
